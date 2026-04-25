@@ -1,0 +1,4 @@
+2026-04-14 12:43:09.096205+01:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Valeur trop longue pour la colonne "IMAGES CHARACTER VARYING(255)": "'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxIQEhUSEhIVFRUWFRoV... (5255)"
+Value too long for column "IMAGES CHARACTER VARYING(255)": "'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxIQEhUSEhIVFRUWFRoV... (5255)"; SQL statement:
+update product set actif=?,date_creation=?,description=?,images=?,nom=?,prix=?,prix_promo=?,seller_id=?,stock=? where id=? [22001-232]
