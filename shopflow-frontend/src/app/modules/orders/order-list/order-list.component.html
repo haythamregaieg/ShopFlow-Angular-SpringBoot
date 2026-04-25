@@ -1,0 +1,39 @@
+<div class="container" style="padding-top: 30px;">
+  <h1 class="page-title">📦 Mes Commandes</h1>
+
+  <div class="empty" *ngIf="orders.length === 0">
+    <p>Aucune commande pour le moment</p>
+    <a routerLink="/products" class="btn btn-primary">Commencer mes achats</a>
+  </div>
+
+  <div class="orders-list" *ngIf="orders.length > 0">
+    <div class="order-card card" *ngFor="let order of orders">
+      <div class="order-header">
+        <div>
+          <h3>{{ order.numeroCommande }}</h3>
+          <p class="order-date">{{ order.dateCommande | date:'dd/MM/yyyy HH:mm' }}</p>
+        </div>
+        <span class="badge" [class]="getStatusClass(order.statut)">{{ order.statut }}</span>
+      </div>
+
+      <div class="order-items">
+        <div *ngFor="let item of order.lignes" class="order-item">
+          <span>{{ item.productNom }}</span>
+          <span>{{ item.quantite }} x {{ item.prixUnitaire | number:'1.2-2' }} €</span>
+        </div>
+      </div>
+
+      <div class="order-footer">
+        <div class="order-total">
+          Total : <strong>{{ order.totalTTC | number:'1.2-2' }} €</strong>
+        </div>
+        <div class="order-actions">
+          <a [routerLink]="['/orders', order.id]" class="btn btn-primary">Détail</a>
+          <button class="btn btn-danger"
+            *ngIf="order.statut === 'PENDING' || order.statut === 'PAID'"
+            (click)="cancelOrder(order.id)">Annuler</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

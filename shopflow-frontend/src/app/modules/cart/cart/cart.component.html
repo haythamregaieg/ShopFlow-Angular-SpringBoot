@@ -1,0 +1,64 @@
+<div class="container" style="padding-top: 30px;">
+  <h1 class="page-title">🛒 Mon Panier</h1>
+
+  <div class="alert alert-success" *ngIf="message">{{ message }}</div>
+  <div class="alert alert-error" *ngIf="error">{{ error }}</div>
+
+  <div *ngIf="cart && cart.lignes.length > 0" class="cart-layout">
+    <div class="cart-items">
+      <div class="cart-item card" *ngFor="let item of cart.lignes">
+        <div class="item-image">{{ item.productNom.charAt(0) }}</div>
+        <div class="item-info">
+          <h3>{{ item.productNom }}</h3>
+          <p class="item-price">{{ item.prixUnitaire | number:'1.2-2' }} €</p>
+        </div>
+        <div class="item-quantity">
+          <button (click)="updateQuantity(item.id, item.quantite - 1)">−</button>
+          <span>{{ item.quantite }}</span>
+          <button (click)="updateQuantity(item.id, item.quantite + 1)">+</button>
+        </div>
+        <div class="item-total">{{ item.sousTotal | number:'1.2-2' }} €</div>
+        <button class="btn btn-danger" (click)="removeItem(item.id)">🗑️</button>
+      </div>
+    </div>
+
+    <div class="cart-summary card">
+      <h3>Récapitulatif</h3>
+
+      <div class="coupon-section">
+        <input type="text" [(ngModel)]="couponCode" placeholder="Code promo" *ngIf="!cart.couponCode" />
+        <button class="btn btn-success" (click)="applyCoupon()" *ngIf="!cart.couponCode">Appliquer</button>
+        <div class="coupon-applied" *ngIf="cart.couponCode">
+          🎟️ {{ cart.couponCode }} <button class="btn btn-danger" (click)="removeCoupon()">✕</button>
+        </div>
+      </div>
+
+      <div class="summary-line">
+        <span>Sous-total</span>
+        <span>{{ cart.sousTotal | number:'1.2-2' }} €</span>
+      </div>
+      <div class="summary-line discount" *ngIf="cart.remise > 0">
+        <span>Remise</span>
+        <span>-{{ cart.remise | number:'1.2-2' }} €</span>
+      </div>
+      <div class="summary-line">
+        <span>Frais de livraison</span>
+        <span>{{ cart.fraisLivraison === 0 ? 'Gratuit' : (cart.fraisLivraison | number:'1.2-2') + ' €' }}</span>
+      </div>
+      <div class="summary-total">
+        <span>Total TTC</span>
+        <span>{{ cart.totalTTC | number:'1.2-2' }} €</span>
+      </div>
+
+      <button class="btn btn-primary btn-full" (click)="checkout()" [disabled]="loading">
+        {{ loading ? 'Traitement...' : '✅ Commander' }}
+      </button>
+      <a routerLink="/products" class="continue-shopping">← Continuer mes achats</a>
+    </div>
+  </div>
+
+  <div class="empty-cart" *ngIf="!cart || cart.lignes.length === 0">
+    <p>🛒 Votre panier est vide</p>
+    <a routerLink="/products" class="btn btn-primary">Voir les produits</a>
+  </div>
+</div>

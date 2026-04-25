@@ -1,0 +1,62 @@
+<div class="container" style="padding-top: 30px;">
+  <h1 class="page-title">{{ isAdmin ? '⚙️ Dashboard Admin' : '👤 Mon Espace' }}</h1>
+
+  <div class="stats-grid">
+    <ng-container *ngIf="isAdmin">
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-value">{{ stats.totalUsers || 0 }}</div>
+        <div class="stat-label">Utilisateurs</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-value">{{ stats.totalProducts || 0 }}</div>
+        <div class="stat-label">Produits</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🛒</div>
+        <div class="stat-value">{{ stats.totalOrders || 0 }}</div>
+        <div class="stat-label">Commandes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⭐</div>
+        <div class="stat-value">{{ stats.totalReviews || 0 }}</div>
+        <div class="stat-label">Avis</div>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="!isAdmin">
+      <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-value">{{ stats.totalOrders || 0 }}</div>
+        <div class="stat-label">Mes Commandes</div>
+      </div>
+    </ng-container>
+  </div>
+
+  <div class="card" *ngIf="recentOrders.length > 0">
+    <h3>Commandes récentes</h3>
+    <table style="margin-top: 16px;">
+      <thead>
+        <tr><th>Numéro</th><th>Date</th><th>Total</th><th>Statut</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let order of recentOrders">
+          <td>{{ order.numeroCommande }}</td>
+          <td>{{ order.dateCommande | date:'dd/MM/yyyy' }}</td>
+          <td>{{ order.totalTTC | number:'1.2-2' }} €</td>
+          <td><span class="badge badge-info">{{ order.statut }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="quick-links">
+    <h3>Accès rapide</h3>
+    <div class="links-grid">
+      <a routerLink="/products" class="quick-link">🛍️ Catalogue</a>
+      <a routerLink="/cart" class="quick-link">🛒 Panier</a>
+      <a routerLink="/orders" class="quick-link">📦 Commandes</a>
+      <a routerLink="/admin" class="quick-link" *ngIf="isAdmin">⚙️ Administration</a>
+    </div>
+  </div>
+</div>

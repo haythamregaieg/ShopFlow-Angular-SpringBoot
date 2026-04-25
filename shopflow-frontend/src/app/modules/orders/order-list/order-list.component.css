@@ -1,0 +1,11 @@
+.order-card { margin-bottom: 16px; }
+.order-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+.order-header h3 { font-size: 16px; font-weight: 700; }
+.order-date { font-size: 13px; color: #999; margin-top: 4px; }
+.order-items { border-top: 1px solid #f0f0f0; padding-top: 12px; margin-bottom: 12px; }
+.order-item { display: flex; justify-content: space-between; font-size: 14px; padding: 4px 0; }
+.order-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f0f0f0; padding-top: 12px; }
+.order-total { font-size: 16px; }
+.order-actions { display: flex; gap: 8px; }
+.empty { text-align: center; padding: 80px; }
+.empty p { font-size: 20px; color: #999; margin-bottom: 24px; }

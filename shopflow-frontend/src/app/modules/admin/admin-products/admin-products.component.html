@@ -1,0 +1,39 @@
+<div class="container" style="padding-top: 30px;">
+  <div class="admin-nav">
+    <a routerLink="/admin/users" routerLinkActive="active" class="admin-tab">👥 Utilisateurs</a>
+    <a routerLink="/admin/products" routerLinkActive="active" class="admin-tab">📦 Produits</a>
+  </div>
+
+  <div class="page-header">
+    <h1 class="page-title">📦 Gestion des Produits</h1>
+    <a routerLink="/products/new/create" class="btn btn-success">+ Nouveau</a>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr><th>ID</th><th>Nom</th><th>Prix</th><th>Stock</th><th>Vendeur</th><th>Statut</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let product of products">
+          <td>{{ product.id }}</td>
+          <td>{{ product.nom }}</td>
+          <td>{{ product.prix | number:'1.2-2' }} €</td>
+          <td>{{ product.stock }}</td>
+          <td>{{ product.sellerNom }}</td>
+          <td>
+            <span class="badge" [class]="product.actif ? 'badge-success' : 'badge-danger'">
+              {{ product.actif ? 'Actif' : 'Inactif' }}
+            </span>
+          </td>
+          <td>
+            <div style="display: flex; gap: 6px;">
+              <a [routerLink]="['/products', product.id, 'edit']" class="btn btn-success" style="padding: 6px 10px; font-size: 12px;">✏️</a>
+              <button class="btn btn-danger" (click)="delete(product.id)" style="padding: 6px 10px; font-size: 12px;">🗑️</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

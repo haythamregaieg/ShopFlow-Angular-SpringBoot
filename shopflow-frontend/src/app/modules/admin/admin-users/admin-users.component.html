@@ -1,0 +1,38 @@
+<div class="container" style="padding-top: 30px;">
+  <div class="admin-nav">
+    <a routerLink="/admin/users" routerLinkActive="active" class="admin-tab">👥 Utilisateurs</a>
+    <a routerLink="/admin/products" routerLinkActive="active" class="admin-tab">📦 Produits</a>
+  </div>
+
+  <h1 class="page-title">👥 Gestion des Utilisateurs</h1>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th><th>Prénom</th><th>Nom</th><th>Email</th><th>Rôle</th><th>Statut</th><th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users">
+          <td>{{ user.id }}</td>
+          <td>{{ user.prenom }}</td>
+          <td>{{ user.nom }}</td>
+          <td>{{ user.email }}</td>
+          <td><span class="badge badge-info">{{ user.role }}</span></td>
+          <td>
+            <span class="badge" [class]="user.actif ? 'badge-success' : 'badge-danger'">
+              {{ user.actif ? 'Actif' : 'Inactif' }}
+            </span>
+          </td>
+          <td>
+            <button class="btn" [class]="user.actif ? 'btn-danger' : 'btn-success'"
+              (click)="toggle(user)" style="padding: 6px 14px; font-size: 12px;">
+              {{ user.actif ? 'Désactiver' : 'Activer' }}
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

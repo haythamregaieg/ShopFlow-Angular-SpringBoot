@@ -1,0 +1,33 @@
+<nav class="navbar">
+  <div class="nav-container">
+    <a routerLink="/products" class="nav-brand">
+      <span class="brand-text">ShopFlow</span>
+    </a>
+    <div class="nav-links">
+      <a routerLink="/products" routerLinkActive="active">Catalogue</a>
+      <a routerLink="/cart" routerLinkActive="active" *ngIf="isLoggedIn">
+        Panier
+        <span class="cart-badge" *ngIf="cartCount > 0">{{ cartCount }}</span>
+      </a>
+      <a routerLink="/orders" routerLinkActive="active" *ngIf="isLoggedIn">Commandes</a>
+      <a routerLink="/dashboard" routerLinkActive="active" *ngIf="isLoggedIn">Dashboard</a>
+      <a routerLink="/admin" routerLinkActive="active" *ngIf="isAdmin" class="admin-link">Admin</a>
+    </div>
+    <div class="nav-auth">
+      <ng-container *ngIf="!isLoggedIn">
+        <a routerLink="/auth/login" class="btn btn-ghost btn-sm">Connexion</a>
+        <a routerLink="/auth/register" class="btn btn-primary btn-sm">Inscription</a>
+      </ng-container>
+      <ng-container *ngIf="isLoggedIn">
+        <div class="user-menu">
+          <div class="user-avatar">{{ userEmail.charAt(0).toUpperCase() }}</div>
+          <div class="user-info">
+            <span class="user-email">{{ userEmail }}</span>
+            <span class="user-role">{{ userRole }}</span>
+          </div>
+        </div>
+        <button (click)="logout()" class="btn btn-ghost btn-sm">Deconnexion</button>
+      </ng-container>
+    </div>
+  </div>
+</nav>

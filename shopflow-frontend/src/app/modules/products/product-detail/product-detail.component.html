@@ -1,0 +1,50 @@
+<div class="container" style="padding-top: 30px;" *ngIf="product">
+  <a routerLink="/products" class="back-link">← Retour au catalogue</a>
+
+  <div class="product-detail card">
+    <div class="product-image-large">
+      <span>{{ product.nom.charAt(0) }}</span>
+    </div>
+    <div class="product-detail-info">
+      <h1>{{ product.nom }}</h1>
+      <p class="seller">Vendu par <strong>{{ product.sellerNom || 'ShopFlow' }}</strong></p>
+
+      <div class="categories" *ngIf="product.categories?.length">
+        <span class="badge badge-info" *ngFor="let cat of product.categories">{{ cat }}</span>
+      </div>
+
+      <div class="rating" *ngIf="product.noteMoyenne">
+        ⭐ {{ product.noteMoyenne | number:'1.1-1' }}/5
+      </div>
+
+      <div class="price-section">
+        <span class="price-main">
+          {{ (product.prixPromo || product.prix) | number:'1.2-2' }} €
+        </span>
+        <span class="price-old" *ngIf="product.prixPromo">{{ product.prix | number:'1.2-2' }} €</span>
+        <span class="promo-badge" *ngIf="product.prixPromo">
+          -{{ ((1 - product.prixPromo/product.prix) * 100) | number:'1.0-0' }}%
+        </span>
+      </div>
+
+      <p class="description">{{ product.description }}</p>
+
+      <div class="stock-info" [class.out-stock]="product.stock === 0">
+        {{ product.stock === 0 ? 'Rupture de stock' : 'En stock (' + product.stock + ' disponibles)' }}
+      </div>
+
+      <div class="add-to-cart" *ngIf="product.stock > 0">
+        <div class="quantity-selector">
+          <button (click)="decrement()">−</button>
+          <span>{{ quantity }}</span>
+          <button (click)="increment()">+</button>
+        </div>
+        <button class="btn btn-primary btn-large" (click)="addToCart()">
+          🛒 Ajouter au panier
+        </button>
+      </div>
+
+      <div class="alert alert-success" *ngIf="message">{{ message }}</div>
+    </div>
+  </div>
+</div>
