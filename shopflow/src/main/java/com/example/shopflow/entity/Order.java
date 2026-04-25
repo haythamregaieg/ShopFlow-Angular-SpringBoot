@@ -35,6 +35,8 @@ public class Order {
     private BigDecimal sousTotal;
     private BigDecimal fraisLivraison;
     private BigDecimal totalTTC;
+    private BigDecimal montantRembourse;
+    private boolean isNewStatus;
     private LocalDateTime dateCommande;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)

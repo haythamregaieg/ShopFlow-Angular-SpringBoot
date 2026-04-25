@@ -1,7 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
-import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Order } from "../../../core/models/order.model";
+import { OrderService } from "../../../core/services/order.service";
 
 @Component({
   selector: "app-order-detail",
@@ -11,13 +11,12 @@ import { Order } from "../../../core/models/order.model";
 export class OrderDetailComponent implements OnInit {
   order: Order | null = null;
 
-  constructor(private route: ActivatedRoute, private http: HttpClient) {}
+  constructor(private route: ActivatedRoute, private orderService: OrderService) {}
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get("id");
-    const headers = new HttpHeaders({ Authorization: "Bearer " + localStorage.getItem("token") });
     if (id) {
-      this.http.get<Order>(`http://localhost:8081/api/orders/${id}`, { headers }).subscribe(o => this.order = o);
+      this.orderService.getById(Number(id)).subscribe(o => this.order = o);
     }
   }
 

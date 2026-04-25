@@ -1,5 +1,6 @@
 package com.example.shopflow.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -7,10 +8,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Product {
 
     @Id
@@ -26,6 +29,8 @@ public class Product {
     private BigDecimal prix;
     private BigDecimal prixPromo;
     private Integer stock;
+    private BigDecimal fraisLivraisonLocal;
+    private BigDecimal fraisLivraisonInternational;
     private boolean actif = true;
     private String images;
     private LocalDateTime dateCreation;
@@ -44,5 +49,18 @@ public class Product {
     @PrePersist
     public void prePersist() {
         this.dateCreation = LocalDateTime.now();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Product)) return false;
+        Product product = (Product) o;
+        return id != null && id.equals(product.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

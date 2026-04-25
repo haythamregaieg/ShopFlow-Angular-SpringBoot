@@ -1,3 +1,19 @@
-.admin-nav { display: flex; gap: 16px; margin-bottom: 24px; }
-.admin-tab { padding: 10px 24px; border-radius: 8px; text-decoration: none; color: #555; background: white; box-shadow: 0 1px 4px rgba(0,0,0,0.1); font-weight: 500; }
+.admin-nav { display: flex; gap: 10px; margin-bottom: 30px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+.admin-tab { text-decoration: none; color: #666; padding: 8px 16px; border-radius: 6px; font-weight: 600; }
 .admin-tab.active { background: #1a237e; color: white; }
+
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.page-title { font-size: 24px; font-weight: 800; color: #1a237e; margin: 0; }
+
+.card { background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); overflow: hidden; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; padding: 16px; background: #f8f9fa; color: #555; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+td { padding: 16px; border-top: 1px solid #eee; vertical-align: middle; }
+
+.badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.badge-success { background: #e8f5e9; color: #2e7d32; }
+.badge-danger { background: #ffebee; color: #c62828; }
+.badge-info { background: #e3f2fd; color: #1565c0; }
+
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.user-info strong { color: #1a237e; }

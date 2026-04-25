@@ -9,7 +9,12 @@ export interface Product {
   actif: boolean;
   sellerNom?: string;
   categories?: string[];
+  categoryIds?: number[];
   noteMoyenne?: number;
+  fraisLivraisonLocal?: number;
+  fraisLivraisonInternational?: number;
+  promotion?: boolean;
+  pourcentageRemise?: number;
 }
 
 export interface ProductRequest {
@@ -20,6 +25,28 @@ export interface ProductRequest {
   stock: number;
   images?: string;
   categoryIds: number[];
+  fraisLivraisonLocal?: number;
+  fraisLivraisonInternational?: number;
+}
+
+export interface ProductVariant {
+  id?: number;
+  taille: string;
+  couleur: string;
+  stock: number;
+  prixDelta?: number;
+  sku?: string;
+}
+
+export interface ProductSearchParams {
+  q?: string;
+  prixMin?: number;
+  prixMax?: number;
+  categoryIds?: number[];
+  promoOnly?: boolean;
+  sortBy?: 'prix_asc' | 'prix_desc' | 'popularite' | 'nouveautes';
+  page?: number;
+  size?: number;
 }
 
 export interface PageResponse<T> {

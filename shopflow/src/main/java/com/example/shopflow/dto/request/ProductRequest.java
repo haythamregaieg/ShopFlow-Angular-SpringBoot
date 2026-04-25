@@ -27,4 +27,6 @@ public class ProductRequest {
 
     private String images;
     private List<Long> categoryIds;
+    private BigDecimal fraisLivraisonLocal;
+    private BigDecimal fraisLivraisonInternational;
 }

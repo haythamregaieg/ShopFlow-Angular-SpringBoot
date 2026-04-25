@@ -12,7 +12,9 @@ import com.example.shopflow.repository.ReviewRepository;
 import com.example.shopflow.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
@@ -30,12 +32,43 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public Page<ProductResponse> getAllProducts(Pageable pageable) {
-        return productRepository.findByActifTrue(pageable).map(this::toResponse);
+        Pageable sorted = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "dateCreation")
+        );
+        return productRepository.findByActifTrue(sorted).map(this::toResponse);
     }
 
     @Transactional(readOnly = true)
-    public Page<ProductResponse> searchProducts(String nom, BigDecimal prixMin, BigDecimal prixMax, Pageable pageable) {
-        return productRepository.searchProducts(nom, prixMin, prixMax, pageable).map(this::toResponse);
+    public Page<ProductResponse> searchProducts(
+            String q,
+            BigDecimal prixMin,
+            BigDecimal prixMax,
+            List<Long> categoryIds,
+            boolean promoOnly,
+            String sortBy,
+            Pageable pageable
+    ) {
+        Page<Product> page;
+        List<Long> categoryFilter = (categoryIds == null || categoryIds.isEmpty()) ? null : categoryIds;
+        if ("popularite".equalsIgnoreCase(sortBy)) {
+            page = productRepository.searchProductsByPopularity(q, prixMin, prixMax, categoryFilter, promoOnly, pageable);
+        } else {
+            Sort sort = switch (sortBy == null ? "nouveautes" : sortBy.toLowerCase()) {
+                case "prix_asc" -> Sort.by(Sort.Direction.ASC, "prix");
+                case "prix_desc" -> Sort.by(Sort.Direction.DESC, "prix");
+                case "nouveautes" -> Sort.by(Sort.Direction.DESC, "dateCreation");
+                default -> pageable.getSort().isSorted() ? pageable.getSort() : Sort.by(Sort.Direction.DESC, "dateCreation");
+            };
+            Pageable sorted = PageRequest.of(
+                    pageable.getPageNumber(),
+                    pageable.getPageSize(),
+                    sort
+            );
+            page = productRepository.searchProducts(q, prixMin, prixMax, categoryFilter, promoOnly, sorted);
+        }
+        return page.map(this::toResponse);
     }
 
     @Transactional(readOnly = true)
@@ -60,6 +93,8 @@ public class ProductService {
                 .prixPromo(request.getPrixPromo())
                 .stock(request.getStock())
                 .images(request.getImages())
+                .fraisLivraisonLocal(request.getFraisLivraisonLocal() != null ? request.getFraisLivraisonLocal() : BigDecimal.ZERO)
+                .fraisLivraisonInternational(request.getFraisLivraisonInternational() != null ? request.getFraisLivraisonInternational() : BigDecimal.ZERO)
                 .actif(true)
                 .categories(categories)
                 .build();
@@ -79,6 +114,8 @@ public class ProductService {
         product.setPrixPromo(request.getPrixPromo());
         product.setStock(request.getStock());
         product.setImages(request.getImages());
+        product.setFraisLivraisonLocal(request.getFraisLivraisonLocal() != null ? request.getFraisLivraisonLocal() : BigDecimal.ZERO);
+        product.setFraisLivraisonInternational(request.getFraisLivraisonInternational() != null ? request.getFraisLivraisonInternational() : BigDecimal.ZERO);
         product.setCategories(categories);
         return toResponse(productRepository.save(product));
     }
@@ -106,14 +143,19 @@ public class ProductService {
 
         // Accès sécurisé aux catégories
         List<String> categories = List.of();
+        List<Long> categoryIds = List.of();
         try {
             if (p.getCategories() != null) {
                 categories = p.getCategories().stream()
                         .map(Category::getNom)
                         .collect(Collectors.toList());
+                categoryIds = p.getCategories().stream()
+                        .map(Category::getId)
+                        .collect(Collectors.toList());
             }
         } catch (Exception e) {
             categories = List.of();
+            categoryIds = List.of();
         }
 
         return ProductResponse.builder()
@@ -128,7 +170,20 @@ public class ProductService {
                 .dateCreation(p.getDateCreation())
                 .sellerNom(sellerNom)
                 .categories(categories)
+                .categoryIds(categoryIds)
                 .noteMoyenne(note)
+                .fraisLivraisonLocal(p.getFraisLivraisonLocal())
+                .fraisLivraisonInternational(p.getFraisLivraisonInternational())
+                .promotion(p.getPrixPromo() != null && p.getPrixPromo().compareTo(p.getPrix()) < 0)
+                .pourcentageRemise(calculateDiscountPercent(p.getPrix(), p.getPrixPromo()))
                 .build();
+    }
+
+    private Integer calculateDiscountPercent(BigDecimal prix, BigDecimal prixPromo) {
+        if (prix == null || prixPromo == null || prix.compareTo(BigDecimal.ZERO) <= 0 || prixPromo.compareTo(prix) >= 0) {
+            return 0;
+        }
+        BigDecimal reduction = prix.subtract(prixPromo).multiply(BigDecimal.valueOf(100)).divide(prix, 0, java.math.RoundingMode.HALF_UP);
+        return reduction.intValue();
     }
 }

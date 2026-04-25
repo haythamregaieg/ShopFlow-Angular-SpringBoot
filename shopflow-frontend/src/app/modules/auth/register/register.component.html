@@ -31,10 +31,30 @@
         </div>
         <div class="form-group">
           <label>Mot de passe</label>
-          <input type="password" formControlName="motDePasse" placeholder="Minimum 6 caracteres" />
+          <input type="password" formControlName="motDePasse" placeholder="8+ caracteres, Maj, min, chiffre, symbole" />
           <span class="error-msg" *ngIf="form.get('motDePasse')?.touched && form.get('motDePasse')?.invalid">
-            Minimum 6 caracteres
+            Mot de passe fort requis
           </span>
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" [checked]="asSeller" (change)="toggleSeller()" />
+            Je veux m'inscrire comme vendeur
+          </label>
+        </div>
+        <div *ngIf="asSeller">
+          <div class="form-group">
+            <label>Nom de la boutique</label>
+            <input type="text" formControlName="nomBoutique" placeholder="Ma Boutique" />
+          </div>
+          <div class="form-group">
+            <label>Logo (URL)</label>
+            <input type="text" formControlName="logoBoutique" placeholder="https://..." />
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <input type="text" formControlName="descriptionBoutique" placeholder="Description boutique" />
+          </div>
         </div>
         <button type="submit" class="btn btn-primary btn-full btn-lg" [disabled]="loading">
           {{ loading ? 'Inscription...' : 'S inscrire' }}

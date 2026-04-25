@@ -1,6 +1,6 @@
 import { Component, OnInit } from "@angular/core";
-import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Order } from "../../../core/models/order.model";
+import { OrderService } from "../../../core/services/order.service";
 
 @Component({
   selector: "app-order-list",
@@ -10,11 +10,10 @@ import { Order } from "../../../core/models/order.model";
 export class OrderListComponent implements OnInit {
   orders: Order[] = [];
 
-  constructor(private http: HttpClient) {}
+  constructor(private orderService: OrderService) {}
 
   ngOnInit(): void {
-    const headers = new HttpHeaders({ Authorization: "Bearer " + localStorage.getItem("token") });
-    this.http.get<Order[]>("http://localhost:8081/api/orders/my", { headers }).subscribe({
+    this.orderService.getMyOrders().subscribe({
       next: (orders) => this.orders = orders,
       error: (err) => console.error("Orders error:", err)
     });
@@ -35,8 +34,7 @@ export class OrderListComponent implements OnInit {
 
   cancelOrder(id: number): void {
     if (confirm("Annuler cette commande ?")) {
-      const headers = new HttpHeaders({ Authorization: "Bearer " + localStorage.getItem("token") });
-      this.http.put<Order>(`http://localhost:8081/api/orders/${id}/cancel`, {}, { headers }).subscribe(order => {
+      this.orderService.cancelOrder(id).subscribe(order => {
         const idx = this.orders.findIndex(o => o.id === id);
         if (idx !== -1) this.orders[idx] = order;
       });

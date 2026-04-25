@@ -33,8 +33,8 @@ public class OrderController {
     }
 
     @GetMapping("/{id}")
-    public OrderResponse getById(@PathVariable Long id) {
-        return orderService.getById(id);
+    public OrderResponse getById(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
+        return orderService.getById(id, userDetails.getUsername(), userDetails.getAuthorities());
     }
 
     @PutMapping("/{id}/status")
@@ -53,6 +53,6 @@ public class OrderController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public List<OrderResponse> getAll() {
-        return orderService.getMyOrders(null);
+        return orderService.getAllOrders();
     }
 }

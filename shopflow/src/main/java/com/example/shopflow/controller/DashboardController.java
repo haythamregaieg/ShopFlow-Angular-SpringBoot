@@ -1,6 +1,7 @@
 package com.example.shopflow.controller;
 
 import com.example.shopflow.entity.User;
+import com.example.shopflow.entity.enums.OrderStatus;
 import com.example.shopflow.entity.enums.Role;
 import com.example.shopflow.exception.ResourceNotFoundException;
 import com.example.shopflow.repository.*;
@@ -9,8 +10,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/dashboard")
@@ -26,40 +31,133 @@ public class DashboardController {
     @PreAuthorize("hasRole('ADMIN')")
     public Map<String, Object> adminDashboard() {
         Map<String, Object> stats = new HashMap<>();
+        List<com.example.shopflow.entity.Order> orders = orderRepository.findAll();
+        
+        BigDecimal chiffreAffaires = orders.stream()
+                .filter(o -> o.getStatut() != null && (o.getStatut() == OrderStatus.PAID || o.getStatut() == OrderStatus.PROCESSING
+                        || o.getStatut() == OrderStatus.SHIPPED || o.getStatut() == OrderStatus.DELIVERED))
+                .map(o -> o.getTotalTTC() != null ? o.getTotalTTC() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        Map<String, Integer> topProductsMap = new HashMap<>();
+        Map<String, BigDecimal> topVendeursMap = new HashMap<>();
+
+        orders.forEach(order -> {
+            if (order.getLignes() != null) {
+                order.getLignes().forEach(line -> {
+                    if (line.getProduct() != null) {
+                        String productName = line.getProduct().getNom() != null ? line.getProduct().getNom() : "Produit sans nom";
+                        topProductsMap.put(productName, topProductsMap.getOrDefault(productName, 0) + (line.getQuantite() != null ? line.getQuantite() : 0));
+
+                        if (line.getProduct().getSeller() != null) {
+                            String seller = line.getProduct().getSeller().getNom() != null ? line.getProduct().getSeller().getNom() : line.getProduct().getSeller().getEmail();
+                            BigDecimal lineTotal = (line.getPrixUnitaire() != null ? line.getPrixUnitaire() : BigDecimal.ZERO)
+                                    .multiply(BigDecimal.valueOf(line.getQuantite() != null ? line.getQuantite() : 0));
+                            topVendeursMap.put(seller, topVendeursMap.getOrDefault(seller, BigDecimal.ZERO).add(lineTotal));
+                        }
+                    }
+                });
+            }
+        });
+
         stats.put("totalUsers", userRepository.count());
         stats.put("totalProducts", productRepository.count());
         stats.put("totalOrders", orderRepository.count());
         stats.put("totalReviews", reviewRepository.count());
-        stats.put("recentOrders", orderRepository.findAll()
-                .stream().limit(5).toList());
+        stats.put("chiffreAffaires", chiffreAffaires);
+        
+        stats.put("topProducts", topProductsMap.entrySet().stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue(Comparator.reverseOrder()))
+                .limit(5)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+        
+        stats.put("topSellers", topVendeursMap.entrySet().stream()
+                .sorted(Map.Entry.<String, BigDecimal>comparingByValue(Comparator.reverseOrder()))
+                .limit(5)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+        
+        stats.put("recentOrders", orders.stream()
+                .sorted((o1, o2) -> o2.getDateCommande().compareTo(o1.getDateCommande()))
+                .limit(5)
+                .toList());
+        
         return stats;
     }
 
     @GetMapping("/seller")
-    @PreAuthorize("hasAnyRole('SELLER','ADMIN')")
+    @PreAuthorize("hasRole('SELLER')")
     public Map<String, Object> sellerDashboard(@AuthenticationPrincipal UserDetails userDetails) {
         User user = userRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable"));
+        
+        List<com.example.shopflow.entity.Order> allOrders = orderRepository.findAll();
+        List<com.example.shopflow.entity.Order> sellerOrders = allOrders.stream()
+                .filter(o -> o.getLignes() != null && o.getLignes().stream()
+                        .anyMatch(l -> l.getProduct() != null && l.getProduct().getSeller() != null
+                                && l.getProduct().getSeller().getId().equals(user.getId())))
+                .toList();
+
+        BigDecimal revenue = sellerOrders.stream()
+                .flatMap(o -> o.getLignes().stream())
+                .filter(l -> l.getProduct() != null && l.getProduct().getSeller() != null
+                        && l.getProduct().getSeller().getId().equals(user.getId()))
+                .map(l -> {
+                    BigDecimal prix = l.getPrixUnitaire() != null ? l.getPrixUnitaire() : BigDecimal.ZERO;
+                    return prix.multiply(BigDecimal.valueOf(l.getQuantite() != null ? l.getQuantite() : 0));
+                })
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        long pendingOrders = sellerOrders.stream()
+                .filter(o -> o.getStatut() != null && (o.getStatut() == OrderStatus.PAID || o.getStatut() == OrderStatus.PENDING || o.getStatut() == OrderStatus.PROCESSING))
+                .count();
+
+        long lowStockAlerts = productRepository.findBySellerId(user.getId(), org.springframework.data.domain.PageRequest.of(0, 1000))
+                .getContent().stream()
+                .filter(p -> p.getStock() != null && p.getStock() <= 5)
+                .count();
+
         Map<String, Object> stats = new HashMap<>();
-        stats.put("totalProducts", productRepository.findBySellerId(user.getId(), null).getTotalElements());
+        stats.put("totalProducts", productRepository.findBySellerId(user.getId(), org.springframework.data.domain.PageRequest.of(0, 1)).getTotalElements());
+        stats.put("revenus", revenue);
+        stats.put("commandesEnAttente", pendingOrders);
+        stats.put("alertesStockFaible", lowStockAlerts);
         stats.put("email", user.getEmail());
         stats.put("nom", user.getNom());
         stats.put("role", user.getRole());
+        stats.put("recentOrders", sellerOrders.stream()
+                .sorted((o1, o2) -> o2.getDateCommande().compareTo(o1.getDateCommande()))
+                .limit(5)
+                .toList());
+        
         return stats;
     }
 
     @GetMapping("/customer")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public Map<String, Object> customerDashboard(@AuthenticationPrincipal UserDetails userDetails) {
         User user = userRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable"));
+        
         Map<String, Object> stats = new HashMap<>();
-        stats.put("totalOrders", orderRepository
-                .findByCustomerIdOrderByDateCommandeDesc(user.getId()).size());
+        List<com.example.shopflow.entity.Order> orders = orderRepository.findByCustomerIdOrderByDateCommandeDesc(user.getId());
+        
+        long commandesEnCours = orders.stream()
+                .filter(o -> o.getStatut() != null && (o.getStatut() == OrderStatus.PAID || o.getStatut() == OrderStatus.PROCESSING || o.getStatut() == OrderStatus.SHIPPED))
+                .count();
+
+        List<com.example.shopflow.entity.Review> derniersAvis = reviewRepository.findAll().stream()
+                .filter(r -> r.getCustomer() != null && r.getCustomer().getId().equals(user.getId()))
+                .sorted((r1, r2) -> r2.getId().compareTo(r1.getId())) // assuming higher ID is more recent
+                .limit(3)
+                .toList();
+
+        stats.put("totalOrders", orders.size());
+        stats.put("commandesEnCours", commandesEnCours);
+        stats.put("derniersAvis", derniersAvis);
         stats.put("email", user.getEmail());
         stats.put("nom", user.getNom());
-        stats.put("recentOrders", orderRepository
-                .findByCustomerIdOrderByDateCommandeDesc(user.getId())
-                .stream().limit(3).toList());
+        stats.put("recentOrders", orders.stream().limit(5).toList());
+        
         return stats;
     }
 }

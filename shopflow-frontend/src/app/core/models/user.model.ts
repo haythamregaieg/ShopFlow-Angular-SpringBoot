@@ -24,4 +24,7 @@ export interface RegisterRequest {
   motDePasse: string;
   prenom: string;
   nom: string;
+  nomBoutique?: string;
+  logoBoutique?: string;
+  descriptionBoutique?: string;
 }

@@ -1,5 +1,6 @@
 package com.example.shopflow.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -17,10 +18,12 @@ public class ProductVariant {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
+    @JsonIgnore
     private Product product;
 
-    private String attribut;
-    private String valeur;
-    private Integer stockSupplementaire;
+    private String taille;
+    private String couleur;
+    private Integer stock;
     private BigDecimal prixDelta;
+    private String sku;
 }

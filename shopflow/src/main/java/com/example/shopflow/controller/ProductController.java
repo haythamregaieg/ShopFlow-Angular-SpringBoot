@@ -14,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/products")
@@ -37,8 +38,11 @@ public class ProductController {
             @RequestParam(required = false) String q,
             @RequestParam(required = false) BigDecimal prixMin,
             @RequestParam(required = false) BigDecimal prixMax,
+            @RequestParam(required = false) List<Long> categoryIds,
+            @RequestParam(defaultValue = "false") boolean promoOnly,
+            @RequestParam(defaultValue = "nouveautes") String sortBy,
             Pageable pageable) {
-        return productService.searchProducts(q, prixMin, prixMax, pageable);
+        return productService.searchProducts(q, prixMin, prixMax, categoryIds, promoOnly, sortBy, pageable);
     }
 
     @PostMapping

@@ -31,6 +31,12 @@ public class ReviewController {
         return reviewService.getProductReviews(productId);
     }
 
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<Review> getAllReviews() {
+        return reviewService.getAllReviews();
+    }
+
     @PutMapping("/{id}/approve")
     @PreAuthorize("hasRole('ADMIN')")
     public Review approve(@PathVariable Long id) {

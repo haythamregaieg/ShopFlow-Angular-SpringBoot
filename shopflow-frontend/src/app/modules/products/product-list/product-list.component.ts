@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Product } from '../../../core/models/product.model';
 import { ProductService } from '../../../core/services/product.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { Category } from '../../../core/models/category.model';
+import { CategoryService } from '../../../core/services/category.service';
+import { CartService } from '../../../core/services/cart.service';
 
 @Component({
   selector: 'app-product-list',
@@ -15,6 +17,13 @@ export class ProductListComponent implements OnInit {
   totalPages = 0;
   currentPage = 0;
   searchQuery = '';
+  prixMin?: number;
+  prixMax?: number;
+  promoOnly = false;
+  sortBy: 'prix_asc' | 'prix_desc' | 'popularite' | 'nouveautes' = 'nouveautes';
+  categories: Category[] = [];
+  selectedCategoryIds: number[] = [];
+  pageSize = 12;
   loading = false;
   isLoggedIn = false;
   isAdmin = false;
@@ -23,21 +32,32 @@ export class ProductListComponent implements OnInit {
 
   constructor(
     private productService: ProductService,
+    private categoryService: CategoryService,
     private authService: AuthService,
-    private router: Router,
-    private http: HttpClient
+    private cartService: CartService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
     this.isLoggedIn = this.authService.isLoggedIn();
-    this.isAdmin = this.authService.getRole() === 'ADMIN';
+    this.isAdmin = this.authService.isAdmin();
     this.isSeller = this.authService.getRole() === 'SELLER';
+    this.categoryService.getAll().subscribe(c => this.categories = c || []);
     this.loadProducts();
   }
 
   loadProducts(): void {
     this.loading = true;
-    this.productService.getAll(this.currentPage).subscribe({
+    this.productService.search({
+      q: this.searchQuery || undefined,
+      prixMin: this.prixMin,
+      prixMax: this.prixMax,
+      categoryIds: this.selectedCategoryIds,
+      promoOnly: this.promoOnly,
+      sortBy: this.sortBy,
+      page: this.currentPage,
+      size: this.pageSize
+    }).subscribe({
       next: (page) => {
         this.products = page.content;
         this.totalPages = page.totalPages;
@@ -48,17 +68,34 @@ export class ProductListComponent implements OnInit {
   }
 
   search(): void {
-    if (!this.searchQuery.trim()) { this.loadProducts(); return; }
-    this.productService.search(this.searchQuery).subscribe(page => {
-      this.products = page.content;
-      this.totalPages = page.totalPages;
-    });
+    this.currentPage = 0;
+    this.loadProducts();
+  }
+
+  resetFilters(): void {
+    this.searchQuery = '';
+    this.prixMin = undefined;
+    this.prixMax = undefined;
+    this.promoOnly = false;
+    this.sortBy = 'nouveautes';
+    this.selectedCategoryIds = [];
+    this.currentPage = 0;
+    this.loadProducts();
+  }
+
+  toggleCategory(categoryId: number, checked: boolean): void {
+    if (checked) {
+      if (!this.selectedCategoryIds.includes(categoryId)) {
+        this.selectedCategoryIds.push(categoryId);
+      }
+    } else {
+      this.selectedCategoryIds = this.selectedCategoryIds.filter(id => id !== categoryId);
+    }
   }
 
   addToCart(product: Product): void {
     if (!this.isLoggedIn) { this.router.navigate(['/auth/login']); return; }
-    const headers = new HttpHeaders({ Authorization: 'Bearer ' + localStorage.getItem('token') });
-    this.http.post<any>('http://localhost:8081/api/cart/items', { productId: product.id, quantite: 1 }, { headers }).subscribe({
+    this.cartService.addItem(product.id, 1).subscribe({
       next: () => {
         this.message = product.nom + ' ajoute au panier';
         setTimeout(() => this.message = '', 3000);

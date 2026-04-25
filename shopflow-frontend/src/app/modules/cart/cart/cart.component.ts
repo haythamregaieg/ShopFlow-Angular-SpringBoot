@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Cart } from '../../../core/models/cart.model';
 import { CartService } from '../../../core/services/cart.service';
 import { OrderService } from '../../../core/services/order.service';
@@ -16,12 +15,15 @@ export class CartComponent implements OnInit {
   message = '';
   error = '';
   loading = false;
+  adresseTexte = '';
+  ville = '';
+  codePostal = '';
+  pays = 'Tunisie';
 
   constructor(
     private cartService: CartService,
     private orderService: OrderService,
-    private router: Router,
-    private http: HttpClient
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -69,8 +71,17 @@ export class CartComponent implements OnInit {
   }
 
   checkout(): void {
+    if (!this.adresseTexte.trim()) {
+      this.error = 'Saisissez une adresse de livraison';
+      return;
+    }
     this.loading = true;
-    this.orderService.createOrder(1).subscribe({
+    this.orderService.createOrder({
+      adresseTexte: this.adresseTexte,
+      ville: this.ville,
+      codePostal: this.codePostal,
+      pays: this.pays
+    }).subscribe({
       next: (order) => {
         this.message = `Commande ${order.numeroCommande} creee ✅`;
         this.loadCart();

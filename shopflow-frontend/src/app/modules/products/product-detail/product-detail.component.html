@@ -32,6 +32,16 @@
       <div class="stock-info" [class.out-stock]="product.stock === 0">
         {{ product.stock === 0 ? 'Rupture de stock' : 'En stock (' + product.stock + ' disponibles)' }}
       </div>
+      <div class="mb-4" *ngIf="variants && variants.length > 0">
+        <label class="form-label" style="font-weight: 600;">Choisir une variante :</label>
+        <div class="d-flex flex-wrap gap-2">
+          <select class="form-select" [(ngModel)]="selectedVariantId" (change)="onVariantChange()">
+            <option *ngFor="let v of variants" [value]="v.id">
+              {{ v.taille }} / {{ v.couleur }} ({{ v.stock }} en stock)
+            </option>
+          </select>
+        </div>
+      </div>
 
       <div class="add-to-cart" *ngIf="product.stock > 0">
         <div class="quantity-selector">
@@ -45,6 +55,60 @@
       </div>
 
       <div class="alert alert-success" *ngIf="message">{{ message }}</div>
+    </div>
+  </div>
+
+  <!-- Section Avis -->
+  <div class="reviews-section mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="m-0">⭐ Avis des clients ({{ reviews.length }})</h2>
+      <button class="btn btn-outline-primary" *ngIf="isLoggedIn" (click)="showReviewForm = !showReviewForm">
+        {{ showReviewForm ? 'Annuler' : 'Laisser un avis' }}
+      </button>
+    </div>
+
+    <!-- Formulaire Nouvel Avis -->
+    <div class="card p-4 mb-4 shadow-sm" *ngIf="showReviewForm">
+      <h4 class="mb-3">Votre avis sur ce produit</h4>
+      <div class="mb-3">
+        <label class="form-label">Note :</label>
+        <div class="rating-input">
+          <span *ngFor="let i of [1,2,3,4,5]"
+                class="star-icon"
+                [class.active]="newReview.note >= i"
+                (click)="newReview.note = i">
+            ★
+          </span>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Commentaire :</label>
+        <textarea class="form-control" [(ngModel)]="newReview.commentaire" rows="3" placeholder="Qu'avez-vous pensé de ce produit ?"></textarea>
+      </div>
+      <button class="btn btn-primary" (click)="submitReview()" [disabled]="!newReview.commentaire">
+        Envoyer mon avis
+      </button>
+    </div>
+
+    <!-- Liste des Avis -->
+    <div class="review-list">
+      <div class="alert alert-light text-center py-4" *ngIf="reviews.length === 0">
+        <i class="far fa-comment-dots fa-3x mb-3 text-muted"></i>
+        <p class="m-0 text-muted">Aucun avis pour le moment. Soyez le premier à en laisser un !</p>
+      </div>
+
+      <div class="review-card card mb-3 p-3 shadow-sm border-0" *ngFor="let review of reviews">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div>
+            <div class="stars mb-1">
+              <span class="star" *ngFor="let i of [1,2,3,4,5]" [class.filled]="review.note >= i">★</span>
+            </div>
+            <strong class="d-block">{{ review.customer?.prenom || 'Client' }} {{ review.customer?.nom || '' }}</strong>
+          </div>
+          <small class="text-muted">{{ review.dateCreation | date:'dd/MM/yyyy' }}</small>
+        </div>
+        <p class="review-comment mb-0">{{ review.commentaire }}</p>
+      </div>
     </div>
   </div>
 </div>

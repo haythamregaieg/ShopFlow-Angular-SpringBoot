@@ -1,47 +1,118 @@
-<div class="container" style="padding-top: 30px; max-width: 600px;">
-  <div class="card">
+<div class="form-container">
+  <div class="form-card">
     <h2 class="page-title">{{ isEdit ? '✏️ Modifier le produit' : '➕ Nouveau produit' }}</h2>
 
-    <div class="alert alert-error" *ngIf="error">{{ error }}</div>
+    <div class="alert alert-danger border-0 shadow-sm mb-4" *ngIf="error">
+      <i class="fas fa-exclamation-circle me-2"></i> {{ error }}
+    </div>
 
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
-      <div class="form-group">
-        <label>Nom du produit *</label>
-        <input type="text" formControlName="nom" placeholder="Ex: iPhone 15" />
-        <span class="error-msg" *ngIf="form.get('nom')?.touched && form.get('nom')?.invalid">Nom obligatoire</span>
-      </div>
-
-      <div class="form-group">
-        <label>Description *</label>
-        <textarea formControlName="description" rows="3" placeholder="Description du produit..."></textarea>
-        <span class="error-msg" *ngIf="form.get('description')?.touched && form.get('description')?.invalid">Description obligatoire</span>
-      </div>
-
-      <div class="form-row">
+      <div class="form-section">
+        <span class="section-label">Informations Générales</span>
+        
         <div class="form-group">
-          <label>Prix (€) *</label>
-          <input type="number" formControlName="prix" placeholder="0.00" step="0.01" />
+          <label>Nom du produit *</label>
+          <input type="text" class="form-control" formControlName="nom" placeholder="Ex: iPhone 15 Pro" />
+          <span class="error-msg" *ngIf="form.get('nom')?.touched && form.get('nom')?.invalid">Le nom est requis</span>
         </div>
+
         <div class="form-group">
-          <label>Prix promo (€)</label>
-          <input type="number" formControlName="prixPromo" placeholder="0.00" step="0.01" />
+          <label>Description *</label>
+          <textarea class="form-control" formControlName="description" rows="4" placeholder="Décrivez votre produit en quelques lignes..."></textarea>
+          <span class="error-msg" *ngIf="form.get('description')?.touched && form.get('description')?.invalid">La description est requise</span>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Prix de base (€) *</label>
+            <input type="number" class="form-control" formControlName="prix" placeholder="0.00" step="0.01" />
+          </div>
+          <div class="form-group">
+            <label>Prix promotionnel (€)</label>
+            <input type="number" class="form-control" formControlName="prixPromo" placeholder="0.00" step="0.01" />
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Stock global *</label>
+            <input type="number" class="form-control" formControlName="stock" placeholder="Quantité totale" />
+          </div>
+          <div class="form-group">
+            <label>URL de l'image</label>
+            <input type="text" class="form-control" formControlName="images" placeholder="https://..." />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Catégories</label>
+          <select class="form-control" formControlName="categoryIds" multiple style="height: 120px;">
+            <option *ngFor="let category of categories" [ngValue]="category.id">{{ category.nom }}</option>
+          </select>
+          <small class="text-muted">Maintenez Ctrl pour sélectionner plusieurs catégories</small>
         </div>
       </div>
 
-      <div class="form-group">
-        <label>Stock *</label>
-        <input type="number" formControlName="stock" placeholder="Quantité disponible" />
+      <div class="form-section">
+        <span class="section-label">Livraison</span>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Frais local (€)</label>
+            <input type="number" class="form-control" formControlName="fraisLivraisonLocal" step="0.01" />
+          </div>
+          <div class="form-group">
+            <label>Frais international (€)</label>
+            <input type="number" class="form-control" formControlName="fraisLivraisonInternational" step="0.01" />
+          </div>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label>Image URL</label>
-        <input type="text" formControlName="images" placeholder="https://..." />
+      <div class="form-section">
+        <span class="section-label">Variantes du Produit</span>
+        <div class="variant-list" formArrayName="variants">
+          <div *ngFor="let variant of variantsForm.controls; let i = index" [formGroupName]="i" class="variant-card">
+            <button type="button" class="btn-remove-variant" (click)="removeVariant(i)" title="Supprimer la variante">
+              <i class="fas fa-trash"></i>
+            </button>
+            
+            <div class="form-grid mb-3">
+              <div class="form-group mb-0">
+                <label class="small">Taille</label>
+                <input type="text" class="form-control" formControlName="taille" placeholder="Ex: XL, 42..." />
+              </div>
+              <div class="form-group mb-0">
+                <label class="small">Couleur</label>
+                <input type="text" class="form-control" formControlName="couleur" placeholder="Ex: Rouge, Bleu..." />
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group mb-0">
+                <label class="small">Stock spécifique</label>
+                <input type="number" class="form-control" formControlName="stock" />
+              </div>
+              <div class="form-group mb-0">
+                <label class="small">Delta Prix (+/- €)</label>
+                <input type="number" class="form-control" step="0.01" formControlName="prixDelta" />
+              </div>
+              <div class="form-group mb-0" style="grid-column: span 2;">
+                <label class="small">SKU (Optionnel)</label>
+                <input type="text" class="form-control" formControlName="sku" placeholder="Référence interne" />
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <button type="button" class="btn-add-variant" (click)="addVariant()">
+          <i class="fas fa-plus-circle me-2"></i> Ajouter une variante (Taille, Couleur...)
+        </button>
       </div>
 
       <div class="form-actions">
-        <button type="button" class="btn" routerLink="/products">Annuler</button>
-        <button type="submit" class="btn btn-primary" [disabled]="loading || form.invalid">
-          {{ loading ? 'Enregistrement...' : (isEdit ? 'Modifier' : 'Créer') }}
+        <a routerLink="/products" class="btn-cancel">Annuler</a>
+        <button type="submit" class="btn-submit" [disabled]="loading || form.invalid">
+          <span *ngIf="!loading">{{ isEdit ? 'Enregistrer les modifications' : 'Créer le produit' }}</span>
+          <span *ngIf="loading"><i class="fas fa-spinner fa-spin me-2"></i>Traitement...</span>
         </button>
       </div>
     </form>

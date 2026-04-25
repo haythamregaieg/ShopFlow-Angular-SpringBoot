@@ -1,5 +1,6 @@
 package com.example.shopflow.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.example.shopflow.entity.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
@@ -8,10 +9,12 @@ import java.util.List;
 
 @Entity
 @Table(name = "users")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "motDePasse"})
 public class User {
 
     @Id
@@ -40,5 +43,18 @@ public class User {
     @PrePersist
     public void prePersist() {
         this.dateCreation = LocalDateTime.now();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof User)) return false;
+        User user = (User) o;
+        return id != null && id.equals(user.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

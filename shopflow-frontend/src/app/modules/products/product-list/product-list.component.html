@@ -2,63 +2,124 @@
   <div class="container">
     <div class="page-header">
       <div>
-        <h1 class="page-title">Catalogue Produits</h1>
-        <p class="page-subtitle">Decouvrez notre selection de produits</p>
+        <h1 class="page-title">🛒 Catalogue Produits</h1>
+        <p class="page-subtitle">Découvrez notre sélection exclusive de produits</p>
       </div>
       <button *ngIf="isAdmin || isSeller" routerLink="/products/new/create" class="btn btn-primary btn-lg">+ Nouveau Produit</button>
     </div>
 
     <div class="alert alert-success" *ngIf="message">{{ message }}</div>
 
-    <div class="search-section">
-      <input class="search-input" type="text" [(ngModel)]="searchQuery" placeholder="Rechercher un produit..." (keyup.enter)="search()" />
-      <button class="btn btn-primary" (click)="search()">Rechercher</button>
-      <button class="btn btn-ghost" (click)="searchQuery = ''; loadProducts()">Reinitialiser</button>
-    </div>
-
-    <p class="results-count" *ngIf="!loading">{{ products.length }} produit(s)</p>
-
-    <div class="loading" *ngIf="loading">
-      <div class="spinner"></div> Chargement...
-    </div>
-
-    <div class="products-grid" *ngIf="!loading">
-      <div class="product-card" *ngFor="let product of products">
-        <div class="promo-tag" *ngIf="product.prixPromo">PROMO</div>
-        <div class="product-image" [routerLink]="['/products', product.id]">
-          <span class="product-letter">{{ product.nom.charAt(0) }}</span>
-        </div>
-        <div class="product-body">
-          <h3 class="product-name" [routerLink]="['/products', product.id]">{{ product.nom }}</h3>
-          <p class="product-seller">Par {{ product.sellerNom || 'ShopFlow' }}</p>
-          <div class="product-rating" *ngIf="product.noteMoyenne">{{ product.noteMoyenne | number:'1.1-1' }}/5</div>
-          <div class="product-price">
-            <span class="price-promo" *ngIf="product.prixPromo">{{ product.prixPromo | number:'1.2-2' }} EUR</span>
-            <span [class]="product.prixPromo ? 'price-striked' : 'price-original'">{{ product.prix | number:'1.2-2' }} EUR</span>
-          </div>
-          <div class="stock-status" [class]="product.stock === 0 ? 'out-stock' : 'in-stock'">
-            {{ product.stock === 0 ? 'Rupture de stock' : 'En stock (' + product.stock + ')' }}
-          </div>
-          <div class="product-actions">
-            <button class="btn btn-primary" (click)="addToCart(product)" [disabled]="product.stock === 0">Ajouter</button>
-            <button class="btn btn-ghost btn-sm" [routerLink]="['/products', product.id]">Voir</button>
-            <ng-container *ngIf="isAdmin || isSeller">
-              <button class="btn btn-ghost btn-sm" [routerLink]="['/products', product.id, 'edit']">Edit</button>
-              <button class="btn btn-danger btn-sm" (click)="deleteProduct(product.id)">Suppr</button>
-            </ng-container>
+    <div class="filter-layout">
+      <!-- Sidebar Filtres -->
+      <aside class="filters-sidebar card">
+        <div class="filter-group">
+          <h4 class="filter-title">Recherche</h4>
+          <div class="search-box">
+            <input type="text" [(ngModel)]="searchQuery" placeholder="Nom, description..." (keyup.enter)="search()" class="form-control" />
           </div>
         </div>
-      </div>
-    </div>
 
-    <div class="empty-state" *ngIf="!loading && products.length === 0">
-      <div class="icon">Aucun produit disponible</div>
-    </div>
+        <div class="filter-group">
+          <h4 class="filter-title">Catégories</h4>
+          <div class="categories-list">
+            <label class="category-item" *ngFor="let category of categories">
+              <input
+                type="checkbox"
+                [checked]="selectedCategoryIds.includes(category.id)"
+                (change)="toggleCategory(category.id, $any($event.target).checked)"
+              />
+              <span class="category-name">{{ category.nom }}</span>
+            </label>
+          </div>
+        </div>
 
-    <div class="pagination" *ngIf="totalPages > 1">
-      <button class="btn btn-ghost" (click)="prevPage()" [disabled]="currentPage === 0">Precedent</button>
-      <span class="page-info">Page {{ currentPage + 1 }} / {{ totalPages }}</span>
-      <button class="btn btn-primary" (click)="nextPage()" [disabled]="currentPage === totalPages - 1">Suivant</button>
+        <div class="filter-group">
+          <h4 class="filter-title">Prix (€)</h4>
+          <div class="price-inputs">
+            <input type="number" [(ngModel)]="prixMin" placeholder="Min" class="form-control" />
+            <input type="number" [(ngModel)]="prixMax" placeholder="Max" class="form-control" />
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <h4 class="filter-title">Options</h4>
+          <label class="checkbox-item">
+            <input type="checkbox" [(ngModel)]="promoOnly" />
+            <span>En promotion 🔥</span>
+          </label>
+        </div>
+
+        <div class="filter-actions">
+          <button class="btn btn-primary w-100 mb-2" (click)="search()">Appliquer les filtres</button>
+          <button class="btn btn-ghost w-100" (click)="resetFilters()">Réinitialiser</button>
+        </div>
+      </aside>
+
+      <!-- Grille Produits -->
+      <main class="products-main">
+        <div class="results-header">
+          <div class="results-count">{{ products.length }} produit(s) trouvé(s)</div>
+          <div class="sort-box">
+            <select [(ngModel)]="sortBy" (change)="search()" class="form-select">
+              <option value="nouveautes">Nouveautés</option>
+              <option value="popularite">Popularité</option>
+              <option value="prix_asc">Prix croissant</option>
+              <option value="prix_desc">Prix décroissant</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="loading-overlay" *ngIf="loading">
+          <div class="spinner"></div>
+        </div>
+
+        <div class="products-grid" *ngIf="!loading">
+          <div class="product-card" *ngFor="let product of products">
+            <div class="promo-tag" *ngIf="product.prixPromo">PROMO</div>
+            <div class="product-image" [routerLink]="['/products', product.id]">
+              <span class="product-letter">{{ product.nom.charAt(0) }}</span>
+            </div>
+            <div class="product-body">
+              <h3 class="product-name" [routerLink]="['/products', product.id]">{{ product.nom }}</h3>
+              <p class="product-seller">Par {{ product.sellerNom || 'ShopFlow' }}</p>
+              
+              <div class="product-rating" *ngIf="product.noteMoyenne">
+                <span class="stars">⭐</span> {{ product.noteMoyenne | number:'1.1-1' }}
+              </div>
+
+              <div class="product-footer">
+                <div class="product-price">
+                  <ng-container *ngIf="product.prixPromo; else originalPrice">
+                    <span class="price-promo">{{ product.prixPromo | number:'1.2-2' }} €</span>
+                    <span class="price-striked">{{ product.prix | number:'1.2-2' }} €</span>
+                  </ng-container>
+                  <ng-template #originalPrice>
+                    <span class="price-original">{{ product.prix | number:'1.2-2' }} €</span>
+                  </ng-template>
+                </div>
+                <button class="btn btn-icon" [routerLink]="['/products', product.id]" title="Voir détails">👁️</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="empty-state card" *ngIf="!loading && products.length === 0">
+          <div class="empty-icon">🔍</div>
+          <h3>Aucun produit trouvé</h3>
+          <p>Essayez de modifier vos filtres ou votre recherche.</p>
+          <button class="btn btn-primary" (click)="resetFilters()">Tout afficher</button>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" *ngIf="totalPages > 1">
+          <button class="btn btn-ghost" (click)="currentPage = currentPage - 1; loadProducts()" [disabled]="currentPage === 0">← Précédent</button>
+          <div class="page-numbers">
+            <span class="page-current">{{ currentPage + 1 }}</span> / {{ totalPages }}
+          </div>
+          <button class="btn btn-primary" (click)="currentPage = currentPage + 1; loadProducts()" [disabled]="currentPage === totalPages - 1">Suivant →</button>
+        </div>
+      </main>
     </div>
   </div>
 </div>

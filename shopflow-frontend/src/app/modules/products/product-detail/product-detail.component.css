@@ -18,3 +18,49 @@
 .quantity-selector button { background: none; border: none; font-size: 20px; cursor: pointer; color: #333; }
 .quantity-selector span { font-size: 18px; font-weight: 600; min-width: 30px; text-align: center; }
 .btn-large { padding: 14px 28px; font-size: 16px; }
+
+/* Reviews Styles */
+.reviews-section {
+  max-width: 800px;
+  margin-top: 50px;
+}
+
+.rating-input {
+  display: flex;
+  gap: 8px;
+  font-size: 32px;
+}
+
+.star-icon {
+  cursor: pointer;
+  color: #ddd;
+  transition: color 0.2s;
+}
+
+.star-icon:hover,
+.star-icon.active {
+  color: #ffc107;
+}
+
+.stars {
+  color: #ddd;
+  font-size: 18px;
+}
+
+.star.filled {
+  color: #ffc107;
+}
+
+.review-card {
+  transition: transform 0.2s;
+}
+
+.review-card:hover {
+  transform: translateY(-2px);
+}
+
+.review-comment {
+  color: #444;
+  font-size: 15px;
+  line-height: 1.6;
+}

@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -22,6 +24,12 @@ public class AuthController {
     @ResponseStatus(HttpStatus.CREATED)
     public AuthResponse register(@Valid @RequestBody RegisterRequest request) {
         return authService.register(request);
+    }
+
+    @PostMapping("/register-seller")
+    @ResponseStatus(HttpStatus.CREATED)
+    public AuthResponse registerSeller(@Valid @RequestBody RegisterRequest request) {
+        return authService.registerSeller(request);
     }
 
     // Réservé ADMIN → peut créer ADMIN ou SELLER
@@ -40,5 +48,17 @@ public class AuthController {
     @PostMapping("/refresh")
     public AuthResponse refresh(@RequestParam String token) {
         return authService.refresh(token);
+    }
+
+    @PostMapping("/forgot-password")
+    public Map<String, String> forgotPassword(@RequestParam String email) {
+        String token = authService.requestResetPassword(email);
+        return Map.of("message", "Token genere", "token", token);
+    }
+
+    @PostMapping("/reset-password")
+    public Map<String, String> resetPassword(@RequestBody Map<String, String> request) {
+        authService.resetPassword(request.get("token"), request.get("newPassword"));
+        return Map.of("message", "Mot de passe reinitialise");
     }
 }

@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { User } from "../models/user.model";
 
@@ -9,23 +9,19 @@ export class UserService {
 
   constructor(private http: HttpClient) {}
 
-  private getHeaders(): HttpHeaders {
-    return new HttpHeaders({ Authorization: "Bearer " + localStorage.getItem("token") });
-  }
-
   getMe(): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/me`, { headers: this.getHeaders() });
+    return this.http.get<User>(`${this.apiUrl}/me`);
   }
 
   getAll(): Observable<User[]> {
-    return this.http.get<User[]>(this.apiUrl, { headers: this.getHeaders() });
+    return this.http.get<User[]>(this.apiUrl);
   }
 
   activate(id: number): Observable<User> {
-    return this.http.put<User>(`${this.apiUrl}/${id}/activate`, {}, { headers: this.getHeaders() });
+    return this.http.put<User>(`${this.apiUrl}/${id}/activate`, {});
   }
 
   deactivate(id: number): Observable<User> {
-    return this.http.put<User>(`${this.apiUrl}/${id}/deactivate`, {}, { headers: this.getHeaders() });
+    return this.http.put<User>(`${this.apiUrl}/${id}/deactivate`, {});
   }
 }

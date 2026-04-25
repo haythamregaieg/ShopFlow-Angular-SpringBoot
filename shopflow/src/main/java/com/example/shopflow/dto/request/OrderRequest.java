@@ -6,6 +6,9 @@ import lombok.Data;
 @Data
 public class OrderRequest {
 
-    @NotNull(message = "Adresse de livraison obligatoire")
     private Long addressId;
+    private String adresseTexte;
+    private String ville;
+    private String codePostal;
+    private String pays;
 }

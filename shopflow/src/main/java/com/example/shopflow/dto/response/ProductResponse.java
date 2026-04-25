@@ -20,5 +20,10 @@ public class ProductResponse {
     private LocalDateTime dateCreation;
     private String sellerNom;
     private List<String> categories;
+    private List<Long> categoryIds;
     private Double noteMoyenne;
+    private BigDecimal fraisLivraisonLocal;
+    private BigDecimal fraisLivraisonInternational;
+    private boolean promotion;
+    private Integer pourcentageRemise;
 }

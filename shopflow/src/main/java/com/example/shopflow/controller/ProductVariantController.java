@@ -41,10 +41,11 @@ public class ProductVariantController {
                                         @RequestBody ProductVariant variant) {
         ProductVariant existing = productVariantRepository.findById(variantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Variante introuvable"));
-        existing.setAttribut(variant.getAttribut());
-        existing.setValeur(variant.getValeur());
-        existing.setStockSupplementaire(variant.getStockSupplementaire());
+        existing.setTaille(variant.getTaille());
+        existing.setCouleur(variant.getCouleur());
+        existing.setStock(variant.getStock());
         existing.setPrixDelta(variant.getPrixDelta());
+        existing.setSku(variant.getSku());
         return productVariantRepository.save(existing);
     }
 

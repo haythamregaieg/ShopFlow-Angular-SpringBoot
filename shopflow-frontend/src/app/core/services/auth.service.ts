@@ -37,6 +37,24 @@ export class AuthService {
     );
   }
 
+  registerSeller(request: RegisterRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/register-seller`, request).pipe(
+      tap(response => {
+        localStorage.setItem('currentUser', JSON.stringify(response));
+        localStorage.setItem('token', response.accessToken);
+        this.currentUserSubject.next(response);
+      })
+    );
+  }
+
+  forgotPassword(email: string): Observable<{ message: string; token: string }> {
+    return this.http.post<{ message: string; token: string }>(`${this.apiUrl}/forgot-password?email=${encodeURIComponent(email)}`, {});
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/reset-password`, { token, newPassword });
+  }
+
   logout(): void {
     localStorage.removeItem('currentUser');
     localStorage.removeItem('token');
@@ -44,7 +62,11 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return localStorage.getItem('token');
+    const token = localStorage.getItem('token');
+    if (!token || token === 'null' || token === 'undefined') {
+      return null;
+    }
+    return token;
   }
 
   isLoggedIn(): boolean {

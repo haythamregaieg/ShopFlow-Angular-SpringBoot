@@ -1,29 +1,61 @@
-<div class="container" style="padding-top: 30px;" *ngIf="order">
-  <a routerLink="/orders" class="back-link">← Mes commandes</a>
-  <div class="card">
-    <div class="order-title">
-      <h1>Commande {{ order.numeroCommande }}</h1>
-      <span class="badge" [class]="getStatusClass(order.statut)">{{ order.statut }}</span>
+<div class="detail-container" *ngIf="order">
+  <a routerLink="/orders" class="back-link">
+    <i class="fas fa-arrow-left"></i> Retour à mes commandes
+  </a>
+
+  <div class="detail-card">
+    <div class="detail-header">
+      <div class="order-title">
+        <h1>Commande {{ order.numeroCommande }}</h1>
+        <p class="order-meta">
+          <i class="far fa-calendar-alt me-1"></i> Passée le {{ order.dateCommande | date:'dd MMMM yyyy à HH:mm' }}
+        </p>
+      </div>
+      <span class="status-badge" [ngClass]="'status-' + order.statut.toLowerCase()">
+        {{ order.statut }}
+      </span>
     </div>
-    <p class="order-date">Passée le {{ order.dateCommande | date:'dd/MM/yyyy à HH:mm' }}</p>
 
-    <h3 style="margin: 20px 0 12px;">Articles</h3>
-    <table>
-      <thead><tr><th>Produit</th><th>Qté</th><th>Prix unitaire</th><th>Total</th></tr></thead>
-      <tbody>
-        <tr *ngFor="let item of order.lignes">
-          <td>{{ item.productNom }}</td>
-          <td>{{ item.quantite }}</td>
-          <td>{{ item.prixUnitaire | number:'1.2-2' }} €</td>
-          <td>{{ item.sousTotal | number:'1.2-2' }} €</td>
-        </tr>
-      </tbody>
-    </table>
+    <h3 class="section-title">
+      <i class="fas fa-shopping-bag text-primary"></i> Articles commandés
+    </h3>
+    
+    <div class="table-responsive">
+      <table class="items-table">
+        <thead>
+          <tr>
+            <th>Produit</th>
+            <th>Quantité</th>
+            <th>Prix Unitaire</th>
+            <th class="text-end">Sous-total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of order.lignes">
+            <td>
+              <div class="product-name">{{ item.productNom }}</div>
+            </td>
+            <td>{{ item.quantite }}</td>
+            <td>{{ item.prixUnitaire | number:'1.2-2' }} €</td>
+            <td class="text-end font-weight-bold">{{ item.sousTotal | number:'1.2-2' }} €</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-    <div class="totals">
-      <div class="total-line"><span>Sous-total</span><span>{{ order.sousTotal | number:'1.2-2' }} €</span></div>
-      <div class="total-line"><span>Frais de livraison</span><span>{{ order.fraisLivraison | number:'1.2-2' }} €</span></div>
-      <div class="total-line total-final"><span>Total TTC</span><span>{{ order.totalTTC | number:'1.2-2' }} €</span></div>
+    <div class="totals-section">
+      <div class="total-row">
+        <span>Sous-total</span>
+        <span>{{ order.sousTotal | number:'1.2-2' }} €</span>
+      </div>
+      <div class="total-row">
+        <span>Frais de livraison</span>
+        <span>{{ order.fraisLivraison === 0 ? 'Gratuit' : (order.fraisLivraison | number:'1.2-2') + ' €' }}</span>
+      </div>
+      <div class="total-row grand-total">
+        <span>Total TTC</span>
+        <span>{{ order.totalTTC | number:'1.2-2' }} €</span>
+      </div>
     </div>
   </div>
 </div>

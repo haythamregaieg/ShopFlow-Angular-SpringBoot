@@ -1,5 +1,5 @@
 import { Component, OnInit } from "@angular/core";
-import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { HttpClient } from "@angular/common/http";
 import { User } from "../../../core/models/user.model";
 
 @Component({
@@ -12,12 +12,8 @@ export class AdminUsersComponent implements OnInit {
 
   constructor(private http: HttpClient) {}
 
-  private getHeaders(): HttpHeaders {
-    return new HttpHeaders({ Authorization: "Bearer " + localStorage.getItem("token") });
-  }
-
   ngOnInit(): void {
-    this.http.get<User[]>("http://localhost:8081/api/users", { headers: this.getHeaders() })
+    this.http.get<User[]>("http://localhost:8081/api/users")
       .subscribe(users => this.users = users);
   }
 
@@ -25,7 +21,7 @@ export class AdminUsersComponent implements OnInit {
     const url = user.actif
       ? `http://localhost:8081/api/users/${user.id}/deactivate`
       : `http://localhost:8081/api/users/${user.id}/activate`;
-    this.http.put<User>(url, {}, { headers: this.getHeaders() }).subscribe(updated => {
+    this.http.put<User>(url, {}).subscribe(updated => {
       const idx = this.users.findIndex(u => u.id === user.id);
       if (idx !== -1) this.users[idx] = updated;
     });

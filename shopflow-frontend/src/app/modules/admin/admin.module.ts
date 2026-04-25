@@ -4,9 +4,10 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AdminRoutingModule } from './admin-routing.module';
 import { AdminUsersComponent } from './admin-users/admin-users.component';
 import { AdminProductsComponent } from './admin-products/admin-products.component';
+import { AdminReviewsComponent } from './admin-reviews/admin-reviews.component';
 
 @NgModule({
-  declarations: [AdminUsersComponent, AdminProductsComponent],
+  declarations: [AdminUsersComponent, AdminProductsComponent, AdminReviewsComponent],
   imports: [CommonModule, FormsModule, ReactiveFormsModule, AdminRoutingModule]
 })
 export class AdminModule {}

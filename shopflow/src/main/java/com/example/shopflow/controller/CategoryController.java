@@ -17,25 +17,25 @@ public class CategoryController {
 
     @GetMapping
     public List<Category> getAll() {
-        return categoryRepository.findByParentIsNull();
+        return categoryRepository.findAll();
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     public Category create(@RequestBody Category category) {
         return categoryRepository.save(category);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     public Category update(@PathVariable Long id, @RequestBody Category category) {
         category.setId(id);
         return categoryRepository.save(category);
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         categoryRepository.deleteById(id);

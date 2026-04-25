@@ -1,0 +1,63 @@
+<div class="category-container">
+  <div class="header">
+    <h2>Gestion des Catégories</h2>
+    <p>Créez et gérez les catégories pour vos produits.</p>
+  </div>
+
+  <div class="content-grid">
+    <!-- Formulaire -->
+    <div class="card form-card">
+      <h3>{{ isEdit ? 'Modifier' : 'Ajouter' }} une Catégorie</h3>
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label for="nom">Nom</label>
+          <input type="text" id="nom" formControlName="nom" placeholder="Ex: Électronique">
+        </div>
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea id="description" formControlName="description" placeholder="Description de la catégorie"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="form.invalid || loading">
+            {{ loading ? 'Chargement...' : (isEdit ? 'Enregistrer' : 'Créer') }}
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="resetForm()" *ngIf="isEdit">Annuler</button>
+        </div>
+      </form>
+      <div class="error" *ngIf="error">{{ error }}</div>
+    </div>
+
+    <!-- Liste -->
+    <div class="card list-card">
+      <h3>Liste des Catégories</h3>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Description</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let cat of categories">
+              <td><strong>{{ cat.nom }}</strong></td>
+              <td>{{ cat.description }}</td>
+              <td class="actions">
+                <button class="btn-icon" (click)="edit(cat)" title="Modifier">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-icon delete" (click)="delete(cat.id!)" title="Supprimer">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="categories.length === 0 && !loading">
+              <td colspan="3" class="empty">Aucune catégorie trouvée.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

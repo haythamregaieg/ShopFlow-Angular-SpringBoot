@@ -1,7 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
 import { AuthService } from "../../core/services/auth.service";
-import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { HttpClient } from "@angular/common/http";
 
 @Component({
   selector: "app-navbar",
@@ -28,8 +28,7 @@ export class NavbarComponent implements OnInit {
   }
 
   loadCartCount(): void {
-    const headers = new HttpHeaders({ Authorization: "Bearer " + localStorage.getItem("token") });
-    this.http.get<any>("http://localhost:8081/api/cart", { headers }).subscribe({
+    this.http.get<any>("http://localhost:8081/api/cart").subscribe({
       next: (cart) => this.cartCount = cart?.lignes?.length || 0,
       error: () => this.cartCount = 0
     });

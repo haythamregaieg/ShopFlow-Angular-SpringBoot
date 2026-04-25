@@ -24,6 +24,7 @@ public class CartService {
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
+    private final ProductVariantRepository productVariantRepository;
     private final UserRepository userRepository;
     private final CouponRepository couponRepository;
 
@@ -42,18 +43,30 @@ public class CartService {
                 .orElseGet(() -> createCart(user));
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new ResourceNotFoundException("Produit introuvable"));
+        ProductVariant variant = null;
+        if (request.getVariantId() != null) {
+            variant = productVariantRepository.findById(request.getVariantId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Variante introuvable"));
+            if (!variant.getProduct().getId().equals(product.getId())) {
+                throw new BadRequestException("Variante invalide pour ce produit");
+            }
+        }
         if (!product.isActif()) {
             throw new BadRequestException("Produit non disponible");
         }
-        if (product.getStock() < request.getQuantite()) {
-            throw new BadRequestException("Stock insuffisant : " + product.getStock());
+        int stockDisponible = variant != null ? variant.getStock() : product.getStock();
+        if (stockDisponible < request.getQuantite()) {
+            throw new BadRequestException("Stock insuffisant : " + stockDisponible);
         }
+        final ProductVariant selectedVariant = variant;
         CartItem existingItem = cart.getLignes().stream()
-                .filter(i -> i.getProduct().getId().equals(request.getProductId()))
+                .filter(i -> i.getProduct().getId().equals(request.getProductId())
+                        && ((i.getVariant() == null && selectedVariant == null)
+                        || (i.getVariant() != null && selectedVariant != null && i.getVariant().getId().equals(selectedVariant.getId()))))
                 .findFirst().orElse(null);
         if (existingItem != null) {
             int newQty = existingItem.getQuantite() + request.getQuantite();
-            if (product.getStock() < newQty) {
+            if (stockDisponible < newQty) {
                 throw new BadRequestException("Stock insuffisant pour cette quantite");
             }
             existingItem.setQuantite(newQty);
@@ -61,6 +74,7 @@ public class CartService {
             CartItem item = CartItem.builder()
                     .cart(cart)
                     .product(product)
+                    .variant(variant)
                     .quantite(request.getQuantite())
                     .build();
             cart.getLignes().add(item);
@@ -79,7 +93,8 @@ public class CartService {
         if (quantite <= 0) {
             cart.getLignes().removeIf(i -> i.getId().equals(itemId));
         } else {
-            if (item.getProduct().getStock() < quantite) {
+            int stockDisponible = item.getVariant() != null ? item.getVariant().getStock() : item.getProduct().getStock();
+            if (stockDisponible < quantite) {
                 throw new BadRequestException("Stock insuffisant");
             }
             item.setQuantite(quantite);
@@ -149,14 +164,20 @@ public class CartService {
     @Transactional
     public CartResponse toResponse(Cart cart) {
         List<CartItemResponse> lignes = cart.getLignes().stream().map(item -> {
-            BigDecimal prix = item.getProduct().getPrixPromo() != null
+            BigDecimal prixBase = item.getProduct().getPrixPromo() != null
                     ? item.getProduct().getPrixPromo()
                     : item.getProduct().getPrix();
+            BigDecimal prix = item.getVariant() != null && item.getVariant().getPrixDelta() != null
+                    ? prixBase.add(item.getVariant().getPrixDelta())
+                    : prixBase;
             BigDecimal sous = prix.multiply(BigDecimal.valueOf(item.getQuantite()));
+            String variantSuffix = item.getVariant() != null
+                    ? " (" + item.getVariant().getTaille() + " / " + item.getVariant().getCouleur() + ")"
+                    : "";
             return CartItemResponse.builder()
                     .id(item.getId())
                     .productId(item.getProduct().getId())
-                    .productNom(item.getProduct().getNom())
+                    .productNom(item.getProduct().getNom() + variantSuffix)
                     .productImage(item.getProduct().getImages())
                     .prixUnitaire(prix)
                     .quantite(item.getQuantite())
