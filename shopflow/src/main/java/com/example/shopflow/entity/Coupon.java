@@ -30,6 +30,8 @@ public class Coupon {
     private BigDecimal valeur;
     private LocalDateTime dateExpiration;
     private Integer usagesMax;
+    @Builder.Default
     private Integer usagesActuels = 0;
+    @Builder.Default
     private boolean actif = true;
 }

@@ -26,6 +26,7 @@ public class Review {
     private Integer note;
     private String commentaire;
     private LocalDateTime dateCreation;
+    @Builder.Default
     private boolean approuve = false;
 
     @PrePersist

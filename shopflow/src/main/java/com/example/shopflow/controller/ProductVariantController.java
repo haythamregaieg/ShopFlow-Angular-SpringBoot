@@ -1,58 +1,57 @@
 package com.example.shopflow.controller;
 
-import com.example.shopflow.entity.Product;
-import com.example.shopflow.entity.ProductVariant;
-import com.example.shopflow.exception.ResourceNotFoundException;
-import com.example.shopflow.repository.ProductRepository;
-import com.example.shopflow.repository.ProductVariantRepository;
+import com.example.shopflow.dto.request.VariantRequest;
+import com.example.shopflow.dto.response.VariantResponse;
+import com.example.shopflow.service.ProductVariantService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/products/{productId}/variants")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class ProductVariantController {
 
-    private final ProductVariantRepository productVariantRepository;
-    private final ProductRepository productRepository;
+    private final ProductVariantService variantService;
 
-    @GetMapping
-    public List<ProductVariant> getVariants(@PathVariable Long productId) {
-        return productVariantRepository.findByProductId(productId);
+    @GetMapping("/products/{productId}/variants")
+    public List<VariantResponse> listByProduct(@PathVariable Long productId) {
+        return variantService.listByProduct(productId);
     }
 
-    @PostMapping
+    @GetMapping("/variants/{id}")
+    public VariantResponse getById(@PathVariable Long id) {
+        return variantService.getById(id);
+    }
+
+    @PostMapping("/products/{productId}/variants")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAnyRole('SELLER','ADMIN')")
-    public ProductVariant addVariant(@PathVariable Long productId,
-                                     @RequestBody ProductVariant variant) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("Produit introuvable"));
-        variant.setProduct(product);
-        return productVariantRepository.save(variant);
+    public VariantResponse create(@PathVariable Long productId, @Valid @RequestBody VariantRequest req,
+                                  @org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails user) {
+        String username = user != null ? user.getUsername() : null;
+        return variantService.createForUser(productId, req, username);
     }
 
-    @PutMapping("/{variantId}")
+    @PutMapping("/products/{productId}/variants/{id}")
     @PreAuthorize("hasAnyRole('SELLER','ADMIN')")
-    public ProductVariant updateVariant(@PathVariable Long variantId,
-                                        @RequestBody ProductVariant variant) {
-        ProductVariant existing = productVariantRepository.findById(variantId)
-                .orElseThrow(() -> new ResourceNotFoundException("Variante introuvable"));
-        existing.setTaille(variant.getTaille());
-        existing.setCouleur(variant.getCouleur());
-        existing.setStock(variant.getStock());
-        existing.setPrixDelta(variant.getPrixDelta());
-        existing.setSku(variant.getSku());
-        return productVariantRepository.save(existing);
+    public VariantResponse update(@PathVariable Long productId, @PathVariable Long id, @Valid @RequestBody VariantRequest req,
+                                  @org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails user) {
+        String username = user != null ? user.getUsername() : null;
+        return variantService.updateForUser(id, req, username);
     }
 
-    @DeleteMapping("/{variantId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/products/{productId}/variants/{id}")
     @PreAuthorize("hasAnyRole('SELLER','ADMIN')")
-    public void deleteVariant(@PathVariable Long variantId) {
-        productVariantRepository.deleteById(variantId);
+    public ResponseEntity<Void> delete(@PathVariable Long productId, @PathVariable Long id,
+                                       @org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails user) {
+        String username = user != null ? user.getUsername() : null;
+        variantService.deleteForUser(id, username);
+        return ResponseEntity.noContent().build();
     }
 }

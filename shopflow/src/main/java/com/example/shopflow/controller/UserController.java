@@ -1,9 +1,11 @@
 package com.example.shopflow.controller;
 
+import com.example.shopflow.dto.request.UpdateUserProfileRequest;
 import com.example.shopflow.dto.response.UserResponse;
 import com.example.shopflow.entity.User;
 import com.example.shopflow.exception.ResourceNotFoundException;
 import com.example.shopflow.repository.UserRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -24,6 +26,16 @@ public class UserController {
         User user = userRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable"));
         return toResponse(user);
+    }
+
+    @PutMapping("/me")
+    public UserResponse updateMe(@AuthenticationPrincipal UserDetails userDetails,
+                                 @Valid @RequestBody UpdateUserProfileRequest request) {
+        User user = userRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable"));
+        user.setPrenom(request.getPrenom().trim());
+        user.setNom(request.getNom().trim());
+        return toResponse(userRepository.save(user));
     }
 
     @GetMapping

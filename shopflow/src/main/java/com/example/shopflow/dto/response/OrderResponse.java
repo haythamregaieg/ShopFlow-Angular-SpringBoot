@@ -12,6 +12,8 @@ public class OrderResponse {
     private Long id;
     private String numeroCommande;
     private String statut;
+    private String customerNom;
+    private String customerEmail;
     private BigDecimal sousTotal;
     private BigDecimal fraisLivraison;
     private BigDecimal totalTTC;

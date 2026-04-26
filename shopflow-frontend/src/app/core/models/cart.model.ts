@@ -1,6 +1,9 @@
 export interface CartItem {
   id: number;
   productId: number;
+  variantId?: number;
+  variantTaille?: string;
+  variantCouleur?: string;
   productNom: string;
   productImage?: string;
   prixUnitaire: number;

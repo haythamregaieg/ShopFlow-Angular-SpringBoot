@@ -31,6 +31,7 @@ export interface ProductRequest {
 
 export interface ProductVariant {
   id?: number;
+  nom?: string;
   taille: string;
   couleur: string;
   stock: number;

@@ -40,8 +40,10 @@ public class OrderController {
     @PutMapping("/{id}/status")
     @PreAuthorize("hasAnyRole('SELLER','ADMIN')")
     public OrderResponse updateStatus(@PathVariable Long id,
-                                      @RequestParam OrderStatus status) {
-        return orderService.updateStatus(id, status);
+                                      @RequestParam OrderStatus status,
+                                      @AuthenticationPrincipal UserDetails userDetails) {
+        boolean isAdmin = userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        return orderService.updateStatusForUser(id, status, userDetails.getUsername(), isAdmin);
     }
 
     @PutMapping("/{id}/cancel")
@@ -54,5 +56,12 @@ public class OrderController {
     @PreAuthorize("hasRole('ADMIN')")
     public List<OrderResponse> getAll() {
         return orderService.getAllOrders();
+    }
+
+    @GetMapping("/seller")
+    @PreAuthorize("hasAnyRole('SELLER','ADMIN')")
+    public List<OrderResponse> sellerOrders(@AuthenticationPrincipal UserDetails userDetails) {
+        boolean isAdmin = userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        return orderService.getSellerOrders(userDetails.getUsername(), isAdmin);
     }
 }

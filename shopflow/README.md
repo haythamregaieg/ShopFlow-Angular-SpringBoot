@@ -20,3 +20,14 @@ mvnw.cmd spring-boot:run
 - Spring Security + JWT
 - Spring Data JPA + H2
 - Lombok, Swagger/OpenAPI
+
+## Tests
+
+Run unit and slice tests locally with:
+
+```
+mvnw.cmd test -DskipITs
+```
+
+The new controller MockMvc test is located at
+`src/test/java/com/example/shopflow/controller/ProductVariantControllerTest.java`.

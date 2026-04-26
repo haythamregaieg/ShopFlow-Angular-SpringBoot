@@ -39,7 +39,7 @@ export class ProductDetailComponent implements OnInit {
       const productId = +id;
       this.productService.getById(productId).subscribe(p => this.product = p);
       this.productService.getVariants(productId).subscribe(v => {
-        this.variants = v || [];
+        this.variants = (v || []).filter(x => (x.stock ?? 0) > 0);
         this.selectedVariantId = this.variants[0]?.id;
       });
       this.loadReviews(productId);

@@ -30,8 +30,9 @@ public class CartController {
     @PutMapping("/items/{itemId}")
     public CartResponse updateItem(@AuthenticationPrincipal UserDetails userDetails,
                                    @PathVariable Long itemId,
-                                   @RequestParam Integer quantite) {
-        return cartService.updateItem(userDetails.getUsername(), itemId, quantite);
+                                   @RequestParam Integer quantite,
+                                   @RequestParam(required = false) Long variantId) {
+        return cartService.updateItem(userDetails.getUsername(), itemId, quantite, variantId);
     }
 
     @DeleteMapping("/items/{itemId}")

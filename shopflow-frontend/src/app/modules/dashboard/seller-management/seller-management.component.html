@@ -1,0 +1,175 @@
+<div class="seller-container">
+  <div class="page-head">
+    <div>
+      <h2>Espace vendeur</h2>
+      <p>Gerez vos produits, vos coupons de remise et vos categories.</p>
+    </div>
+    <div class="head-actions">
+      <button class="btn btn-primary" (click)="addProduct()">Ajouter un produit</button>
+      <a class="btn btn-secondary" routerLink="/dashboard/categories">Gerer les categories</a>
+    </div>
+  </div>
+
+  <div class="alert success" *ngIf="success">{{ success }}</div>
+  <div class="alert error" *ngIf="error">{{ error }}</div>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h3>Mes produits</h3>
+    </div>
+
+    <div class="table-wrap" *ngIf="!loadingProducts; else loadingProductsTpl">
+      <table>
+        <thead>
+          <tr>
+            <th>Produit</th>
+            <th>Prix</th>
+            <th>Stock</th>
+            <th>Etat</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let product of products">
+            <td>
+              <strong>{{ product.nom }}</strong>
+              <div class="muted">{{ product.description }}</div>
+            </td>
+            <td>{{ product.prix | number:'1.2-2' }} EUR</td>
+            <td>{{ product.stock }}</td>
+            <td>
+              <span class="status" [class.inactive]="!product.actif">{{ product.actif ? 'Actif' : 'Inactif' }}</span>
+            </td>
+            <td class="actions">
+              <button class="btn-sm" (click)="editProduct(product.id)">Modifier</button>
+              <button class="btn-sm danger" (click)="deleteProduct(product.id)">Supprimer</button>
+            </td>
+          </tr>
+          <tr *ngIf="products.length === 0">
+            <td colspan="5" class="empty">Aucun produit trouve.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <ng-template #loadingProductsTpl>
+      <div class="loading">Chargement des produits...</div>
+    </ng-template>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h3>Donnees de ma boutique</h3>
+    </div>
+    <form [formGroup]="sellerProfileForm" (ngSubmit)="saveSellerProfile()">
+      <div class="field-grid">
+        <div class="field">
+          <label for="shopName">Nom boutique</label>
+          <input id="shopName" type="text" formControlName="nomBoutique" />
+        </div>
+        <div class="field">
+          <label for="shopLogo">Logo URL</label>
+          <input id="shopLogo" type="text" formControlName="logo" />
+        </div>
+      </div>
+      <div class="field">
+        <label for="shopDescription">Description</label>
+        <textarea id="shopDescription" formControlName="description" rows="3"></textarea>
+      </div>
+      <button class="btn btn-primary" type="submit">Enregistrer boutique</button>
+    </form>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h3>Mes coupons</h3>
+    </div>
+    <div class="coupon-grid">
+      <div class="coupon-form">
+        <h4>{{ selectedCouponId ? 'Modifier le coupon' : 'Ajouter un coupon' }}</h4>
+        <form [formGroup]="couponForm" (ngSubmit)="submitCoupon()">
+          <div class="field">
+            <label for="couponCode">Code</label>
+            <input id="couponCode" type="text" formControlName="code" placeholder="EX: SHOP20" />
+          </div>
+          <div class="field-grid">
+            <div class="field">
+              <label for="couponType">Type</label>
+              <select id="couponType" formControlName="type">
+                <option *ngFor="let t of couponTypes" [value]="t">{{ t }}</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="couponValue">Remise</label>
+              <input id="couponValue" type="number" step="0.01" min="0.01" formControlName="valeur" />
+            </div>
+          </div>
+          <div class="field-grid">
+            <div class="field">
+              <label for="couponExpire">Expiration</label>
+              <input id="couponExpire" type="datetime-local" formControlName="dateExpiration" />
+            </div>
+            <div class="field">
+              <label for="couponUsages">Usages max</label>
+              <input id="couponUsages" type="number" min="0" formControlName="usagesMax" />
+            </div>
+          </div>
+          <div class="field checkbox">
+            <input id="couponActif" type="checkbox" formControlName="actif" />
+            <label for="couponActif">Actif</label>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit" [disabled]="savingCoupon">
+              {{ savingCoupon ? 'Enregistrement...' : (selectedCouponId ? 'Mettre a jour' : 'Ajouter') }}
+            </button>
+            <button class="btn btn-secondary" type="button" (click)="resetCouponForm()" *ngIf="selectedCouponId">
+              Annuler
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="coupon-list">
+        <h4>Liste des coupons</h4>
+        <div class="table-wrap" *ngIf="!loadingCoupons; else loadingCouponsTpl">
+          <table>
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Type</th>
+                <th>Remise</th>
+                <th>Utilise</th>
+                <th>Etat</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let coupon of coupons">
+                <td><strong>{{ coupon.code }}</strong></td>
+                <td>{{ coupon.type }}</td>
+                <td>
+                  {{ coupon.valeur }}
+                  <span *ngIf="coupon.type === 'PERCENT'">%</span>
+                  <span *ngIf="coupon.type === 'FIXED'">EUR</span>
+                </td>
+                <td>{{ coupon.usagesActuels || 0 }} / {{ coupon.usagesMax ?? '-' }}</td>
+                <td>
+                  <span class="status" [class.inactive]="!coupon.actif">{{ coupon.actif ? 'Actif' : 'Inactif' }}</span>
+                </td>
+                <td class="actions">
+                  <button class="btn-sm" (click)="editCoupon(coupon)">Modifier</button>
+                  <button class="btn-sm danger" (click)="deleteCoupon(coupon.id)">Supprimer</button>
+                </td>
+              </tr>
+              <tr *ngIf="coupons.length === 0">
+                <td colspan="6" class="empty">Aucun coupon trouve.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ng-template #loadingCouponsTpl>
+          <div class="loading">Chargement des coupons...</div>
+        </ng-template>
+      </div>
+    </div>
+  </section>
+</div>

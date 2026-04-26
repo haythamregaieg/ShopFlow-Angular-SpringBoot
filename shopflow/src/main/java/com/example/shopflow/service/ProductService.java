@@ -128,6 +128,42 @@ public class ProductService {
         productRepository.save(product);
     }
 
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<ProductResponse> getProductsForSeller(org.springframework.data.domain.Pageable pageable, String sellerEmail) {
+        com.example.shopflow.entity.User seller = userRepository.findByEmail(sellerEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Vendeur introuvable"));
+        return productRepository.findBySellerId(seller.getId(), pageable).map(this::toResponse);
+    }
+
+    @Transactional
+    public ProductResponse updateForUser(Long id, ProductRequest request, String sellerEmail, boolean isAdmin) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Produit introuvable : " + id));
+        if (!isAdmin) {
+            com.example.shopflow.entity.User seller = userRepository.findByEmail(sellerEmail)
+                    .orElseThrow(() -> new ResourceNotFoundException("Vendeur introuvable"));
+            if (product.getSeller() == null || !product.getSeller().getId().equals(seller.getId())) {
+                throw new org.springframework.security.access.AccessDeniedException("Not owner");
+            }
+        }
+        // reuse existing update logic
+        return update(id, request);
+    }
+
+    @Transactional
+    public void deleteForUser(Long id, String sellerEmail, boolean isAdmin) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Produit introuvable : " + id));
+        if (!isAdmin) {
+            com.example.shopflow.entity.User seller = userRepository.findByEmail(sellerEmail)
+                    .orElseThrow(() -> new ResourceNotFoundException("Vendeur introuvable"));
+            if (product.getSeller() == null || !product.getSeller().getId().equals(seller.getId())) {
+                throw new org.springframework.security.access.AccessDeniedException("Not owner");
+            }
+        }
+        delete(id);
+    }
+
     private ProductResponse toResponse(Product p) {
         Double note = reviewRepository.findAverageNoteByProductId(p.getId());
 

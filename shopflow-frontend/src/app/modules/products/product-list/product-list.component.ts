@@ -1,11 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { Product } from '../../../core/models/product.model';
+import { Product, ProductVariant } from '../../../core/models/product.model';
 import { ProductService } from '../../../core/services/product.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Category } from '../../../core/models/category.model';
 import { CategoryService } from '../../../core/services/category.service';
 import { CartService } from '../../../core/services/cart.service';
+
+interface ProductGroup {
+  categoryName: string;
+  products: Product[];
+}
 
 @Component({
   selector: 'app-product-list',
@@ -29,6 +34,8 @@ export class ProductListComponent implements OnInit {
   isAdmin = false;
   isSeller = false;
   message = '';
+  variantsByProduct: Record<number, ProductVariant[]> = {};
+  selectedVariantByProduct: Record<number, number | undefined> = {};
 
   constructor(
     private productService: ProductService,
@@ -42,8 +49,10 @@ export class ProductListComponent implements OnInit {
     this.isLoggedIn = this.authService.isLoggedIn();
     this.isAdmin = this.authService.isAdmin();
     this.isSeller = this.authService.getRole() === 'SELLER';
-    this.categoryService.getAll().subscribe(c => this.categories = c || []);
-    this.loadProducts();
+    this.categoryService.getAll().subscribe(c => {
+      this.categories = c || [];
+      this.loadProducts();
+    });
   }
 
   loadProducts(): void {
@@ -59,12 +68,46 @@ export class ProductListComponent implements OnInit {
       size: this.pageSize
     }).subscribe({
       next: (page) => {
-        this.products = page.content;
+        this.products = page.content || [];
         this.totalPages = page.totalPages;
+        this.loadProductVariants(this.products);
         this.loading = false;
       },
       error: () => this.loading = false
     });
+  }
+
+  // ── Groupe les produits par catégorie ──────────────────────────────────────
+  get groupedProducts(): ProductGroup[] {
+    if (!this.products || this.products.length === 0) return [];
+
+    const map = new Map<string, Product[]>();
+
+    this.products.forEach(product => {
+      // Adapte ces champs selon ton modèle Product réel :
+      const catName: string =
+        (product as any).categoryNom        // si le backend renvoie categoryNom
+        ?? (product as any).categorie?.nom  // ou un objet imbriqué categorie
+        ?? (product as any).category?.nom   // ou category
+        ?? this.categories.find(c => c.id === (product as any).categoryId)?.nom // mapping local
+        ?? 'Autres';
+
+      if (!map.has(catName)) map.set(catName, []);
+      map.get(catName)!.push(product);
+    });
+
+    return Array.from(map.entries())
+      .sort(([a], [b]) => {
+        if (a === 'Autres') return 1;
+        if (b === 'Autres') return -1;
+        return a.localeCompare(b, 'fr');
+      })
+      .map(([categoryName, products]) => ({ categoryName, products }));
+  }
+
+  // ── Tableau de pages pour la pagination ────────────────────────────────────
+  pagesArray(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i);
   }
 
   search(): void {
@@ -95,26 +138,42 @@ export class ProductListComponent implements OnInit {
 
   addToCart(product: Product): void {
     if (!this.isLoggedIn) { this.router.navigate(['/auth/login']); return; }
-    this.cartService.addItem(product.id, 1).subscribe({
+    const selectedVariant = this.selectedVariantByProduct[product.id];
+    this.cartService.addItem(product.id, 1, selectedVariant).subscribe({
       next: () => {
-        this.message = product.nom + ' ajoute au panier';
+        this.message = product.nom + ' ajouté au panier';
         setTimeout(() => this.message = '', 3000);
       },
-      error: () => this.message = 'Erreur ajout panier'
+      error: () => {
+        this.message = 'Erreur lors de l\'ajout au panier';
+        setTimeout(() => this.message = '', 3000);
+      }
     });
   }
 
+  onVariantChange(productId: number, variantId?: number): void {
+    this.selectedVariantByProduct[productId] = variantId;
+  }
+
   deleteProduct(id: number): void {
-    if (confirm('Desactiver ce produit ?')) {
+    if (confirm('Désactiver ce produit ?')) {
       this.productService.delete(id).subscribe(() => this.loadProducts());
     }
   }
 
-  prevPage(): void {
-    if (this.currentPage > 0) { this.currentPage = this.currentPage - 1; this.loadProducts(); }
-  }
-
-  nextPage(): void {
-    if (this.currentPage < this.totalPages - 1) { this.currentPage = this.currentPage + 1; this.loadProducts(); }
+  private loadProductVariants(products: Product[]): void {
+    products.forEach((product) => {
+      this.productService.getVariants(product.id).subscribe({
+        next: (variants) => {
+          const available = (variants || []).filter(v => (v.stock ?? 0) > 0);
+          this.variantsByProduct[product.id] = available;
+          this.selectedVariantByProduct[product.id] = available.length > 0 ? available[0].id : undefined;
+        },
+        error: () => {
+          this.variantsByProduct[product.id] = [];
+          this.selectedVariantByProduct[product.id] = undefined;
+        }
+      });
+    });
   }
 }

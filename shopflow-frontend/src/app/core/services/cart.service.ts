@@ -17,8 +17,9 @@ export class CartService {
     return this.http.post<Cart>(`${this.apiUrl}/items`, { productId, quantite, variantId });
   }
 
-  updateItem(itemId: number, quantite: number): Observable<Cart> {
-    return this.http.put<Cart>(`${this.apiUrl}/items/${itemId}?quantite=${quantite}`, {});
+  updateItem(itemId: number, quantite: number, variantId?: number): Observable<Cart> {
+    const variantQuery = variantId ? `&variantId=${variantId}` : "";
+    return this.http.put<Cart>(`${this.apiUrl}/items/${itemId}?quantite=${quantite}${variantQuery}`, {});
   }
 
   removeItem(itemId: number): Observable<Cart> {

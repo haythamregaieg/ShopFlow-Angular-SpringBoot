@@ -45,6 +45,11 @@ export class ProductService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
+  getSellerProducts(page = 0, size = 20): Observable<PageResponse<Product>> {
+    const params = new HttpParams().set("page", page).set("size", size);
+    return this.http.get<PageResponse<Product>>(`${this.apiUrl}/seller`, { params });
+  }
+
   getVariants(productId: number): Observable<ProductVariant[]> {
     return this.http.get<ProductVariant[]>(`${this.apiUrl}/${productId}/variants`);
   }

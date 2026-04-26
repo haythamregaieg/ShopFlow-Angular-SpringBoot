@@ -11,6 +11,8 @@
       </a>
       <a routerLink="/orders" routerLinkActive="active" *ngIf="isLoggedIn">Commandes</a>
       <a routerLink="/dashboard" routerLinkActive="active" *ngIf="isLoggedIn">Dashboard</a>
+      <a routerLink="/profile" routerLinkActive="active" *ngIf="isLoggedIn">Profil</a>
+      <a routerLink="/dashboard/seller" routerLinkActive="active" *ngIf="isSeller">Gestion Boutique</a>
       <a routerLink="/admin" routerLinkActive="active" *ngIf="isAdmin" class="admin-link">Admin</a>
     </div>
     <div class="nav-auth">

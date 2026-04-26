@@ -3,14 +3,27 @@ package com.example.shopflow.service;
 import com.example.shopflow.dto.request.OrderRequest;
 import com.example.shopflow.dto.response.OrderItemResponse;
 import com.example.shopflow.dto.response.OrderResponse;
-import com.example.shopflow.entity.*;
+import com.example.shopflow.entity.Address;
+import com.example.shopflow.entity.Cart;
+import com.example.shopflow.entity.Order;
+import com.example.shopflow.entity.OrderItem;
+import com.example.shopflow.entity.Product;
+import com.example.shopflow.entity.ProductVariant;
+import com.example.shopflow.entity.User;
 import com.example.shopflow.entity.enums.OrderStatus;
 import com.example.shopflow.exception.BadRequestException;
 import com.example.shopflow.exception.ResourceNotFoundException;
-import com.example.shopflow.repository.*;
+import com.example.shopflow.repository.AddressRepository;
+import com.example.shopflow.repository.CartRepository;
+import com.example.shopflow.repository.OrderRepository;
+import com.example.shopflow.repository.ProductRepository;
+import com.example.shopflow.repository.ProductVariantRepository;
+import com.example.shopflow.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -52,8 +65,8 @@ public class OrderService {
                     throw new BadRequestException("Stock insuffisant pour : " + product.getNom());
                 }
                 product.setStock(product.getStock() - cartItem.getQuantite());
+                productRepository.save(product);
             }
-            productRepository.save(product);
             BigDecimal prixBase = product.getPrixPromo() != null ? product.getPrixPromo() : product.getPrix();
             BigDecimal prixUnitaire = variant != null && variant.getPrixDelta() != null
                     ? prixBase.add(variant.getPrixDelta())
@@ -103,21 +116,44 @@ public class OrderService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable"));
         return orderRepository.findByCustomerIdOrderByDateCommandeDesc(user.getId())
-                .stream().map(this::toResponse).collect(Collectors.toList());
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrderResponse> getSellerOrders(String email, boolean isAdmin) {
+        if (isAdmin) {
+            return orderRepository.findAll().stream()
+                    .map(this::toResponse)
+                    .collect(Collectors.toList());
+        }
+        User seller = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable"));
+        return orderRepository.findBySellerIdOrderByDateCommandeDesc(seller.getId()).stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public OrderResponse getById(Long id, String email, java.util.Collection<? extends org.springframework.security.core.GrantedAuthority> authorities) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Commande introuvable"));
-        
+
         boolean isAdmin = authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         boolean isOwner = order.getCustomer() != null && order.getCustomer().getEmail().equals(email);
-        
-        if (!isAdmin && !isOwner) {
-            throw new BadRequestException("Vous n'êtes pas autorisé à consulter cette commande");
+        boolean isSeller = authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_SELLER"));
+
+        boolean sellerCanView = false;
+        if (isSeller && !isAdmin) {
+            User seller = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable"));
+            sellerCanView = isSellerParticipant(order, seller.getId());
         }
-        
+
+        if (!isAdmin && !isOwner && !sellerCanView) {
+            throw new BadRequestException("Vous n'etes pas autorise a consulter cette commande");
+        }
         return toResponse(order);
     }
 
@@ -125,12 +161,32 @@ public class OrderService {
     public OrderResponse updateStatus(Long id, OrderStatus status) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Commande introuvable"));
+        if (order.getStatut() == status) {
+            return toResponse(order);
+        }
         if (!isValidStatusTransition(order.getStatut(), status)) {
             throw new BadRequestException("Transition invalide : " + order.getStatut() + " -> " + status);
+        }
+        if (status == OrderStatus.CANCELLED || status == OrderStatus.REFUNDED) {
+            restockOrder(order);
         }
         order.setStatut(status);
         order.setNewStatus(true);
         return toResponse(orderRepository.save(order));
+    }
+
+    @Transactional
+    public OrderResponse updateStatusForUser(Long id, OrderStatus status, String email, boolean isAdmin) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Commande introuvable"));
+        if (!isAdmin) {
+            User seller = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable"));
+            if (!isSellerParticipant(order, seller.getId())) {
+                throw new AccessDeniedException("Vous ne pouvez pas modifier cette commande");
+            }
+        }
+        return updateStatus(id, status);
     }
 
     @Transactional
@@ -149,6 +205,7 @@ public class OrderService {
         } else {
             order.setStatut(OrderStatus.CANCELLED);
         }
+        restockOrder(order);
         order.setNewStatus(true);
         return toResponse(orderRepository.save(order));
     }
@@ -163,17 +220,19 @@ public class OrderService {
     private OrderResponse toResponse(Order o) {
         List<OrderItemResponse> lignes = o.getLignes() != null
                 ? o.getLignes().stream().map(i -> OrderItemResponse.builder()
-                        .id(i.getId())
-                        .productNom(i.getProduct().getNom())
-                        .quantite(i.getQuantite())
-                        .prixUnitaire(i.getPrixUnitaire())
-                        .sousTotal(i.getPrixUnitaire().multiply(BigDecimal.valueOf(i.getQuantite())))
-                        .build()).collect(Collectors.toList())
+                .id(i.getId())
+                .productNom(i.getProduct().getNom())
+                .quantite(i.getQuantite())
+                .prixUnitaire(i.getPrixUnitaire())
+                .sousTotal(i.getPrixUnitaire().multiply(BigDecimal.valueOf(i.getQuantite())))
+                .build()).collect(Collectors.toList())
                 : List.of();
         return OrderResponse.builder()
                 .id(o.getId())
                 .numeroCommande(o.getNumeroCommande())
                 .statut(o.getStatut().name())
+                .customerNom(o.getCustomer() != null ? o.getCustomer().getNom() : null)
+                .customerEmail(o.getCustomer() != null ? o.getCustomer().getEmail() : null)
                 .sousTotal(o.getSousTotal())
                 .fraisLivraison(o.getFraisLivraison())
                 .totalTTC(o.getTotalTTC())
@@ -189,9 +248,20 @@ public class OrderService {
             return true;
         }
         return switch (current) {
-            case PENDING -> next == OrderStatus.PAID || next == OrderStatus.CANCELLED;
-            case PAID -> next == OrderStatus.PROCESSING || next == OrderStatus.REFUNDED;
-            case PROCESSING -> next == OrderStatus.SHIPPED;
+            case PENDING -> next == OrderStatus.PAID
+                    || next == OrderStatus.PROCESSING
+                    || next == OrderStatus.SHIPPED
+                    || next == OrderStatus.DELIVERED
+                    || next == OrderStatus.CANCELLED;
+            case PAID -> next == OrderStatus.PROCESSING
+                    || next == OrderStatus.SHIPPED
+                    || next == OrderStatus.DELIVERED
+                    || next == OrderStatus.REFUNDED
+                    || next == OrderStatus.CANCELLED;
+            case PROCESSING -> next == OrderStatus.SHIPPED
+                    || next == OrderStatus.DELIVERED
+                    || next == OrderStatus.CANCELLED
+                    || next == OrderStatus.REFUNDED;
             case SHIPPED -> next == OrderStatus.DELIVERED;
             default -> false;
         };
@@ -227,5 +297,34 @@ public class OrderService {
                 .principal(false)
                 .build();
         return addressRepository.save(address);
+    }
+
+    private boolean isSellerParticipant(Order order, Long sellerId) {
+        return order.getLignes() != null && order.getLignes().stream()
+                .anyMatch(l -> l.getProduct() != null
+                        && l.getProduct().getSeller() != null
+                        && l.getProduct().getSeller().getId().equals(sellerId));
+    }
+
+    private void restockOrder(Order order) {
+        if (order.getLignes() == null) {
+            return;
+        }
+        for (OrderItem item : order.getLignes()) {
+            Product product = item.getProduct();
+            if (product == null || item.getQuantite() == null) {
+                continue;
+            }
+            ProductVariant variant = item.getVariant();
+            if (variant != null) {
+                int currentStock = variant.getStock() != null ? variant.getStock() : 0;
+                variant.setStock(currentStock + item.getQuantite());
+                productVariantRepository.save(variant);
+            } else {
+                int currentStock = product.getStock() != null ? product.getStock() : 0;
+                product.setStock(currentStock + item.getQuantite());
+                productRepository.save(product);
+            }
+        }
     }
 }

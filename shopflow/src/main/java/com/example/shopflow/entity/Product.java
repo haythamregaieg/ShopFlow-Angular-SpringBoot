@@ -25,12 +25,14 @@ public class Product {
     private User seller;
 
     private String nom;
+    @Column(length = 2000)
     private String description;
     private BigDecimal prix;
     private BigDecimal prixPromo;
     private Integer stock;
     private BigDecimal fraisLivraisonLocal;
     private BigDecimal fraisLivraisonInternational;
+    @Builder.Default
     private boolean actif = true;
     private String images;
     private LocalDateTime dateCreation;

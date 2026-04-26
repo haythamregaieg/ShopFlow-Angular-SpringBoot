@@ -1,62 +1,55 @@
 <div class="cart-container">
   <div class="d-flex justify-content-between align-items-center mb-5">
-    <h1 class="m-0" style="font-weight: 800; color: #1a237e;">🛒 Votre Panier</h1>
+    <h1 class="m-0" style="font-weight: 800; color: #1a237e;">Votre Panier</h1>
     <div class="badge bg-light text-dark p-2 px-3 rounded-pill shadow-sm" *ngIf="cart">
       {{ cart.lignes.length }} article(s)
     </div>
   </div>
 
-  <div class="alert alert-success border-0 shadow-sm mb-4" *ngIf="message">
-    <i class="fas fa-check-circle me-2"></i> {{ message }}
-  </div>
-  <div class="alert alert-danger border-0 shadow-sm mb-4" *ngIf="error">
-    <i class="fas fa-exclamation-circle me-2"></i> {{ error }}
-  </div>
+  <div class="alert alert-success border-0 shadow-sm mb-4" *ngIf="message">{{ message }}</div>
+  <div class="alert alert-danger border-0 shadow-sm mb-4" *ngIf="error">{{ error }}</div>
 
   <div *ngIf="cart && cart.lignes.length > 0" class="cart-layout">
     <div class="cart-main">
       <div class="cart-card">
         <div class="cart-item" *ngFor="let item of cart.lignes">
           <div class="item-image-box">
-            <img [src]="item.productImage" *ngIf="item.productImage" alt="Produit">
-            <div class="item-placeholder" *ngIf="!item.productImage">
-              {{ item.productNom.charAt(0) }}
-            </div>
+            <img [src]="item.productImage" *ngIf="isImageUrl(item.productImage)" alt="Produit">
+            <div class="item-placeholder" *ngIf="!isImageUrl(item.productImage)">{{ item.productNom.charAt(0) }}</div>
           </div>
-          
+
           <div class="item-details">
             <h3>{{ item.productNom }}</h3>
-            <p class="item-price">{{ item.prixUnitaire | number:'1.2-2' }} €</p>
+            <p class="item-price">{{ item.prixUnitaire | number:'1.2-2' }} EUR</p>
+            <div *ngIf="variantsByProduct[item.productId]?.length" style="margin-top: 8px;">
+              <label style="font-size: 12px; color: #64748b;">Variante</label>
+              <select class="form-select form-select-sm" [ngModel]="item.variantId"
+                      (ngModelChange)="updateVariant(item.id, item.quantite, $event)">
+                <option [ngValue]="undefined">Par defaut</option>
+                <option *ngFor="let v of variantsByProduct[item.productId]" [ngValue]="v.id">
+                  {{ v.taille }} / {{ v.couleur }} ({{ v.stock }} stock)
+                </option>
+              </select>
+            </div>
           </div>
 
           <div class="quantity-controls">
-            <button class="qty-btn" (click)="updateQuantity(item.id, item.quantite - 1)">
-              <i class="fas fa-minus"></i>
-            </button>
+            <button class="qty-btn" (click)="updateQuantity(item.id, item.quantite - 1)">-</button>
             <span class="qty-val">{{ item.quantite }}</span>
-            <button class="qty-btn" (click)="updateQuantity(item.id, item.quantite + 1)">
-              <i class="fas fa-plus"></i>
-            </button>
+            <button class="qty-btn" (click)="updateQuantity(item.id, item.quantite + 1)">+</button>
           </div>
 
-          <div class="item-subtotal">
-            {{ item.sousTotal | number:'1.2-2' }} €
-          </div>
-
-          <button class="remove-btn" (click)="removeItem(item.id)" title="Supprimer">
-            <i class="fas fa-trash"></i>
-          </button>
+          <div class="item-subtotal">{{ item.sousTotal | number:'1.2-2' }} EUR</div>
+          <button class="remove-btn" (click)="removeItem(item.id)" title="Supprimer">x</button>
         </div>
       </div>
 
       <div class="cart-card delivery-form">
-        <h3 class="form-title">
-          <i class="fas fa-truck text-primary"></i> Informations de livraison
-        </h3>
+        <h3 class="form-title">Informations de livraison</h3>
         <div class="form-grid">
           <div class="full-width">
-            <label class="form-label small text-muted mb-1">Adresse complète</label>
-            <textarea class="input-field" [(ngModel)]="adresseTexte" rows="2" placeholder="Rue, numéro, appartement..."></textarea>
+            <label class="form-label small text-muted mb-1">Adresse complete</label>
+            <textarea class="input-field" [(ngModel)]="adresseTexte" rows="2" placeholder="Rue, numero, appartement..."></textarea>
           </div>
           <div>
             <label class="form-label small text-muted mb-1">Ville</label>
@@ -76,8 +69,7 @@
 
     <div class="cart-sidebar">
       <div class="cart-card">
-        <h3 class="summary-title">Récapitulatif</h3>
-        
+        <h3 class="summary-title">Recapitulatif</h3>
         <div class="coupon-box">
           <label class="form-label small text-muted mb-2">Code promo</label>
           <div class="coupon-input-group" *ngIf="!cart.couponCode">
@@ -85,56 +77,29 @@
             <button class="btn btn-dark rounded-pill px-4" (click)="applyCoupon()">Appliquer</button>
           </div>
           <div class="coupon-tag" *ngIf="cart.couponCode">
-            <span><i class="fas fa-tag me-2"></i> {{ cart.couponCode }}</span>
-            <button class="btn btn-link text-danger p-0" (click)="removeCoupon()">
-              <i class="fas fa-times"></i>
-            </button>
+            <span>{{ cart.couponCode }}</span>
+            <button class="btn btn-link text-danger p-0" (click)="removeCoupon()">x</button>
           </div>
         </div>
 
-        <div class="summary-row">
-          <span>Sous-total</span>
-          <span>{{ cart.sousTotal | number:'1.2-2' }} €</span>
-        </div>
-        <div class="summary-row text-success" *ngIf="cart.remise > 0">
-          <span>Remise</span>
-          <span>-{{ cart.remise | number:'1.2-2' }} €</span>
-        </div>
-        <div class="summary-row">
-          <span>Frais de livraison</span>
-          <span [class.text-success]="cart.fraisLivraison === 0">
-            {{ cart.fraisLivraison === 0 ? 'Gratuit' : (cart.fraisLivraison | number:'1.2-2') + ' €' }}
-          </span>
-        </div>
-        
-        <div class="summary-row total">
-          <span>Total TTC</span>
-          <span>{{ cart.totalTTC | number:'1.2-2' }} €</span>
-        </div>
+        <div class="summary-row"><span>Sous-total</span><span>{{ cart.sousTotal | number:'1.2-2' }} EUR</span></div>
+        <div class="summary-row text-success" *ngIf="cart.remise > 0"><span>Remise</span><span>-{{ cart.remise | number:'1.2-2' }} EUR</span></div>
+        <div class="summary-row"><span>Frais de livraison</span><span>{{ cart.fraisLivraison === 0 ? 'Gratuit' : (cart.fraisLivraison | number:'1.2-2') + ' EUR' }}</span></div>
+        <div class="summary-row total"><span>Total TTC</span><span>{{ cart.totalTTC | number:'1.2-2' }} EUR</span></div>
 
         <button class="checkout-btn" (click)="checkout()" [disabled]="loading || cart.lignes.length === 0">
           <span *ngIf="!loading">Confirmer la commande</span>
-          <span *ngIf="loading"><i class="fas fa-spinner fa-spin me-2"></i>Traitement...</span>
+          <span *ngIf="loading">Traitement...</span>
         </button>
-
-        <a routerLink="/products" class="continue-link">
-          <i class="fas fa-arrow-left me-2"></i> Continuer mes achats
-        </a>
-      </div>
-
-      <div class="mt-4 text-center text-muted small">
-        <p><i class="fas fa-shield-alt me-2"></i> Paiement sécurisé à la livraison</p>
-        <p><i class="fas fa-undo me-2"></i> Retours gratuits sous 14 jours</p>
+        <a routerLink="/products" class="continue-link">Continuer mes achats</a>
       </div>
     </div>
   </div>
 
   <div class="empty-state" *ngIf="!cart || cart.lignes.length === 0">
-    <div class="empty-icon">🛍️</div>
+    <div class="empty-icon">PANIER</div>
     <h2 style="font-weight: 700; color: #2d3436;">Votre panier est vide</h2>
-    <p class="text-muted mb-4">On dirait que vous n'avez pas encore trouvé votre bonheur.</p>
-    <a routerLink="/products" class="btn btn-primary btn-lg rounded-pill px-5 shadow">
-      Découvrir nos produits
-    </a>
+    <p class="text-muted mb-4">Vous n'avez pas encore ajoute de produit.</p>
+    <a routerLink="/products" class="btn btn-primary btn-lg rounded-pill px-5 shadow">Decouvrir nos produits</a>
   </div>
 </div>

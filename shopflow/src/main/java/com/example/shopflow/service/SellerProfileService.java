@@ -47,7 +47,10 @@ public class SellerProfileService {
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable"));
 
         SellerProfile profile = sellerProfileRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Profil vendeur introuvable"));
+                .orElseGet(() -> SellerProfile.builder()
+                        .user(user)
+                        .note(0.0)
+                        .build());
 
         profile.setNomBoutique(request.getNomBoutique());
         profile.setDescription(request.getDescription());
@@ -56,9 +59,18 @@ public class SellerProfileService {
         return toResponse(sellerProfileRepository.save(profile));
     }
 
+    @Transactional
     public SellerProfileResponse getMyProfile(String email) {
-        SellerProfile profile = sellerProfileRepository.findByUserEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Profil vendeur introuvable"));
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable"));
+        SellerProfile profile = sellerProfileRepository.findByUserId(user.getId())
+                .orElseGet(() -> sellerProfileRepository.save(SellerProfile.builder()
+                        .user(user)
+                        .nomBoutique((user.getNom() != null && !user.getNom().isBlank()) ? user.getNom() : "Ma boutique")
+                        .description("")
+                        .logo("")
+                        .note(0.0)
+                        .build()));
         return toResponse(profile);
     }
 

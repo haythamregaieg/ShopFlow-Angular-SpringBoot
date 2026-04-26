@@ -56,14 +56,33 @@ public class ProductController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('SELLER','ADMIN')")
     public ProductResponse update(@PathVariable Long id,
-                                  @Valid @RequestBody ProductRequest request) {
-        return productService.update(id, request);
+                                  @Valid @RequestBody ProductRequest request,
+                                  @AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails userDetails) {
+        boolean isAdmin = userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        return productService.updateForUser(id, request, userDetails.getUsername(), isAdmin);
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('SELLER','ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        productService.delete(id);
+        // For delete, require the caller to be either the seller who owns the product or an admin
+        // The ProductService will enforce ownership
+        // Try to obtain the current authenticated user (if present)
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = false;
+        String username = null;
+        if (auth != null && auth.getPrincipal() instanceof org.springframework.security.core.userdetails.UserDetails ud) {
+            username = ud.getUsername();
+            isAdmin = ud.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        }
+        productService.deleteForUser(id, username, isAdmin);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/seller")
+    @PreAuthorize("hasAnyRole('SELLER','ADMIN')")
+    public org.springframework.data.domain.Page<ProductResponse> getSellerProducts(org.springframework.data.domain.Pageable pageable,
+                                                                                     @AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails userDetails) {
+        return productService.getProductsForSeller(pageable, userDetails.getUsername());
     }
 }

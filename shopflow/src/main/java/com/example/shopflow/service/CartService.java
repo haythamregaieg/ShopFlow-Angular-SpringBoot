@@ -84,17 +84,38 @@ public class CartService {
     }
 
     @Transactional
-    public CartResponse updateItem(String email, Long itemId, Integer quantite) {
+    public CartResponse updateItem(String email, Long itemId, Integer quantite, Long variantId) {
         User user = getUser(email);
         Cart cart = cartRepository.findByCustomerId(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Panier introuvable"));
         CartItem item = cartItemRepository.findById(itemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Article introuvable"));
+
+        if (item.getCart() == null || !item.getCart().getId().equals(cart.getId())) {
+            throw new BadRequestException("Article non autorise pour ce panier");
+        }
+
+        ProductVariant previousVariant = item.getVariant();
+        ProductVariant targetVariant = previousVariant;
+        if (variantId != null) {
+            targetVariant = productVariantRepository.findById(variantId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Variante introuvable"));
+            if (item.getProduct() == null || targetVariant.getProduct() == null
+                    || !targetVariant.getProduct().getId().equals(item.getProduct().getId())) {
+                throw new BadRequestException("Variante invalide pour ce produit");
+            }
+            item.setVariant(targetVariant);
+        }
+
         if (quantite <= 0) {
             cart.getLignes().removeIf(i -> i.getId().equals(itemId));
         } else {
-            int stockDisponible = item.getVariant() != null ? item.getVariant().getStock() : item.getProduct().getStock();
-            if (stockDisponible < quantite) {
+            int stockDisponible = targetVariant != null ? targetVariant.getStock() : item.getProduct().getStock();
+            boolean sameVariant = previousVariant != null && targetVariant != null
+                    && previousVariant.getId().equals(targetVariant.getId());
+            int currentQty = item.getQuantite() != null ? item.getQuantite() : 0;
+            int effectiveStock = sameVariant ? Math.max(stockDisponible, currentQty) : stockDisponible;
+            if (effectiveStock < quantite) {
                 throw new BadRequestException("Stock insuffisant");
             }
             item.setQuantite(quantite);
@@ -177,6 +198,9 @@ public class CartService {
             return CartItemResponse.builder()
                     .id(item.getId())
                     .productId(item.getProduct().getId())
+                    .variantId(item.getVariant() != null ? item.getVariant().getId() : null)
+                    .variantTaille(item.getVariant() != null ? item.getVariant().getTaille() : null)
+                    .variantCouleur(item.getVariant() != null ? item.getVariant().getCouleur() : null)
                     .productNom(item.getProduct().getNom() + variantSuffix)
                     .productImage(item.getProduct().getImages())
                     .prixUnitaire(prix)

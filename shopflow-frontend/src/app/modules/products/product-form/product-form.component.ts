@@ -51,12 +51,12 @@ export class ProductFormComponent implements OnInit {
   addVariant(v?: ProductVariant): void {
     this.variantsForm.push(this.fb.group({
       id: [v?.id || null],
-      taille: [v?.taille || '', Validators.required],
-      couleur: [v?.couleur || '', Validators.required],
+      taille: [v?.taille || ''],
+      couleur: [v?.couleur || ''],
       stock: [v?.stock ?? 0, [Validators.required, Validators.min(0)]],
       prixDelta: [v?.prixDelta ?? 0],
       sku: [v?.sku || '']
-    }));
+    }, { validators: this.variantIdentityValidator }));
   }
 
   removeVariant(index: number): void {
@@ -116,12 +116,20 @@ export class ProductFormComponent implements OnInit {
 
         // Add/Update variants
         (variants || []).forEach((variant: ProductVariant) => {
+          const payload = {
+            nom: variant.nom?.trim() || `${variant.taille || ''} / ${variant.couleur || ''}`.trim(),
+            taille: variant.taille,
+            couleur: variant.couleur,
+            stock: variant.stock,
+            prixDelta: variant.prixDelta ?? 0,
+            sku: variant.sku || ''
+          };
           if (variant.id) {
-            variantActions.push(this.productService.updateVariant(productId, variant.id, variant).pipe(
+            variantActions.push(this.productService.updateVariant(productId, variant.id, payload).pipe(
               catchError(err => { console.error(err); return of(null); })
             ));
           } else {
-            variantActions.push(this.productService.createVariant(productId, variant).pipe(
+            variantActions.push(this.productService.createVariant(productId, payload).pipe(
               catchError(err => { console.error(err); return of(null); })
             ));
           }
@@ -140,7 +148,13 @@ export class ProductFormComponent implements OnInit {
         }
 
         forkJoin(variantActions).subscribe({
-          next: () => {
+          next: (results) => {
+            const hasVariantErrors = (results || []).some(r => r === null);
+            if (hasVariantErrors) {
+              this.error = 'Certaines variantes ne sont pas enregistrees. Verifiez les champs variante (taille, couleur, stock, prix delta).';
+              this.loading = false;
+              return;
+            }
             this.router.navigate(['/products']);
           },
           error: (err) => {
@@ -154,5 +168,11 @@ export class ProductFormComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  private variantIdentityValidator(group: FormGroup): null | { variantIdentity: true } {
+    const taille = (group.get('taille')?.value || '').toString().trim();
+    const couleur = (group.get('couleur')?.value || '').toString().trim();
+    return (taille || couleur) ? null : { variantIdentity: true };
   }
 }

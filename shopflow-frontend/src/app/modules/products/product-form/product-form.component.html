@@ -77,13 +77,16 @@
             
             <div class="form-grid mb-3">
               <div class="form-group mb-0">
-                <label class="small">Taille</label>
+                <label class="small">Taille (optionnel)</label>
                 <input type="text" class="form-control" formControlName="taille" placeholder="Ex: XL, 42..." />
               </div>
               <div class="form-group mb-0">
-                <label class="small">Couleur</label>
+                <label class="small">Couleur (optionnel)</label>
                 <input type="text" class="form-control" formControlName="couleur" placeholder="Ex: Rouge, Bleu..." />
               </div>
+            </div>
+            <div class="error-msg" *ngIf="variant.invalid && (variant.touched || variant.dirty) && variant.errors?.['variantIdentity']">
+              Renseignez au moins une taille ou une couleur pour cette variante.
             </div>
 
             <div class="form-grid">
@@ -104,7 +107,7 @@
         </div>
         
         <button type="button" class="btn-add-variant" (click)="addVariant()">
-          <i class="fas fa-plus-circle me-2"></i> Ajouter une variante (Taille, Couleur...)
+          <i class="fas fa-plus-circle me-2"></i> Ajouter une variante (taille seule, couleur seule, ou les deux)
         </button>
       </div>
 

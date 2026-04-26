@@ -11,6 +11,7 @@ import { HttpClient } from "@angular/common/http";
 export class NavbarComponent implements OnInit {
   isLoggedIn = false;
   isAdmin = false;
+  isSeller = false;
   userEmail = "";
   userRole = "";
   cartCount = 0;
@@ -21,6 +22,7 @@ export class NavbarComponent implements OnInit {
     this.authService.currentUser$.subscribe(user => {
       this.isLoggedIn = !!user;
       this.isAdmin = user?.role === "ADMIN";
+      this.isSeller = user?.role === "SELLER";
       this.userEmail = user?.email || "";
       this.userRole = user?.role || "";
       if (user) this.loadCartCount();

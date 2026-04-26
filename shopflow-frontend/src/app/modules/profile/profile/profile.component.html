@@ -1,0 +1,46 @@
+<div class="profile-container">
+  <h2>Mon profil</h2>
+
+  <div class="alert success" *ngIf="success">{{ success }}</div>
+  <div class="alert error" *ngIf="error">{{ error }}</div>
+
+  <section class="panel">
+    <h3>Informations utilisateur</h3>
+    <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+      <div class="grid">
+        <div class="field">
+          <label>Prenom</label>
+          <input type="text" formControlName="prenom" />
+        </div>
+        <div class="field">
+          <label>Nom</label>
+          <input type="text" formControlName="nom" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="text" formControlName="email" />
+      </div>
+      <button class="btn btn-primary" type="submit">Enregistrer</button>
+    </form>
+  </section>
+
+  <section class="panel" *ngIf="isSeller">
+    <h3>Ma boutique</h3>
+    <form [formGroup]="sellerForm" (ngSubmit)="saveSellerProfile()">
+      <div class="field">
+        <label>Nom boutique</label>
+        <input type="text" formControlName="nomBoutique" />
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <textarea formControlName="description" rows="3"></textarea>
+      </div>
+      <div class="field">
+        <label>Logo (URL)</label>
+        <input type="text" formControlName="logo" />
+      </div>
+      <button class="btn btn-primary" type="submit">Mettre a jour la boutique</button>
+    </form>
+  </section>
+</div>

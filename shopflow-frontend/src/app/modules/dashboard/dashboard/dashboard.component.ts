@@ -14,10 +14,13 @@ export class DashboardComponent implements OnInit {
   stats: any = {};
   recentOrders: any[] = [];
   barChartType: ChartType = 'bar';
+  lineChartType: ChartType = 'line';
   doughnutChartType: ChartType = 'doughnut';
   topProductsData: ChartConfiguration<'bar'>['data'] = { labels: [], datasets: [{ data: [], label: 'Ventes' }] };
   topSellersData: ChartConfiguration<'bar'>['data'] = { labels: [], datasets: [{ data: [], label: 'Revenus' }] };
   ordersStatusData: ChartConfiguration<'doughnut'>['data'] = { labels: [], datasets: [{ data: [] }] };
+  monthlySpendData: ChartConfiguration<'line'>['data'] = { labels: [], datasets: [{ data: [], label: 'Depenses' }] };
+  customerStatusData: ChartConfiguration<'bar'>['data'] = { labels: [], datasets: [{ data: [], label: 'Commandes' }] };
 
   constructor(private authService: AuthService, private dashboardService: DashboardService) {}
 
@@ -49,6 +52,8 @@ export class DashboardComponent implements OnInit {
   private buildCharts(): void {
     const topProducts = this.stats.topProducts || {};
     const topSellers = this.stats.topSellers || {};
+    const customerMonthly = this.stats.depensesParMois || {};
+    const customerStatuses = this.stats.commandesParStatut || {};
     this.topProductsData = {
       labels: Object.keys(topProducts),
       datasets: [{ data: (Object.values(topProducts) as any[]).map(v => Number(v)), label: 'Ventes' }]
@@ -64,6 +69,14 @@ export class DashboardComponent implements OnInit {
     this.ordersStatusData = {
       labels: Object.keys(statusCount),
       datasets: [{ data: Object.values(statusCount) }]
+    };
+    this.monthlySpendData = {
+      labels: Object.keys(customerMonthly),
+      datasets: [{ data: (Object.values(customerMonthly) as any[]).map(v => Number(v)), label: 'Depenses' }]
+    };
+    this.customerStatusData = {
+      labels: Object.keys(customerStatuses),
+      datasets: [{ data: (Object.values(customerStatuses) as any[]).map(v => Number(v)), label: 'Commandes' }]
     };
   }
 }

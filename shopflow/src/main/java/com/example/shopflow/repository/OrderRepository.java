@@ -22,4 +22,14 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     boolean hasPurchasedProduct(@Param("customerId") Long customerId,
                                 @Param("productId") Long productId,
                                 @Param("eligibleStatuses") List<OrderStatus> eligibleStatuses);
+
+    @Query("""
+            SELECT DISTINCT o
+            FROM Order o
+            JOIN o.lignes l
+            JOIN l.product p
+            WHERE p.seller.id = :sellerId
+            ORDER BY o.dateCommande DESC
+            """)
+    List<Order> findBySellerIdOrderByDateCommandeDesc(@Param("sellerId") Long sellerId);
 }

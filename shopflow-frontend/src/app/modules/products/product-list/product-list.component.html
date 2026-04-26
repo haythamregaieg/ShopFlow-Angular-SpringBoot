@@ -1,67 +1,99 @@
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;0,900;1,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
 <div class="products-page">
   <div class="container">
-    <div class="page-header">
-      <div>
-        <h1 class="page-title">🛒 Catalogue Produits</h1>
-        <p class="page-subtitle">Découvrez notre sélection exclusive de produits</p>
+
+    <!-- Hero Header -->
+    <header class="page-hero">
+      <div class="hero-text">
+        <p class="hero-eyebrow">Notre Sélection</p>
+        <h1 class="page-title">Catalogue<br><em>Produits</em></h1>
       </div>
-      <button *ngIf="isAdmin || isSeller" routerLink="/products/new/create" class="btn btn-primary btn-lg">+ Nouveau Produit</button>
+      <button *ngIf="isAdmin || isSeller" routerLink="/products/new/create" class="btn-new-product">
+        <span class="btn-icon-plus">+</span>
+        Nouveau Produit
+      </button>
+    </header>
+
+    <!-- Toast notification -->
+    <div class="toast" [class.toast-visible]="message">
+      <span class="toast-dot"></span>
+      {{ message }}
     </div>
 
-    <div class="alert alert-success" *ngIf="message">{{ message }}</div>
-
     <div class="filter-layout">
-      <!-- Sidebar Filtres -->
-      <aside class="filters-sidebar card">
-        <div class="filter-group">
-          <h4 class="filter-title">Recherche</h4>
-          <div class="search-box">
-            <input type="text" [(ngModel)]="searchQuery" placeholder="Nom, description..." (keyup.enter)="search()" class="form-control" />
-          </div>
-        </div>
 
-        <div class="filter-group">
-          <h4 class="filter-title">Catégories</h4>
-          <div class="categories-list">
-            <label class="category-item" *ngFor="let category of categories">
-              <input
-                type="checkbox"
-                [checked]="selectedCategoryIds.includes(category.id)"
-                (change)="toggleCategory(category.id, $any($event.target).checked)"
-              />
-              <span class="category-name">{{ category.nom }}</span>
+      <!-- Sidebar -->
+      <aside class="filters-sidebar">
+        <div class="sidebar-inner">
+
+          <div class="filter-section">
+            <span class="filter-label">Recherche</span>
+            <div class="search-wrap">
+              <svg class="search-icon" viewBox="0 0 20 20" fill="none">
+                <circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.5"/>
+                <path d="m14 14 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              <input type="text" [(ngModel)]="searchQuery" placeholder="Nom, description…"
+                     (keyup.enter)="search()" class="search-input" />
+            </div>
+          </div>
+
+          <div class="filter-section">
+            <span class="filter-label">Catégories</span>
+            <div class="categories-list">
+              <label class="cat-chip" *ngFor="let category of categories"
+                     [class.cat-chip-active]="selectedCategoryIds.includes(category.id)">
+                <input type="checkbox" hidden
+                       [checked]="selectedCategoryIds.includes(category.id)"
+                       (change)="toggleCategory(category.id, $any($event.target).checked)" />
+                {{ category.nom }}
+              </label>
+            </div>
+          </div>
+
+          <div class="filter-section">
+            <span class="filter-label">Prix (EUR)</span>
+            <div class="price-row">
+              <div class="price-field">
+                <span class="price-prefix">Min</span>
+                <input type="number" [(ngModel)]="prixMin" placeholder="0" class="price-input" />
+              </div>
+              <div class="price-sep">—</div>
+              <div class="price-field">
+                <span class="price-prefix">Max</span>
+                <input type="number" [(ngModel)]="prixMax" placeholder="∞" class="price-input" />
+              </div>
+            </div>
+          </div>
+
+          <div class="filter-section">
+            <label class="promo-toggle">
+              <div class="toggle-track" [class.toggle-on]="promoOnly" (click)="promoOnly = !promoOnly">
+                <div class="toggle-thumb"></div>
+              </div>
+              <span>En promotion uniquement</span>
             </label>
           </div>
-        </div>
 
-        <div class="filter-group">
-          <h4 class="filter-title">Prix (€)</h4>
-          <div class="price-inputs">
-            <input type="number" [(ngModel)]="prixMin" placeholder="Min" class="form-control" />
-            <input type="number" [(ngModel)]="prixMax" placeholder="Max" class="form-control" />
+          <div class="filter-actions">
+            <button class="btn-apply" (click)="search()">Appliquer</button>
+            <button class="btn-reset" (click)="resetFilters()">Réinitialiser</button>
           </div>
-        </div>
-
-        <div class="filter-group">
-          <h4 class="filter-title">Options</h4>
-          <label class="checkbox-item">
-            <input type="checkbox" [(ngModel)]="promoOnly" />
-            <span>En promotion 🔥</span>
-          </label>
-        </div>
-
-        <div class="filter-actions">
-          <button class="btn btn-primary w-100 mb-2" (click)="search()">Appliquer les filtres</button>
-          <button class="btn btn-ghost w-100" (click)="resetFilters()">Réinitialiser</button>
         </div>
       </aside>
 
-      <!-- Grille Produits -->
+      <!-- Main content -->
       <main class="products-main">
-        <div class="results-header">
-          <div class="results-count">{{ products.length }} produit(s) trouvé(s)</div>
-          <div class="sort-box">
-            <select [(ngModel)]="sortBy" (change)="search()" class="form-select">
+
+        <!-- Results bar -->
+        <div class="results-bar">
+          <span class="results-count">
+            <strong>{{ products.length }}</strong> produit{{ products.length !== 1 ? 's' : '' }} trouvé{{ products.length !== 1 ? 's' : '' }}
+          </span>
+          <div class="sort-wrap">
+            <label class="sort-label">Trier par</label>
+            <select [(ngModel)]="sortBy" (change)="search()" class="sort-select">
               <option value="nouveautes">Nouveautés</option>
               <option value="popularite">Popularité</option>
               <option value="prix_asc">Prix croissant</option>
@@ -70,55 +102,132 @@
           </div>
         </div>
 
-        <div class="loading-overlay" *ngIf="loading">
-          <div class="spinner"></div>
-        </div>
-
-        <div class="products-grid" *ngIf="!loading">
-          <div class="product-card" *ngFor="let product of products">
-            <div class="promo-tag" *ngIf="product.prixPromo">PROMO</div>
-            <div class="product-image" [routerLink]="['/products', product.id]">
-              <span class="product-letter">{{ product.nom.charAt(0) }}</span>
-            </div>
-            <div class="product-body">
-              <h3 class="product-name" [routerLink]="['/products', product.id]">{{ product.nom }}</h3>
-              <p class="product-seller">Par {{ product.sellerNom || 'ShopFlow' }}</p>
-              
-              <div class="product-rating" *ngIf="product.noteMoyenne">
-                <span class="stars">⭐</span> {{ product.noteMoyenne | number:'1.1-1' }}
-              </div>
-
-              <div class="product-footer">
-                <div class="product-price">
-                  <ng-container *ngIf="product.prixPromo; else originalPrice">
-                    <span class="price-promo">{{ product.prixPromo | number:'1.2-2' }} €</span>
-                    <span class="price-striked">{{ product.prix | number:'1.2-2' }} €</span>
-                  </ng-container>
-                  <ng-template #originalPrice>
-                    <span class="price-original">{{ product.prix | number:'1.2-2' }} €</span>
-                  </ng-template>
-                </div>
-                <button class="btn btn-icon" [routerLink]="['/products', product.id]" title="Voir détails">👁️</button>
+        <!-- Loading -->
+        <div class="loading-state" *ngIf="loading">
+          <div class="skeleton-grid">
+            <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6]">
+              <div class="skeleton-img"></div>
+              <div class="skeleton-body">
+                <div class="skeleton-line w-60"></div>
+                <div class="skeleton-line w-40"></div>
+                <div class="skeleton-line w-80"></div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="empty-state card" *ngIf="!loading && products.length === 0">
-          <div class="empty-icon">🔍</div>
-          <h3>Aucun produit trouvé</h3>
-          <p>Essayez de modifier vos filtres ou votre recherche.</p>
-          <button class="btn btn-primary" (click)="resetFilters()">Tout afficher</button>
+        <!-- Products grouped by category -->
+        <div *ngIf="!loading && products.length > 0">
+          <ng-container *ngFor="let group of groupedProducts">
+            <section class="category-section">
+              <div class="category-header">
+                <h2 class="category-title">{{ group.categoryName }}</h2>
+                <div class="category-line"></div>
+                <span class="category-count">{{ group.products.length }} article{{ group.products.length !== 1 ? 's' : '' }}</span>
+              </div>
+
+              <div class="products-grid">
+                <article class="product-card" *ngFor="let product of group.products; let i = index"
+                         [style.animation-delay]="(i * 60) + 'ms'">
+
+                  <div class="card-badge promo-badge" *ngIf="product.prixPromo">
+                    <svg viewBox="0 0 12 12" fill="none"><path d="M6 1l1.3 2.6 2.9.4-2.1 2 .5 2.9L6 7.4 3.4 8.9l.5-2.9L2 4l2.9-.4z" fill="currentColor"/></svg>
+                    Promo
+                  </div>
+
+                  <div class="card-image" [routerLink]="['/products', product.id]">
+                    <div class="product-letter-wrap">
+                      <span class="product-letter">{{ product.nom.charAt(0) }}</span>
+                    </div>
+                    <div class="card-overlay">
+                      <span class="overlay-cta">Voir le produit →</span>
+                    </div>
+                  </div>
+
+                  <div class="card-body">
+                    <div class="card-meta">
+                      <span class="seller-name">{{ product.sellerNom || 'ShopFlow' }}</span>
+                      <div class="rating-pill" *ngIf="product.noteMoyenne">
+                        <svg viewBox="0 0 12 12" fill="currentColor" width="10"><path d="M6 1l1.3 2.6 2.9.4-2.1 2 .5 2.9L6 7.4 3.4 8.9l.5-2.9L2 4l2.9-.4z"/></svg>
+                        {{ product.noteMoyenne | number:'1.1-1' }}
+                      </div>
+                    </div>
+
+                    <h3 class="product-name" [routerLink]="['/products', product.id]">{{ product.nom }}</h3>
+
+                    <div class="stock-indicator" [class.in-stock]="product.stock > 0" [class.out-stock]="product.stock <= 0">
+                      <span class="stock-dot"></span>
+                      {{ product.stock > 0 ? 'En stock' : 'Rupture' }}
+                    </div>
+
+                    <div class="variant-row" *ngIf="variantsByProduct[product.id]?.length">
+                      <select class="variant-select" [ngModel]="selectedVariantByProduct[product.id]"
+                              (ngModelChange)="onVariantChange(product.id, $event)">
+                        <option *ngFor="let v of variantsByProduct[product.id]" [ngValue]="v.id">
+                          {{ v.taille }} / {{ v.couleur }}
+                        </option>
+                      </select>
+                    </div>
+
+                    <div class="card-footer">
+                      <div class="price-block">
+                        <ng-container *ngIf="product.prixPromo; else origPrice">
+                          <span class="price-promo">{{ product.prixPromo | number:'1.2-2' }} €</span>
+                          <span class="price-old">{{ product.prix | number:'1.2-2' }} €</span>
+                        </ng-container>
+                        <ng-template #origPrice>
+                          <span class="price-main">{{ product.prix | number:'1.2-2' }} €</span>
+                        </ng-template>
+                      </div>
+                      <button class="btn-cart"
+                              [disabled]="!product.actif || product.stock <= 0"
+                              (click)="addToCart(product)">
+                        <svg viewBox="0 0 20 20" fill="none" width="16">
+                          <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 4h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Ajouter
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              </div>
+            </section>
+          </ng-container>
+        </div>
+
+        <!-- Empty state -->
+        <div class="empty-state" *ngIf="!loading && products.length === 0">
+          <div class="empty-visual">
+            <svg viewBox="0 0 80 80" fill="none" width="80">
+              <circle cx="40" cy="40" r="39" stroke="currentColor" stroke-width="1" stroke-dasharray="4 4" opacity=".3"/>
+              <path d="M25 30h30l-3 20H28L25 30z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" opacity=".5"/>
+              <path d="M33 30c0-3.9 3.1-7 7-7s7 3.1 7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".5"/>
+            </svg>
+          </div>
+          <h3 class="empty-title">Aucun produit trouvé</h3>
+          <p class="empty-text">Essayez de modifier vos filtres ou d'élargir votre recherche.</p>
+          <button class="btn-apply" (click)="resetFilters()">Tout afficher</button>
         </div>
 
         <!-- Pagination -->
-        <div class="pagination" *ngIf="totalPages > 1">
-          <button class="btn btn-ghost" (click)="currentPage = currentPage - 1; loadProducts()" [disabled]="currentPage === 0">← Précédent</button>
-          <div class="page-numbers">
-            <span class="page-current">{{ currentPage + 1 }}</span> / {{ totalPages }}
+        <nav class="pagination" *ngIf="totalPages > 1">
+          <button class="page-btn" (click)="currentPage = currentPage - 1; loadProducts()"
+                  [disabled]="currentPage === 0">
+            ← Précédent
+          </button>
+          <div class="page-dots">
+            <span *ngFor="let p of pagesArray(); let pi = index"
+                  class="page-dot"
+                  [class.page-dot-active]="pi === currentPage"
+                  (click)="currentPage = pi; loadProducts()">
+            </span>
           </div>
-          <button class="btn btn-primary" (click)="currentPage = currentPage + 1; loadProducts()" [disabled]="currentPage === totalPages - 1">Suivant →</button>
-        </div>
+          <button class="page-btn page-btn-next" (click)="currentPage = currentPage + 1; loadProducts()"
+                  [disabled]="currentPage === totalPages - 1">
+            Suivant →
+          </button>
+        </nav>
+
       </main>
     </div>
   </div>

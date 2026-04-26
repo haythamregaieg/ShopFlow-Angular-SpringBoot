@@ -10,6 +10,8 @@ export interface Order {
   id: number;
   numeroCommande: string;
   statut: string;
+  customerNom?: string;
+  customerEmail?: string;
   sousTotal: number;
   fraisLivraison: number;
   totalTTC: number;

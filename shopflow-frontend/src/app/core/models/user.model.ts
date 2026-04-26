@@ -28,3 +28,8 @@ export interface RegisterRequest {
   logoBoutique?: string;
   descriptionBoutique?: string;
 }
+
+export interface UpdateUserProfileRequest {
+  prenom: string;
+  nom: string;
+}
