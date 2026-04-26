@@ -1,5 +1,5 @@
-<app-navbar></app-navbar>
-<main class="main-content">
+<app-navbar *ngIf="shouldShowLayout"></app-navbar>
+<main class="main-content" [class.main-content--auth]="!shouldShowLayout">
   <router-outlet></router-outlet>
 </main>
-<app-footer></app-footer>
+<app-footer *ngIf="shouldShowLayout"></app-footer>

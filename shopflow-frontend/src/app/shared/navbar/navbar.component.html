@@ -1,34 +1,66 @@
 <nav class="navbar">
   <div class="nav-container">
-    <a routerLink="/products" class="nav-brand">
-      <span class="brand-text">ShopFlow</span>
+    <a routerLink="/" class="nav-brand">
+      <span class="brand-mark">SF</span>
+      <span class="brand-block">
+        <span class="brand-text">ShopFlow</span>
+        <span class="brand-sub">Marketplace</span>
+      </span>
     </a>
     <div class="nav-links">
-      <a routerLink="/products" routerLinkActive="active">Catalogue</a>
-      <a routerLink="/cart" routerLinkActive="active" *ngIf="isLoggedIn">
-        Panier
+
+      <a
+        routerLink="/products"
+        routerLinkActive="active"
+        class="nav-icon-link"
+        title="Produits"
+        aria-label="Produits">
+        <i class="fas fa-box-open"></i>
+      </a>
+      <a
+        routerLink="/orders"
+        routerLinkActive="active"
+        *ngIf="isLoggedIn"
+        class="nav-icon-link"
+        title="Commandes"
+        aria-label="Commandes">
+        <i class="fas fa-receipt"></i>
+      </a>
+      <a
+        routerLink="/cart"
+        routerLinkActive="active"
+        *ngIf="isLoggedIn"
+        class="nav-icon-link cart-link"
+        title="Panier"
+        aria-label="Panier">
+        <i class="fas fa-cart-shopping"></i>
         <span class="cart-badge" *ngIf="cartCount > 0">{{ cartCount }}</span>
       </a>
-      <a routerLink="/orders" routerLinkActive="active" *ngIf="isLoggedIn">Commandes</a>
-      <a routerLink="/dashboard" routerLinkActive="active" *ngIf="isLoggedIn">Dashboard</a>
-      <a routerLink="/profile" routerLinkActive="active" *ngIf="isLoggedIn">Profil</a>
-      <a routerLink="/dashboard/seller" routerLinkActive="active" *ngIf="isSeller">Gestion Boutique</a>
-      <a routerLink="/admin" routerLinkActive="active" *ngIf="isAdmin" class="admin-link">Admin</a>
     </div>
     <div class="nav-auth">
       <ng-container *ngIf="!isLoggedIn">
-        <a routerLink="/auth/login" class="btn btn-ghost btn-sm">Connexion</a>
-        <a routerLink="/auth/register" class="btn btn-primary btn-sm">Inscription</a>
+        <a routerLink="/auth/login" class="btn btn-sm nav-login-btn">Connexion</a>
+        <a routerLink="/auth/register" class="btn btn-sm nav-register-btn">Inscription</a>
       </ng-container>
       <ng-container *ngIf="isLoggedIn">
-        <div class="user-menu">
-          <div class="user-avatar">{{ userEmail.charAt(0).toUpperCase() }}</div>
-          <div class="user-info">
-            <span class="user-email">{{ userEmail }}</span>
-            <span class="user-role">{{ userRole }}</span>
+        <div class="user-menu-wrap">
+          <button class="user-menu-trigger" (click)="toggleUserMenu()" type="button" aria-label="Ouvrir le menu utilisateur">
+            <div class="user-avatar">{{ userInitial }}</div>
+            <div class="user-info">
+              <span class="user-name">{{ userFullName || (userEmail.split('@')[0]) }}</span>
+              <span class="user-role-badge">{{ userRole }}</span>
+            </div>
+            <span class="menu-caret">&#9662;</span>
+          </button>
+
+          <div class="user-dropdown" *ngIf="isUserMenuOpen">
+            <a routerLink="/dashboard" (click)="closeUserMenu()">Dashboard</a>
+            <a routerLink="/profile" (click)="closeUserMenu()">Profil</a>
+            <a routerLink="/dashboard/seller" *ngIf="isSeller" (click)="closeUserMenu()">Gestion boutique</a>
+            <a routerLink="/admin" *ngIf="isAdmin" (click)="closeUserMenu()">Admin</a>
+            <button type="button" class="logout-item" (click)="logout()">Deconnexion</button>
           </div>
         </div>
-        <button (click)="logout()" class="btn btn-ghost btn-sm">Deconnexion</button>
       </ng-container>
     </div>
   </div>

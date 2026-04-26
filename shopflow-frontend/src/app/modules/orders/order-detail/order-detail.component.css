@@ -8,7 +8,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #636e72;
+  color: var(--text-muted);
   text-decoration: none;
   font-weight: 500;
   margin-bottom: 32px;
@@ -16,7 +16,7 @@
 }
 
 .back-link:hover {
-  color: #1a237e;
+  color: var(--secondary);
 }
 
 .detail-card {
@@ -24,7 +24,7 @@
   border-radius: 20px;
   box-shadow: 0 10px 40px rgba(0,0,0,0.05);
   padding: 40px;
-  border: 1px solid #f0f0f0;
+  border: 1px solid var(--border);
 }
 
 .detail-header {
@@ -33,18 +33,18 @@
   align-items: flex-start;
   margin-bottom: 40px;
   padding-bottom: 24px;
-  border-bottom: 1px solid #f1f2f6;
+  border-bottom: 1px solid #edf2f7;
 }
 
 .order-title h1 {
   font-size: 28px;
   font-weight: 800;
-  color: #1a237e;
+  color: var(--secondary);
   margin: 0 0 8px 0;
 }
 
 .order-meta {
-  color: #b2bec3;
+  color: #94a3b8;
   font-size: 14px;
 }
 
@@ -58,7 +58,7 @@
 
 .status-pending { background: #fff8e1; color: #ffa000; }
 .status-paid { background: #e8f5e9; color: #2e7d32; }
-.status-processing { background: #e3f2fd; color: #1976d2; }
+.status-processing { background: #e3f2fd; color: var(--secondary); }
 .status-shipped { background: #f3e5f5; color: #7b1fa2; }
 .status-delivered { background: #e8f5e9; color: #2e7d32; }
 .status-cancelled { background: #ffeea4; color: #d32f2f; }
@@ -66,7 +66,7 @@
 .section-title {
   font-size: 18px;
   font-weight: 700;
-  color: #2d3436;
+  color: var(--text);
   margin: 0 0 20px 0;
   display: flex;
   align-items: center;
@@ -81,19 +81,19 @@
 }
 
 .items-table th {
-  background: #f8f9fa;
+  background: var(--bg);
   padding: 16px;
   text-align: left;
   font-size: 12px;
   text-transform: uppercase;
-  color: #b2bec3;
+  color: #94a3b8;
   letter-spacing: 1px;
 }
 
 .items-table td {
   padding: 20px 16px;
-  border-bottom: 1px solid #f1f2f6;
-  color: #2d3436;
+  border-bottom: 1px solid #edf2f7;
+  color: var(--text);
 }
 
 .items-table th:first-child { border-radius: 12px 0 0 12px; }
@@ -104,7 +104,7 @@
 }
 
 .totals-section {
-  background: #f8f9fa;
+  background: var(--bg);
   border-radius: 16px;
   padding: 24px;
   margin-left: auto;
@@ -115,14 +115,14 @@
   display: flex;
   justify-content: space-between;
   margin-bottom: 12px;
-  color: #636e72;
+  color: var(--text-muted);
 }
 
 .total-row.grand-total {
   margin-top: 16px;
   padding-top: 16px;
   border-top: 2px dashed #e0e0e0;
-  color: #1a237e;
+  color: var(--secondary);
   font-size: 24px;
   font-weight: 800;
 }

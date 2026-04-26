@@ -2,3 +2,8 @@
   min-height: calc(100vh - 68px);
   padding-top: 68px;
 }
+
+.main-content--auth {
+  min-height: 100vh;
+  padding-top: 0;
+}

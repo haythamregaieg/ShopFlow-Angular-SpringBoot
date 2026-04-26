@@ -1,11 +1,11 @@
 @import url("https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap");
 
 :root {
-  --primary: #0f172a;
-  --secondary: #1e293b;
-  --accent: #6366f1;
-  --accent-light: #818cf8;
-  --accent-dark: #4f46e5;
+  --primary: #B49A6B;
+  --secondary: #004285;
+  --accent: #004285;
+  --accent-light: #2F6BA3;
+  --accent-dark: #00356B;
   --success: #10b981;
   --warning: #f59e0b;
   --danger: #ef4444;
@@ -15,8 +15,8 @@
   --text: #1e293b;
   --text-muted: #64748b;
   --border: #e2e8f0;
-  --shadow: 0 4px 24px rgba(99,102,241,0.08);
-  --shadow-lg: 0 12px 48px rgba(99,102,241,0.15);
+  --shadow: 0 4px 24px rgba(0,66,133,0.08);
+  --shadow-lg: 0 12px 48px rgba(0,66,133,0.15);
   --radius: 16px;
   --radius-sm: 8px;
   --transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
@@ -61,7 +61,7 @@ h1, h2, h3, h4 {
 
 .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 .btn-primary { background: var(--accent); color: white; }
-.btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(99,102,241,0.3); }
+.btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,66,133,0.3); }
 .btn-success { background: var(--success); color: white; }
 .btn-success:hover { background: #059669; transform: translateY(-1px); }
 .btn-danger { background: var(--danger); color: white; }
@@ -132,7 +132,7 @@ h1, h2, h3, h4 {
 .form-group select:focus,
 .form-group textarea:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 4px rgba(99,102,241,0.1);
+  box-shadow: 0 0 0 4px rgba(0,66,133,0.1);
 }
 
 .error-msg { color: var(--danger); font-size: 12px; margin-top: 6px; font-weight: 500; }
@@ -154,7 +154,7 @@ h1, h2, h3, h4 {
 
 /* Tables */
 table { width: 100%; border-collapse: collapse; }
-thead { background: #f1f5f9; }
+thead { background: #edf3f8; }
 th {
   padding: 14px 16px;
   text-align: left;
@@ -243,3 +243,4 @@ tr:hover td { background: #f8fafc; }
   .container { padding: 0 16px; }
   .page-title { font-size: 24px; }
 }
+

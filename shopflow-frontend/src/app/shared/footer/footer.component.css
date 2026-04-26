@@ -1,48 +1,111 @@
 .footer {
-  background: #0f172a;
-  color: rgba(255,255,255,0.6);
-  padding: 40px 24px 24px;
+  background: linear-gradient(165deg, #003a74 0%, var(--secondary) 55%, #1f5f9a 100%);
+  color: rgba(255,255,255,0.74);
+  padding: 44px 24px 22px;
   margin-top: 60px;
+  border-top: 1px solid rgba(255,255,255,0.14);
 }
 
 .footer-container {
   max-width: 1280px;
   margin: 0 auto;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.footer-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .footer-brand {
-  display: flex;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.brand-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, var(--primary), #c7b28e);
+  color: #0f355f;
+  font-family: "Syne", sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  margin-bottom: 12px;
-  font-size: 20px;
 }
 
 .brand {
   font-family: "Syne", sans-serif;
   font-weight: 800;
   color: white;
+  font-size: 22px;
 }
 
-.footer-desc { margin-bottom: 20px; font-size: 14px; }
+.footer-desc {
+  font-size: 14px;
+  max-width: 520px;
+  color: rgba(255,255,255,0.72);
+}
 
 .footer-links {
   display: flex;
-  justify-content: center;
-  gap: 24px;
-  margin-bottom: 20px;
+  justify-content: flex-start;
+  gap: 14px;
   flex-wrap: wrap;
 }
 
 .footer-links a {
-  color: rgba(255,255,255,0.5);
+  color: rgba(255,255,255,0.85);
   text-decoration: none;
-  font-size: 14px;
-  transition: color 0.2s;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 7px 12px;
 }
 
-.footer-links a:hover { color: #6366f1; }
+.footer-links a:hover {
+  color: #0f355f;
+  background: var(--primary);
+  border-color: var(--primary);
+}
 
-.footer-copy { font-size: 12px; color: rgba(255,255,255,0.3); }
+.footer-bottom {
+  border-top: 1px solid rgba(255,255,255,0.18);
+  padding-top: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.footer-copy {
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+}
+
+.footer-meta {
+  font-size: 12px;
+  color: rgba(255,255,255,0.66);
+}
+
+@media (max-width: 760px) {
+  .footer-top {
+    align-items: flex-start;
+  }
+
+  .footer-links {
+    gap: 10px;
+  }
+}

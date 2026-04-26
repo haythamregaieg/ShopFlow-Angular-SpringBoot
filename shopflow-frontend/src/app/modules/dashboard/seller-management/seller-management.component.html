@@ -5,8 +5,20 @@
       <p>Gerez vos produits, vos coupons de remise et vos categories.</p>
     </div>
     <div class="head-actions">
-      <button class="btn btn-primary" (click)="addProduct()">Ajouter un produit</button>
-      <a class="btn btn-secondary" routerLink="/dashboard/categories">Gerer les categories</a>
+      <button
+        class="icon-action primary"
+        (click)="addProduct()"
+        title="Ajouter un produit"
+        aria-label="Ajouter un produit">
+        +
+      </button>
+      <a
+        class="icon-action secondary"
+        routerLink="/dashboard/categories"
+        title="Gerer les categories"
+        aria-label="Gerer les categories">
+        &#9776;
+      </a>
     </div>
   </div>
 
@@ -41,8 +53,20 @@
               <span class="status" [class.inactive]="!product.actif">{{ product.actif ? 'Actif' : 'Inactif' }}</span>
             </td>
             <td class="actions">
-              <button class="btn-sm" (click)="editProduct(product.id)">Modifier</button>
-              <button class="btn-sm danger" (click)="deleteProduct(product.id)">Supprimer</button>
+              <button
+                class="icon-btn"
+                (click)="editProduct(product.id)"
+                title="Modifier"
+                aria-label="Modifier le produit">
+                &#9998;
+              </button>
+              <button
+                class="icon-btn danger"
+                (click)="deleteProduct(product.id)"
+                title="Supprimer"
+                aria-label="Supprimer le produit">
+                &#128465;
+              </button>
             </td>
           </tr>
           <tr *ngIf="products.length === 0">
@@ -156,8 +180,20 @@
                   <span class="status" [class.inactive]="!coupon.actif">{{ coupon.actif ? 'Actif' : 'Inactif' }}</span>
                 </td>
                 <td class="actions">
-                  <button class="btn-sm" (click)="editCoupon(coupon)">Modifier</button>
-                  <button class="btn-sm danger" (click)="deleteCoupon(coupon.id)">Supprimer</button>
+                  <button
+                    class="icon-btn"
+                    (click)="editCoupon(coupon)"
+                    title="Modifier"
+                    aria-label="Modifier le coupon">
+                    &#9998;
+                  </button>
+                  <button
+                    class="icon-btn danger"
+                    (click)="deleteCoupon(coupon.id)"
+                    title="Supprimer"
+                    aria-label="Supprimer le coupon">
+                    &#128465;
+                  </button>
                 </td>
               </tr>
               <tr *ngIf="coupons.length === 0">

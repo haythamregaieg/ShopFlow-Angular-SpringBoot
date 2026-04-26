@@ -9,54 +9,86 @@ import { AuthService } from '../../../core/services/auth.service';
   styleUrls: ['./register.component.css']
 })
 export class RegisterComponent {
+
   form: FormGroup;
   error = '';
   loading = false;
-  asSeller = false;
-  readonly strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&._#^()\-\+=]).{8,}$/;
 
-  constructor(private fb: FormBuilder, private authService: AuthService, private router: Router) {
+  asSeller = false;
+  acceptedTerms = false;
+
+  readonly strongPasswordRegex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&._#^()\-\+=]).{8,}$/;
+
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router
+  ) {
+
     this.form = this.fb.group({
       prenom: ['', Validators.required],
       nom: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      motDePasse: ['', [Validators.required, Validators.pattern(this.strongPasswordRegex)]],
+      motDePasse: ['', [
+        Validators.required,
+        Validators.pattern(this.strongPasswordRegex)
+      ]],
+
       nomBoutique: [''],
-      logoBoutique: [''],
       descriptionBoutique: ['']
     });
   }
 
-  toggleSeller(): void {
-    this.asSeller = !this.asSeller;
-    const nomBoutiqueCtrl = this.form.get('nomBoutique');
-    if (!nomBoutiqueCtrl) return;
-    if (this.asSeller) {
-      nomBoutiqueCtrl.setValidators([Validators.required]);
-    } else {
-      nomBoutiqueCtrl.clearValidators();
+  toggleSeller(value: boolean): void {
+    this.asSeller = value;
+
+    if (!value) {
       this.form.patchValue({
         nomBoutique: '',
-        logoBoutique: '',
         descriptionBoutique: ''
       });
     }
-    nomBoutiqueCtrl.updateValueAndValidity();
+  }
+
+  // ✅ checkbox FIX PROPRE
+  onTermsChange(event: Event): void {
+    this.acceptedTerms = (event.target as HTMLInputElement).checked;
   }
 
   onSubmit(): void {
-    if (this.form.invalid) return;
-    this.loading = true;
+
     this.error = '';
-    const req = this.form.value;
+
+    if (!this.acceptedTerms) {
+      this.error = "Vous devez accepter les conditions d'utilisation.";
+      return;
+    }
+
+    if (this.form.invalid) {
+      this.error = "Veuillez remplir correctement le formulaire.";
+      return;
+    }
+
+    this.loading = true;
+
+    const payload = {
+      ...this.form.value,
+      role: this.asSeller ? 'seller' : 'client'
+    };
+
     const request$ = this.asSeller
-      ? this.authService.registerSeller(req)
-      : this.authService.register(req);
+      ? this.authService.registerSeller(payload)
+      : this.authService.register(payload);
+
     request$.subscribe({
-      next: () => this.router.navigate(['/products']),
-      error: (err) => {
-        this.error = err.error?.error || 'Erreur lors de l\'inscription';
+      next: () => {
         this.loading = false;
+        this.router.navigate(['/products']);
+      },
+      error: (err) => {
+        this.loading = false;
+        this.error = err.error?.message || 'Erreur lors de l’inscription';
       }
     });
   }

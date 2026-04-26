@@ -18,24 +18,37 @@ interface ProductGroup {
   styleUrls: ['./product-list.component.css']
 })
 export class ProductListComponent implements OnInit {
+
   products: Product[] = [];
+  groupedProducts: ProductGroup[] = []; // ✅ FIX IMPORTANT
+
   totalPages = 0;
   currentPage = 0;
+
   searchQuery = '';
   prixMin?: number;
   prixMax?: number;
   promoOnly = false;
+
   sortBy: 'prix_asc' | 'prix_desc' | 'popularite' | 'nouveautes' = 'nouveautes';
+
   categories: Category[] = [];
   selectedCategoryIds: number[] = [];
+
   pageSize = 12;
   loading = false;
+
   isLoggedIn = false;
   isAdmin = false;
   isSeller = false;
+
   message = '';
+
   variantsByProduct: Record<number, ProductVariant[]> = {};
   selectedVariantByProduct: Record<number, number | undefined> = {};
+
+  // ✅ optimisation
+  private categoryMap: Record<number, string> = {};
 
   constructor(
     private productService: ProductService,
@@ -49,14 +62,22 @@ export class ProductListComponent implements OnInit {
     this.isLoggedIn = this.authService.isLoggedIn();
     this.isAdmin = this.authService.isAdmin();
     this.isSeller = this.authService.getRole() === 'SELLER';
+
     this.categoryService.getAll().subscribe(c => {
       this.categories = c || [];
+
+      // ✅ optimisation map
+      this.categories.forEach(cat => {
+        this.categoryMap[cat.id] = cat.nom;
+      });
+
       this.loadProducts();
     });
   }
 
   loadProducts(): void {
     this.loading = true;
+
     this.productService.search({
       q: this.searchQuery || undefined,
       prixMin: this.prixMin,
@@ -70,33 +91,39 @@ export class ProductListComponent implements OnInit {
       next: (page) => {
         this.products = page.content || [];
         this.totalPages = page.totalPages;
+
+        this.computeGroupedProducts(); // ✅ FIX
+
         this.loadProductVariants(this.products);
+
         this.loading = false;
       },
       error: () => this.loading = false
     });
   }
 
-  // ── Groupe les produits par catégorie ──────────────────────────────────────
-  get groupedProducts(): ProductGroup[] {
-    if (!this.products || this.products.length === 0) return [];
+  // ✅ VERSION OPTIMISÉE (plus de getter)
+  computeGroupedProducts(): void {
+    if (!this.products.length) {
+      this.groupedProducts = [];
+      return;
+    }
 
     const map = new Map<string, Product[]>();
 
     this.products.forEach(product => {
-      // Adapte ces champs selon ton modèle Product réel :
       const catName: string =
-        (product as any).categoryNom        // si le backend renvoie categoryNom
-        ?? (product as any).categorie?.nom  // ou un objet imbriqué categorie
-        ?? (product as any).category?.nom   // ou category
-        ?? this.categories.find(c => c.id === (product as any).categoryId)?.nom // mapping local
+        (product as any).categoryNom
+        ?? (product as any).categorie?.nom
+        ?? (product as any).category?.nom
+        ?? this.categoryMap[(product as any).categoryId]
         ?? 'Autres';
 
       if (!map.has(catName)) map.set(catName, []);
       map.get(catName)!.push(product);
     });
 
-    return Array.from(map.entries())
+    this.groupedProducts = Array.from(map.entries())
       .sort(([a], [b]) => {
         if (a === 'Autres') return 1;
         if (b === 'Autres') return -1;
@@ -105,7 +132,6 @@ export class ProductListComponent implements OnInit {
       .map(([categoryName, products]) => ({ categoryName, products }));
   }
 
-  // ── Tableau de pages pour la pagination ────────────────────────────────────
   pagesArray(): number[] {
     return Array.from({ length: this.totalPages }, (_, i) => i);
   }
@@ -137,15 +163,20 @@ export class ProductListComponent implements OnInit {
   }
 
   addToCart(product: Product): void {
-    if (!this.isLoggedIn) { this.router.navigate(['/auth/login']); return; }
+    if (!this.isLoggedIn) {
+      this.router.navigate(['/auth/login']);
+      return;
+    }
+
     const selectedVariant = this.selectedVariantByProduct[product.id];
+
     this.cartService.addItem(product.id, 1, selectedVariant).subscribe({
       next: () => {
         this.message = product.nom + ' ajouté au panier';
         setTimeout(() => this.message = '', 3000);
       },
       error: () => {
-        this.message = 'Erreur lors de l\'ajout au panier';
+        this.message = 'Erreur lors de l\'ajout';
         setTimeout(() => this.message = '', 3000);
       }
     });
@@ -166,12 +197,13 @@ export class ProductListComponent implements OnInit {
       this.productService.getVariants(product.id).subscribe({
         next: (variants) => {
           const available = (variants || []).filter(v => (v.stock ?? 0) > 0);
+
           this.variantsByProduct[product.id] = available;
-          this.selectedVariantByProduct[product.id] = available.length > 0 ? available[0].id : undefined;
+          this.selectedVariantByProduct[product.id] =
+            available.length > 0 ? available[0].id : undefined;
         },
         error: () => {
           this.variantsByProduct[product.id] = [];
-          this.selectedVariantByProduct[product.id] = undefined;
         }
       });
     });

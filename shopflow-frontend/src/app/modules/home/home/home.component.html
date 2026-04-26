@@ -1,0 +1,89 @@
+<section class="home-page">
+  <div class="container">
+    <section class="hero-band">
+      <div class="hero-content">
+        <p class="hero-kicker">ShopFlow Kids</p>
+        <h1>La boutique enfant qui rassure les parents et fait plaisir aux petits.</h1>
+        <p class="hero-subtext">
+          Vetements, jouets, deco et essentiels du quotidien selectionnes pour leur qualite, leur style et leur praticite.
+        </p>
+        <div class="hero-actions">
+          <a routerLink="/products" class="btn btn-primary">Voir les produits</a>
+          <a routerLink="/auth/register" class="btn btn-outline">Ouvrir ma boutique</a>
+        </div>
+      </div>
+
+      <div class="hero-tools">
+        <label for="categorySelect">Categorie</label>
+        <select id="categorySelect" [value]="selectedCategoryId" (change)="onCategoryChange($event)">
+          <option value="">Toutes les categories</option>
+          <option *ngFor="let category of categories" [value]="category.id">{{ category.nom }}</option>
+        </select>
+        <small>Filtre instantane pour trouver rapidement les articles adaptes a vos besoins.</small>
+      </div>
+    </section>
+
+    <section class="categories-strip" *ngIf="categories.length > 0">
+      <div class="strip-head">
+        <h2>Categories populaires</h2>
+      </div>
+
+      <div class="categories-list">
+        <button
+          type="button"
+          class="cat-pill"
+          [class.active]="!selectedCategoryId"
+          (click)="selectCategory()">
+          <span class="cat-icon">✨</span>
+          <span>Toutes</span>
+        </button>
+        <button
+          type="button"
+          class="cat-pill"
+          *ngFor="let category of categories; let i = index"
+          [class.active]="selectedCategoryId === (category.id + '')"
+          [style.animationDelay.ms]="i * 70"
+          (click)="selectCategory(category.id)">
+          <span class="cat-icon">{{ getCategoryIcon(category.nom) }}</span>
+          <span>{{ category.nom }}</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="products-section">
+      <div class="products-head">
+        <h2>Produits coups de coeur</h2>
+      </div>
+
+      <div class="products-grid" *ngIf="!loadingProducts && products.length > 0">
+        <a
+          class="product-card"
+          *ngFor="let product of products"
+          [routerLink]="['/products', product.id]">
+          <div class="thumb">
+            <span>{{ product.nom.charAt(0) }}</span>
+          </div>
+          <div class="content">
+            <h3>{{ product.nom }}</h3>
+            <p>{{ product.description || 'Article fiable, pratique et adapte aux enfants.' }}</p>
+            <div class="meta">
+              <strong>{{ getPrice(product) | number:'1.0-0' }} TND</strong>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="products-footer-link" *ngIf="!loadingProducts && products.length > 0">
+        <a routerLink="/products">Voir tout le catalogue</a>
+      </div>
+    </section>
+
+    <div class="state" *ngIf="loadingProducts">
+      Chargement des produits...
+    </div>
+
+    <div class="state" *ngIf="!loadingProducts && products.length === 0">
+      Aucun produit disponible pour cette categorie.
+    </div>
+  </div>
+</section>

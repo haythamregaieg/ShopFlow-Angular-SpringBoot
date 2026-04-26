@@ -9,12 +9,12 @@
   border-radius: 20px;
   box-shadow: 0 10px 40px rgba(0,0,0,0.05);
   padding: 40px;
-  border: 1px solid #f0f0f0;
+  border: 1px solid var(--border);
 }
 
 .page-title {
   font-weight: 800;
-  color: #1a237e;
+  color: var(--secondary);
   margin-bottom: 32px;
   font-size: 24px;
 }
@@ -27,12 +27,12 @@
   display: block;
   font-size: 14px;
   font-weight: 700;
-  color: #b2bec3;
+  color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-bottom: 20px;
   padding-bottom: 10px;
-  border-bottom: 2px solid #f1f2f6;
+  border-bottom: 2px solid #edf2f7;
 }
 
 .form-group {
@@ -42,24 +42,24 @@
 .form-group label {
   display: block;
   font-weight: 600;
-  color: #2d3436;
+  color: var(--text);
   margin-bottom: 8px;
 }
 
 .form-control {
   width: 100%;
   padding: 12px 16px;
-  border: 2px solid #f1f2f6;
+  border: 2px solid #edf2f7;
   border-radius: 12px;
   outline: none;
   transition: all 0.2s;
-  background: #f8f9fa;
+  background: var(--bg);
 }
 
 .form-control:focus {
-  border-color: #1a237e;
+  border-color: var(--secondary);
   background: white;
-  box-shadow: 0 4px 12px rgba(26, 35, 126, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 66, 133, 0.12);
 }
 
 .form-grid {
@@ -76,15 +76,15 @@
 }
 
 .variant-card {
-  background: #f8f9fa;
+  background: var(--bg);
   border-radius: 16px;
   padding: 20px;
-  border: 1px solid #f1f2f6;
+  border: 1px solid #edf2f7;
   position: relative;
 }
 
 .variant-card:hover {
-  border-color: #1a237e;
+  border-color: var(--secondary);
 }
 
 .btn-remove-variant {
@@ -92,7 +92,7 @@
   top: 12px;
   right: 12px;
   background: #fff5f5;
-  color: #ff7675;
+  color: var(--danger);
   border: none;
   width: 32px;
   height: 32px;
@@ -105,7 +105,7 @@
 }
 
 .btn-remove-variant:hover {
-  background: #ff7675;
+  background: var(--danger);
   color: white;
 }
 
@@ -115,7 +115,7 @@
   background: white;
   border: 2px dashed #d1d2d6;
   border-radius: 12px;
-  color: #636e72;
+  color: var(--text-muted);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -123,8 +123,8 @@
 }
 
 .btn-add-variant:hover {
-  border-color: #1a237e;
-  color: #1a237e;
+  border-color: var(--secondary);
+  color: var(--secondary);
   background: #f0f1f8;
 }
 
@@ -133,13 +133,13 @@
   gap: 16px;
   margin-top: 40px;
   padding-top: 24px;
-  border-top: 1px solid #f1f2f6;
+  border-top: 1px solid #edf2f7;
 }
 
 .btn-submit {
   flex: 2;
   padding: 14px;
-  background: linear-gradient(135deg, #1a237e, #283593);
+  background: linear-gradient(135deg, var(--secondary), #0a5ba8);
   color: white;
   border: none;
   border-radius: 12px;
@@ -151,8 +151,8 @@
 .btn-cancel {
   flex: 1;
   padding: 14px;
-  background: #f1f2f6;
-  color: #636e72;
+  background: #edf2f7;
+  color: var(--text-muted);
   border: none;
   border-radius: 12px;
   font-weight: 600;
@@ -161,7 +161,7 @@
 }
 
 .error-msg {
-  color: #ff7675;
+  color: var(--danger);
   font-size: 12px;
   margin-top: 4px;
   display: block;

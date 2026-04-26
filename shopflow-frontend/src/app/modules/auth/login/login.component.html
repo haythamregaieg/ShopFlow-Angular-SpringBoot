@@ -1,39 +1,69 @@
+<!-- login.component.html -->
 <div class="auth-page">
-  <div class="auth-left">
-    <div class="auth-logo">ShopFlow</div>
-    <h1>ShopFlow</h1>
-    <p>La plateforme e-commerce moderne pour gerer votre boutique en ligne</p>
-    <div class="auth-features">
-      <div class="feature">Gestion des produits et stocks</div>
-      <div class="feature">Panier et commandes en temps reel</div>
-      <div class="feature">Dashboard analytique complet</div>
-      <div class="feature">Securite JWT avancee</div>
+    <!-- LEFT SIDE - exactement le même style que la page register -->
+    <div class="auth-left">
+        <a class="auth-logo" routerLink="/products">
+            <div class="logo-icon">SF</div>
+            <h1>ShopFlow</h1>
+        </a>
+        <h2>Bon retour</h2>
+        <p>Connectez-vous pour gérer votre activité, suivre vos commandes et accéder à votre tableau de bord professionnel.</p>
+
     </div>
-  </div>
-  <div class="auth-right">
-    <div class="auth-form-container fade-in">
-      <div class="auth-header">
-        <h2>Bon retour !</h2>
-        <p>Connectez-vous a votre compte ShopFlow</p>
-      </div>
-      <div class="alert alert-error" *ngIf="error">{{ error }}</div>
-      <form [formGroup]="form" (ngSubmit)="onSubmit()">
-        <div class="form-group">
-          <label>Adresse email</label>
-          <input type="email" formControlName="email" placeholder="votre@email.com" />
-          <span class="error-msg" *ngIf="form.get('email')?.touched && form.get('email')?.invalid">
-            Email invalide
-          </span>
+
+    <!-- RIGHT SIDE - CARD LOGIN avec design premium -->
+    <div class="auth-right">
+        <div class="auth-form-container fade-in">
+            <div class="auth-header">
+                <h2>Connexion</h2>
+                <p>Accédez à votre espace ShopFlow</p>
+            </div>
+
+            <!-- Zone d'erreur -->
+            <div class="alert-error" *ngIf="error">
+                <i class="fas fa-circle-exclamation"></i> {{ error }}
+            </div>
+
+            <form [formGroup]="form" (ngSubmit)="onSubmit()">
+                <div class="form-group">
+                    <label><i class="fas fa-envelope"></i> Adresse email</label>
+                    <input
+                        type="email"
+                        formControlName="email"
+                        placeholder="votre@email.com"
+                        autocomplete="email"
+                        [class.is-invalid]="f['email'].touched && f['email'].invalid">
+                    <div class="error-msg" *ngIf="f['email'].touched && f['email'].invalid">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span *ngIf="f['email'].errors?.['required']">L'email est obligatoire</span>
+                        <span *ngIf="f['email'].errors?.['email']">Email invalide</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-lock"></i> Mot de passe</label>
+                    <input
+                        type="password"
+                        formControlName="motDePasse"
+                        placeholder="••••••••"
+                        autocomplete="current-password"
+                        [class.is-invalid]="f['motDePasse'].touched && f['motDePasse'].invalid">
+                    <div class="error-msg" *ngIf="f['motDePasse'].touched && f['motDePasse'].invalid">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span *ngIf="f['motDePasse'].errors?.['required']">Le mot de passe est obligatoire</span>
+                        <span *ngIf="f['motDePasse'].errors?.['minlength']">Minimum 4 caractères</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary" [disabled]="loading || form.invalid">
+                    <i class="fas fa-arrow-right-to-bracket"></i>
+                    {{ loading ? 'Connexion en cours...' : 'Se connecter' }}
+                </button>
+            </form>
+
+            <p class="auth-link">
+                Pas encore de compte ? <a routerLink="/auth/register">Créer un compte</a>
+            </p>
         </div>
-        <div class="form-group">
-          <label>Mot de passe</label>
-          <input type="password" formControlName="motDePasse" placeholder="••••••••" />
-        </div>
-        <button type="submit" class="btn btn-primary btn-full btn-lg" [disabled]="loading">
-          {{ loading ? 'Connexion en cours...' : 'Se connecter' }}
-        </button>
-      </form>
-      <p class="auth-link">Pas encore de compte ? <a routerLink="/auth/register">Creer un compte</a></p>
     </div>
-  </div>
 </div>
