@@ -12369,3 +12369,11 @@ update seller_profile set description=?,logo=?,nom_boutique=?,note=?,user_id=? w
 org.h2.jdbc.JdbcSQLDataException: Valeur trop longue pour la colonne "LOGO CHARACTER VARYING(255)": "'https://www.google.com/search?sca_esv=9f8463f094060b86&sxsrf=ANbL-n6EC9VRcEXfG_... (591)"
 Value too long for column "LOGO CHARACTER VARYING(255)": "'https://www.google.com/search?sca_esv=9f8463f094060b86&sxsrf=ANbL-n6EC9VRcEXfG_... (591)"; SQL statement:
 update seller_profile set description=?,logo=?,nom_boutique=?,note=?,user_id=? where id=? [22001-232]
+2026-04-27 15:38:34.539304+01:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Valeur trop longue pour la colonne "IMAGES CHARACTER VARYING(255)": "'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxETEBUSEhMVFRUXFhoX... (7491)"
+Value too long for column "IMAGES CHARACTER VARYING(255)": "'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxETEBUSEhMVFRUXFhoX... (7491)"; SQL statement:
+update product set actif=?,date_creation=?,description=?,frais_livraison_international=?,frais_livraison_local=?,images=?,nom=?,prix=?,prix_promo=?,seller_id=?,stock=? where id=? [22001-232]
+2026-04-27 15:38:48.639450+01:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Valeur trop longue pour la colonne "IMAGES CHARACTER VARYING(255)": "'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxETEBUSEhMVFRUXFhoX... (7491)"
+Value too long for column "IMAGES CHARACTER VARYING(255)": "'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxETEBUSEhMVFRUXFhoX... (7491)"; SQL statement:
+update product set actif=?,date_creation=?,description=?,frais_livraison_international=?,frais_livraison_local=?,images=?,nom=?,prix=?,prix_promo=?,seller_id=?,stock=? where id=? [22001-232]

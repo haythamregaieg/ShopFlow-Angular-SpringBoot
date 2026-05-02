@@ -3,7 +3,19 @@
 
   <div class="product-detail card">
     <div class="product-image-large">
-      <span>{{ product.nom.charAt(0) }}</span>
+  <img *ngIf="imageUrlToShow; else noImage" [src]="imageUrlToShow" alt="{{product.nom}}" class="main-image" />
+        <ng-template #noImage>
+          <div class="no-image">No image</div>
+        </ng-template>
+
+        <div *ngIf="imageList && imageList.length > 1" class="thumbnails">
+          <img *ngFor="let img of imageList; let i = index"
+               [src]="img"
+               [class.selected]="i === selectedImageIndex"
+               (click)="selectImage(i)"
+               alt="thumb-{{i}}"
+               class="thumb" />
+        </div>
     </div>
     <div class="product-detail-info">
       <h1>{{ product.nom }}</h1>
@@ -42,6 +54,7 @@
           </select>
         </div>
       </div>
+      
 
       <div class="add-to-cart" *ngIf="product.stock > 0">
         <div class="quantity-selector">

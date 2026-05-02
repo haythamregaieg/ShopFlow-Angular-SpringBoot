@@ -45,6 +45,12 @@ export class HomeComponent implements OnInit {
     request.subscribe({
       next: (response) => {
         this.products = response?.content || [];
+        // compute thumbnails for the home product cards
+        this.products.forEach(p => {
+          const imgs = this.parseImageList((p as any).images);
+          (p as any)._imageList = imgs;
+          (p as any)._thumbnail = imgs.length > 0 ? imgs[0] : null;
+        });
         this.loadingProducts = false;
       },
       error: () => {
@@ -52,6 +58,14 @@ export class HomeComponent implements OnInit {
         this.loadingProducts = false;
       }
     });
+  }
+
+  private parseImageList(images?: any): string[] {
+    if (!images) return [];
+    if (Array.isArray(images)) return images.filter(Boolean);
+    if (typeof images !== 'string') return [];
+    const imgs = images.split(',').map((s: string) => s.trim()).filter(Boolean);
+    return imgs.filter((s: string) => s.startsWith('http://') || s.startsWith('https://') || s.startsWith('data:'));
   }
 
   onCategoryChange(event: Event): void {

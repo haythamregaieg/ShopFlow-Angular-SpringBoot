@@ -136,9 +136,14 @@
                   </div>
 
                   <div class="card-image" [routerLink]="['/products', product.id]">
-                    <div class="product-letter-wrap">
-                      <span class="product-letter">{{ product.nom.charAt(0) }}</span>
-                    </div>
+                    <ng-container *ngIf="$any(product)._thumbnail; else letter">
+                      <img [src]="$any(product)._thumbnail" alt="{{ product.nom }}" class="card-thumb" />
+                    </ng-container>
+                    <ng-template #letter>
+                      <div class="product-letter-wrap">
+                        <span class="product-letter">{{ product.nom.charAt(0) }}</span>
+                      </div>
+                    </ng-template>
                     <div class="card-overlay">
                       <span class="overlay-cta">Voir le produit →</span>
                     </div>

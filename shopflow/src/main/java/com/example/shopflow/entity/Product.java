@@ -34,6 +34,7 @@ public class Product {
     private BigDecimal fraisLivraisonInternational;
     @Builder.Default
     private boolean actif = true;
+    @Column(length = 2000)
     private String images;
     private LocalDateTime dateCreation;
 

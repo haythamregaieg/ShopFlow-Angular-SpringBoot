@@ -56,12 +56,17 @@
       </div>
 
       <div class="products-grid" *ngIf="!loadingProducts && products.length > 0">
-        <a
+          <a
           class="product-card"
           *ngFor="let product of products"
           [routerLink]="['/products', product.id]">
           <div class="thumb">
-            <span>{{ product.nom.charAt(0) }}</span>
+            <ng-container *ngIf="$any(product)._thumbnail; else letter">
+              <img [src]="$any(product)._thumbnail" alt="{{ product.nom }}" class="home-thumb" />
+            </ng-container>
+            <ng-template #letter>
+              <span>{{ product.nom.charAt(0) }}</span>
+            </ng-template>
           </div>
           <div class="content">
             <h3>{{ product.nom }}</h3>

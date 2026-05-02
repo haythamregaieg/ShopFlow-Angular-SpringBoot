@@ -26,10 +26,20 @@
               {{ order.statut }}
             </span>
           </td>
-          <td>
+          <td class="d-flex align-items-center gap-2">
             <a [routerLink]="['/orders', order.id]" class="btn btn-sm btn-primary">
               Voir détails
             </a>
+
+            <!-- Seller controls: allow seller to change order status -->
+            <div *ngIf="isSeller" class="d-flex align-items-center">
+              <select class="form-select form-select-sm me-1" [(ngModel)]="order._selectedStatus">
+                <option *ngFor="let s of getAvailableStatusesFor(order)" [value]="s">{{ s }}</option>
+              </select>
+              <button class="btn btn-sm btn-outline-secondary" (click)="updateStatus(order.id, order._selectedStatus)">
+                Mettre à jour
+              </button>
+            </div>
           </td>
         </tr>
       </tbody>

@@ -16,10 +16,24 @@
       </span>
     </div>
 
+    <div class="customer-section mt-3">
+      <h4>Informations client</h4>
+      <p><strong>Nom :</strong> {{ order.customerPrenom }} {{ order.customerNom }}</p>
+      <p><strong>Email :</strong> {{ order.customerEmail }}</p>
+      <div *ngIf="order.adresseLivraison">
+        <p><strong>Adresse de livraison :</strong></p>
+        <p>
+          {{ order.adresseLivraison.rue }}<br />
+          {{ order.adresseLivraison.ville }} {{ order.adresseLivraison.codePostal }}<br />
+          {{ order.adresseLivraison.pays }}
+        </p>
+      </div>
+    </div>
+
     <h3 class="section-title">
       <i class="fas fa-shopping-bag text-primary"></i> Articles commandés
     </h3>
-    
+
     <div class="table-responsive">
       <table class="items-table">
         <thead>
@@ -31,13 +45,27 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let item of order.lignes">
+          <tr *ngFor="let item of visibleLignes">
             <td>
-              <div class="product-name">{{ item.productNom }}</div>
+              <div class="d-flex align-items-center gap-2">
+                <ng-container *ngIf="$any(item)._thumbnail; else noThumb">
+                  <img [src]="$any(item)._thumbnail" alt="{{ item.productNom }}" class="order-item-thumb" />
+                </ng-container>
+                <ng-template #noThumb>
+                  <div class="product-name">{{ item.productNom }}</div>
+                </ng-template>
+                <div>
+                  <div class="product-name">{{ item.productNom }}</div>
+                  <div *ngIf="item.sellerNom" class="small text-muted">Vendeur: {{ item.sellerNom }}</div>
+                </div>
+              </div>
             </td>
             <td>{{ item.quantite }}</td>
             <td>{{ item.prixUnitaire | number:'1.2-2' }} €</td>
             <td class="text-end font-weight-bold">{{ item.sousTotal | number:'1.2-2' }} €</td>
+          </tr>
+          <tr *ngIf="isSeller && visibleLignes.length === 0">
+            <td colspan="4" class="text-center text-muted">Aucun article de votre boutique dans cette commande.</td>
           </tr>
         </tbody>
       </table>

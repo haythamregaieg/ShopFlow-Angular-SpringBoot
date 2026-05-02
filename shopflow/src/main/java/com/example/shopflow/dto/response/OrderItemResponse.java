@@ -12,4 +12,6 @@ public class OrderItemResponse {
     private Integer quantite;
     private BigDecimal prixUnitaire;
     private BigDecimal sousTotal;
+    private Long sellerId;
+    private String sellerNom;
 }

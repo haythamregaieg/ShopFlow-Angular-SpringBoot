@@ -13,7 +13,9 @@ public class OrderResponse {
     private String numeroCommande;
     private String statut;
     private String customerNom;
+    private String customerPrenom;
     private String customerEmail;
+    private AddressResponse adresseLivraison;
     private BigDecimal sousTotal;
     private BigDecimal fraisLivraison;
     private BigDecimal totalTTC;

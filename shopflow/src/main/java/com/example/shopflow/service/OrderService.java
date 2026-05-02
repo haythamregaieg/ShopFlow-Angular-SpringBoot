@@ -3,6 +3,7 @@ package com.example.shopflow.service;
 import com.example.shopflow.dto.request.OrderRequest;
 import com.example.shopflow.dto.response.OrderItemResponse;
 import com.example.shopflow.dto.response.OrderResponse;
+import com.example.shopflow.dto.response.AddressResponse;
 import com.example.shopflow.entity.Address;
 import com.example.shopflow.entity.Cart;
 import com.example.shopflow.entity.Order;
@@ -82,9 +83,8 @@ public class OrderService {
         BigDecimal sousTotal = items.stream()
                 .map(i -> i.getPrixUnitaire().multiply(BigDecimal.valueOf(i.getQuantite())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal frais = items.stream()
-                .map(i -> resolveShippingFee(i.getProduct(), address))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    // Fixed shipping fee per order (7.99 EUR)
+    BigDecimal frais = BigDecimal.valueOf(7.99);
 
         long nextOrderNumber = orderRepository.count() + 1;
         String numeroCommande = String.format("ORD-%d-%05d", LocalDate.now().getYear(), nextOrderNumber);
@@ -218,29 +218,52 @@ public class OrderService {
     }
 
     private OrderResponse toResponse(Order o) {
-        List<OrderItemResponse> lignes = o.getLignes() != null
-                ? o.getLignes().stream().map(i -> OrderItemResponse.builder()
+    List<OrderItemResponse> lignes = o.getLignes() != null
+        ? o.getLignes().stream().map(i -> {
+            Long sellerId = null;
+            String sellerNom = null;
+            if (i.getProduct() != null && i.getProduct().getSeller() != null) {
+            sellerId = i.getProduct().getSeller().getId();
+            sellerNom = i.getProduct().getSeller().getNom();
+            }
+            return OrderItemResponse.builder()
                 .id(i.getId())
                 .productNom(i.getProduct().getNom())
                 .quantite(i.getQuantite())
                 .prixUnitaire(i.getPrixUnitaire())
                 .sousTotal(i.getPrixUnitaire().multiply(BigDecimal.valueOf(i.getQuantite())))
-                .build()).collect(Collectors.toList())
-                : List.of();
-        return OrderResponse.builder()
-                .id(o.getId())
-                .numeroCommande(o.getNumeroCommande())
-                .statut(o.getStatut().name())
-                .customerNom(o.getCustomer() != null ? o.getCustomer().getNom() : null)
-                .customerEmail(o.getCustomer() != null ? o.getCustomer().getEmail() : null)
-                .sousTotal(o.getSousTotal())
-                .fraisLivraison(o.getFraisLivraison())
-                .totalTTC(o.getTotalTTC())
-                .montantRembourse(o.getMontantRembourse())
-                .isNewStatus(o.isNewStatus())
-                .dateCommande(o.getDateCommande())
-                .lignes(lignes)
+                .sellerId(sellerId)
+                .sellerNom(sellerNom)
                 .build();
+        }).collect(Collectors.toList())
+        : List.of();
+
+    AddressResponse addr = null;
+    if (o.getAdresseLivraison() != null) {
+        addr = AddressResponse.builder()
+            .rue(o.getAdresseLivraison().getRue())
+            .ville(o.getAdresseLivraison().getVille())
+            .codePostal(o.getAdresseLivraison().getCodePostal())
+            .pays(o.getAdresseLivraison().getPays())
+            .build();
+    }
+
+    return OrderResponse.builder()
+        .id(o.getId())
+        .numeroCommande(o.getNumeroCommande())
+        .statut(o.getStatut().name())
+        .customerNom(o.getCustomer() != null ? o.getCustomer().getNom() : null)
+        .customerPrenom(o.getCustomer() != null ? o.getCustomer().getPrenom() : null)
+        .customerEmail(o.getCustomer() != null ? o.getCustomer().getEmail() : null)
+        .adresseLivraison(addr)
+        .sousTotal(o.getSousTotal())
+        .fraisLivraison(o.getFraisLivraison())
+        .totalTTC(o.getTotalTTC())
+        .montantRembourse(o.getMontantRembourse())
+        .isNewStatus(o.isNewStatus())
+        .dateCommande(o.getDateCommande())
+        .lignes(lignes)
+        .build();
     }
 
     private boolean isValidStatusTransition(OrderStatus current, OrderStatus next) {

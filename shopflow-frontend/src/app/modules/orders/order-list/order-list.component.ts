@@ -32,7 +32,10 @@ export class OrderListComponent implements OnInit {
 
     const source$ = this.isSeller ? this.orderService.getSellerOrders() : this.orderService.getMyOrders();
     source$.subscribe({
-      next: (orders) => this.orders = orders,
+      next: (orders) => {
+        this.prepareOrders(orders);
+        this.orders = orders;
+      },
       error: (err) => console.error("Orders error:", err)
     });
   }
@@ -59,7 +62,11 @@ export class OrderListComponent implements OnInit {
     }
   }
 
-  updateStatus(id: number, status: string): void {
+  updateStatus(id: number, status?: string): void {
+    if (!status) {
+      console.warn('No status provided for updateStatus call', id);
+      return;
+    }
     this.orderService.updateStatus(id, status).subscribe({
       next: (order) => {
         const idx = this.orders.findIndex(o => o.id === id);
@@ -68,6 +75,15 @@ export class OrderListComponent implements OnInit {
         }
       },
       error: (err) => console.error("Status update error:", err)
+    });
+  }
+
+  // Helper: when orders are loaded, attach a _selectedStatus default so ngModel can bind
+  private prepareOrders(orders: Order[]): void {
+    orders.forEach(o => {
+      // default selected status is the current status
+      // use a non-enumerable property so model typing isn't strictly modified
+      (o as any)._selectedStatus = o.statut;
     });
   }
 

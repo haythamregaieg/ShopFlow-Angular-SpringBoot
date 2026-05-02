@@ -109,6 +109,14 @@ export class ProductListComponent implements OnInit {
       return;
     }
 
+    // Pre-compute image lists and a thumbnail for each product to avoid
+    // doing work in the template. Images are stored as a CSV on the model.
+    this.products.forEach(product => {
+      const imgs = this.parseImageList((product as any).images);
+      (product as any)._imageList = imgs;
+      (product as any)._thumbnail = imgs.length > 0 ? imgs[0] : null;
+    });
+
     const map = new Map<string, Product[]>();
 
     this.products.forEach(product => {
@@ -130,6 +138,16 @@ export class ProductListComponent implements OnInit {
         return a.localeCompare(b, 'fr');
       })
       .map(([categoryName, products]) => ({ categoryName, products }));
+  }
+
+  /**
+   * Parse a CSV-style images string into an array of valid image URIs.
+   * Accepts http(s) URLs and data URIs.
+   */
+  private parseImageList(images?: string): string[] {
+    if (!images) return [];
+    const imgs = images.split(',').map(s => s.trim()).filter(Boolean);
+    return imgs.filter(s => s.startsWith('http://') || s.startsWith('https://') || s.startsWith('data:'));
   }
 
   pagesArray(): number[] {
@@ -181,6 +199,9 @@ export class ProductListComponent implements OnInit {
       }
     });
   }
+
+  // Compute the displayed price for a product card, taking the first available variant into account
+  // variant-aware card price (removed per user request)
 
   onVariantChange(productId: number, variantId?: number): void {
     this.selectedVariantByProduct[productId] = variantId;
