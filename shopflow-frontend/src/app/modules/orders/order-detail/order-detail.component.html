@@ -1,115 +1,139 @@
-<div class="detail-container" *ngIf="order">
-  <a routerLink="/orders" class="back-link">
-    <i class="fas fa-arrow-left"></i> Retour a mes commandes
-  </a>
+<div class="order-detail" *ngIf="order">
+  <!-- Fil d'Ariane -->
+  <nav class="order-breadcrumb">
+    <a routerLink="/">Accueil</a>
+    <span>›</span>
+    <a routerLink="/orders">Commandes</a>
+    <span>›</span>
+    <span>Commande #{{ order.numeroCommande }}</span>
+  </nav>
 
-  <div class="detail-card">
-    <div class="detail-header">
-      <div class="order-title">
-        <h1>Commande {{ order.numeroCommande }}</h1>
-        <p class="order-meta">
-          Passee le {{ order.dateCommande | date:'dd MMMM yyyy a HH:mm' }}
-        </p>
-      </div>
-      <div class="d-flex align-items-center gap-2">
-        <span *ngIf="order.isNewStatus" class="badge badge-warning">Nouveau statut</span>
-        <span class="status-badge" [ngClass]="'status-' + order.statut.toLowerCase()">
-          {{ order.statut }}
-        </span>
+  <!-- En-tête -->
+  <div class="order-header">
+    <div>
+      <h1 class="order-ref">Commande {{ order.numeroCommande }}</h1>
+      <p class="order-date">Passée le {{ order.dateCommande | date:'dd MMMM yyyy à HH:mm' }}</p>
+    </div>
+    <div class="header-right">
+      <span class="order-status" [ngClass]="'status-' + order.statut.toLowerCase()">
+        {{ order.statut }}
+      </span>
+      <span class="new-badge" *ngIf="order.isNewStatus">Nouveau statut</span>
+    </div>
+  </div>
+
+  <!-- Grille principale -->
+  <div class="order-grid">
+    <!-- Colonne gauche : articles + totaux -->
+    <div class="order-main">
+      <div class="order-card">
+        <div class="card-header">
+          <span class="card-icon">🧸</span>
+          <h2 class="card-title">Articles commandés</h2>
+        </div>
+
+        <div class="items-table-wrapper">
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>Produit</th>
+                <th>Quantité</th>
+                <th>Prix unitaire</th>
+                <th class="text-right">Sous-total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of visibleLignes">
+                <td class="product-cell">
+                  <div class="product-info">
+                    <div class="product-thumb">
+                      <img *ngIf="$any(item)._thumbnail" [src]="$any(item)._thumbnail" [alt]="item.productNom" />
+                      <div class="thumb-placeholder" *ngIf="!$any(item)._thumbnail">{{ item.productNom.charAt(0) }}</div>
+                    </div>
+                    <div class="product-details">
+                      <div class="product-name">{{ item.productNom }}</div>
+                      <div class="product-seller" *ngIf="item.sellerNom">Vendeur : {{ item.sellerNom }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="quantity-cell">{{ item.quantite }}</td>
+                <td class="price-cell">{{ item.prixUnitaire | number:'1.2-2' }} €</td>
+                <td class="total-cell text-right">{{ item.sousTotal | number:'1.2-2' }} €</td>
+              </tr>
+              <tr *ngIf="isSeller && visibleLignes.length === 0">
+                <td colspan="4" class="empty-row">Aucun article de votre boutique</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Totaux -->
+        <div class="totals-container">
+          <div class="total-line">
+            <span>Sous-total</span>
+            <span>{{ order.sousTotal | number:'1.2-2' }} €</span>
+          </div>
+          <div class="total-line" *ngIf="order.remise && order.remise > 0">
+            <span>Remise <span *ngIf="order.couponCode">({{ order.couponCode }})</span></span>
+            <span class="discount">-{{ order.remise | number:'1.2-2' }} €</span>
+          </div>
+          <div class="total-line">
+            <span>Livraison</span>
+            <span>{{ order.fraisLivraison === 0 ? 'Offerte' : (order.fraisLivraison | number:'1.2-2') + ' €' }}</span>
+          </div>
+          <div class="total-line grand-total">
+            <span>Total TTC</span>
+            <span>{{ order.totalTTC | number:'1.2-2' }} €</span>
+          </div>
+          <div class="total-line refund" *ngIf="order.montantRembourse && order.montantRembourse > 0">
+            <span>Montant remboursé</span>
+            <span>{{ order.montantRembourse | number:'1.2-2' }} €</span>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Informations client -->
-    <div class="customer-section mt-3">
-      <h4>Informations client</h4>
-      <p><strong>Nom :</strong> {{ order.customerPrenom }} {{ order.customerNom }}</p>
-      <p><strong>Email :</strong> {{ order.customerEmail }}</p>
-      <p *ngIf="order.telephone"><strong>Telephone :</strong> {{ order.telephone }}</p>
-      <div *ngIf="order.adresseLivraison">
-        <p><strong>Adresse de livraison :</strong></p>
-        <p>
-          {{ order.adresseLivraison.rue }}<br>
-          {{ order.adresseLivraison.ville }} {{ order.adresseLivraison.codePostal }}<br>
-          {{ order.adresseLivraison.pays }}
-        </p>
+    <!-- Colonne droite : infos client + livraison + action vendeur -->
+    <div class="order-sidebar">
+      <div class="info-card">
+        <div class="info-icon">👤</div>
+        <div class="info-content">
+          <h3>Client</h3>
+          <p><strong>{{ order.customerPrenom }} {{ order.customerNom }}</strong></p>
+          <p>{{ order.customerEmail }}</p>
+          <p *ngIf="order.telephone">{{ order.telephone }}</p>
+        </div>
       </div>
-    </div>
 
-    <!-- Articles -->
-    <h3 class="section-title">Articles commandes</h3>
-    <div class="table-responsive">
-      <table class="items-table">
-        <thead>
-          <tr>
-            <th>Produit</th>
-            <th>Quantite</th>
-            <th>Prix Unitaire</th>
-            <th class="text-end">Sous-total</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let item of visibleLignes">
-            <td>
-              <div class="d-flex align-items-center gap-2">
-                <ng-container *ngIf="$any(item)._thumbnail">
-                  <img [src]="$any(item)._thumbnail" alt="{{ item.productNom }}" class="order-item-thumb">
-                </ng-container>
-                <div>
-                  <div class="product-name">{{ item.productNom }}</div>
-                  <div *ngIf="item.sellerNom" class="small text-muted">Vendeur: {{ item.sellerNom }}</div>
-                </div>
-              </div>
-            </td>
-            <td>{{ item.quantite }}</td>
-            <td>{{ item.prixUnitaire | number:'1.2-2' }} EUR</td>
-            <td class="text-end">{{ item.sousTotal | number:'1.2-2' }} EUR</td>
-          </tr>
-          <tr *ngIf="isSeller && visibleLignes.length === 0">
-            <td colspan="4" class="text-center text-muted">Aucun article de votre boutique.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+      <div class="info-card" *ngIf="order.adresseLivraison">
+        <div class="info-icon">🏠</div>
+        <div class="info-content">
+          <h3>Adresse de livraison</h3>
+          <p>
+            {{ order.adresseLivraison.rue }}<br>
+            {{ order.adresseLivraison.codePostal }} {{ order.adresseLivraison.ville }}<br>
+            {{ order.adresseLivraison.pays }}
+          </p>
+        </div>
+      </div>
 
-    <!-- Totaux -->
-    <div class="totals-section">
-      <div class="total-row">
-        <span>Sous-total</span>
-        <span>{{ order.sousTotal | number:'1.2-2' }} EUR</span>
+      <div class="seller-card" *ngIf="isSeller && order.statut !== 'DELIVERED' && order.statut !== 'CANCELLED' && order.statut !== 'REFUNDED'">
+        <div class="info-icon">⚙️</div>
+        <div class="info-content">
+          <h3>Gestion de la commande</h3>
+          <div class="status-update">
+            <select #statusSelect class="status-select">
+              <option value="PAID">Payée</option>
+              <option value="PROCESSING">En préparation</option>
+              <option value="SHIPPED">Expédiée</option>
+              <option value="DELIVERED">Livrée</option>
+              <option value="CANCELLED">Annulée</option>
+              <option value="REFUNDED">Remboursée</option>
+            </select>
+            <button class="btn-update" (click)="updateStatus(order.id, statusSelect.value)">Mettre à jour</button>
+          </div>
+        </div>
       </div>
-      <div class="total-row" *ngIf="order.remise && order.remise > 0">
-        <span>Remise <span *ngIf="order.couponCode">({{ order.couponCode }})</span></span>
-        <span style="color:#e53e3e">-{{ order.remise | number:'1.2-2' }} EUR</span>
-      </div>
-      <div class="total-row">
-        <span>Frais de livraison</span>
-        <span>{{ order.fraisLivraison === 0 ? 'Gratuit' : (order.fraisLivraison | number:'1.2-2') + ' EUR' }}</span>
-      </div>
-      <div class="total-row grand-total">
-        <span>Total TTC</span>
-        <span>{{ order.totalTTC | number:'1.2-2' }} EUR</span>
-      </div>
-      <div class="total-row" *ngIf="order.montantRembourse && order.montantRembourse > 0" style="color:#e53e3e">
-        <span>Montant rembourse</span>
-        <span>{{ order.montantRembourse | number:'1.2-2' }} EUR</span>
-      </div>
-    </div>
-
-    <!-- Controle vendeur -->
-    <div *ngIf="isSeller && order.statut !== 'DELIVERED' && order.statut !== 'CANCELLED' && order.statut !== 'REFUNDED'"
-         class="mt-3 d-flex gap-2 align-items-center">
-      <label class="mb-0"><strong>Changer statut :</strong></label>
-      <select class="form-select form-select-sm" style="max-width:200px" #statusSelect>
-        <option value="PAID">PAID</option>
-        <option value="PROCESSING">PROCESSING</option>
-        <option value="SHIPPED">SHIPPED</option>
-        <option value="DELIVERED">DELIVERED</option>
-        <option value="CANCELLED">CANCELLED</option>
-        <option value="REFUNDED">REFUNDED</option>
-      </select>
-      <button class="btn btn-sm btn-outline-secondary" (click)="updateStatus(order.id, statusSelect.value)">
-        Valider
-      </button>
     </div>
   </div>
 </div>

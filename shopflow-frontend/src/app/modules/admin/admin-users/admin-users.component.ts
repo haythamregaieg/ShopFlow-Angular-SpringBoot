@@ -9,12 +9,37 @@ import { User } from "../../../core/models/user.model";
 })
 export class AdminUsersComponent implements OnInit {
   users: User[] = [];
+  filteredUsers: User[] = [];
+  searchTerm: string = '';
+  loading = false;
 
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
-    this.http.get<User[]>("http://localhost:8081/api/users")
-      .subscribe(users => this.users = users);
+    this.loadUsers();
+  }
+
+  loadUsers(): void {
+    this.loading = true;
+    this.http.get<User[]>("http://localhost:8081/api/users").subscribe({
+      next: (users) => {
+        this.users = users;
+        this.filteredUsers = users;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      }
+    });
+  }
+
+  filterUsers(): void {
+    const term = this.searchTerm.toLowerCase();
+    this.filteredUsers = this.users.filter(user =>
+      user.prenom.toLowerCase().includes(term) ||
+      user.nom.toLowerCase().includes(term) ||
+      user.email.toLowerCase().includes(term)
+    );
   }
 
   toggle(user: User): void {
@@ -24,6 +49,7 @@ export class AdminUsersComponent implements OnInit {
     this.http.put<User>(url, {}).subscribe(updated => {
       const idx = this.users.findIndex(u => u.id === user.id);
       if (idx !== -1) this.users[idx] = updated;
+      this.filterUsers(); // met à jour la vue filtrée
     });
   }
 }

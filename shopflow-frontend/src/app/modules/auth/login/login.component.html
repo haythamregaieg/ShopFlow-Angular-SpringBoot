@@ -1,68 +1,66 @@
 <!-- login.component.html -->
 <div class="auth-page">
-    <!-- LEFT SIDE - exactement le même style que la page register -->
+    <!-- LEFT SIDE - amélioration des messages et icônes -->
     <div class="auth-left">
         <a class="auth-logo" routerLink="/products">
-            <div class="logo-icon">SF</div>
+            <div class="logo-icon">🧸</div>
             <h1>ShopFlow</h1>
         </a>
-        <h2>Bon retour</h2>
-        <p>Connectez-vous pour gérer votre activité, suivre vos commandes et accéder à votre tableau de bord professionnel.</p>
-
+        <h2>Bon retour !</h2>
+        <p>Connectez-vous pour suivre vos commandes, gérer votre boutique et profiter de nos offres enfants.</p>
+        <div class="auth-features">
+            <div class="feature"><i class="fas fa-gift"></i> Idées cadeaux</div>
+            <div class="feature"><i class="fas fa-truck"></i> Livraison offerte dès 50€</div>
+            <div class="feature"><i class="fas fa-shield-alt"></i> Paiement sécurisé</div>
+        </div>
     </div>
 
-    <!-- RIGHT SIDE - CARD LOGIN avec design premium -->
+    <!-- RIGHT SIDE - formulaire modernisé -->
     <div class="auth-right">
         <div class="auth-form-container fade-in">
             <div class="auth-header">
                 <h2>Connexion</h2>
-                <p>Accédez à votre espace ShopFlow</p>
+                <p>Accédez à votre espace personnel</p>
             </div>
 
-            <!-- Zone d'erreur -->
             <div class="alert-error" *ngIf="error">
                 <i class="fas fa-circle-exclamation"></i> {{ error }}
             </div>
 
             <form [formGroup]="form" (ngSubmit)="onSubmit()">
                 <div class="form-group">
-                    <label><i class="fas fa-envelope"></i> Adresse email</label>
-                    <input
-                        type="email"
-                        formControlName="email"
-                        placeholder="votre@email.com"
-                        autocomplete="email"
-                        [class.is-invalid]="f['email'].touched && f['email'].invalid">
+                    <label><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" formControlName="email" placeholder="exemple@email.com"
+                           autocomplete="email" [class.is-invalid]="f['email'].touched && f['email'].invalid">
                     <div class="error-msg" *ngIf="f['email'].touched && f['email'].invalid">
                         <i class="fas fa-exclamation-circle"></i>
                         <span *ngIf="f['email'].errors?.['required']">L'email est obligatoire</span>
-                        <span *ngIf="f['email'].errors?.['email']">Email invalide</span>
+                        <span *ngIf="f['email'].errors?.['email']">Format invalide</span>
                     </div>
                 </div>
 
                 <div class="form-group password-group">
                     <label><i class="fas fa-lock"></i> Mot de passe</label>
                     <div class="password-input-wrapper">
-                        <input
-                            [type]="showPassword ? 'text' : 'password'"
-                            formControlName="motDePasse"
-                            placeholder="••••••••"
-                            autocomplete="current-password"
-                            [class.is-invalid]="f['motDePasse'].touched && f['motDePasse'].invalid">
-                        <button type="button" class="eye-btn" (click)="toggleShowPassword()" aria-label="Afficher/masquer le mot de passe">
+                        <input [type]="showPassword ? 'text' : 'password'"
+                               formControlName="motDePasse"
+                               placeholder="••••••••"
+                               autocomplete="current-password"
+                               [class.is-invalid]="f['motDePasse'].touched && f['motDePasse'].invalid">
+                        <button type="button" class="eye-btn" (click)="toggleShowPassword()" aria-label="Afficher/masquer">
                             <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
                         </button>
                     </div>
                     <div class="error-msg" *ngIf="f['motDePasse'].touched && f['motDePasse'].invalid">
                         <i class="fas fa-exclamation-circle"></i>
-                        <span *ngIf="f['motDePasse'].errors?.['required']">Le mot de passe est obligatoire</span>
+                        <span *ngIf="f['motDePasse'].errors?.['required']">Mot de passe requis</span>
                         <span *ngIf="f['motDePasse'].errors?.['minlength']">Minimum 4 caractères</span>
                     </div>
                 </div>
 
                 <button type="submit" class="btn-primary" [disabled]="loading || form.invalid">
                     <i class="fas fa-arrow-right-to-bracket"></i>
-                    {{ loading ? 'Connexion en cours...' : 'Se connecter' }}
+                    {{ loading ? 'Connexion...' : 'Se connecter' }}
                 </button>
             </form>
 

@@ -12,6 +12,11 @@ export class AdminReviewsComponent implements OnInit {
   loading = false;
   message = '';
 
+  // Pagination
+  currentPage = 0;
+  pageSize = 10;
+  totalPages = 0;
+
   constructor(private reviewService: ReviewService) {}
 
   ngOnInit(): void {
@@ -21,15 +26,31 @@ export class AdminReviewsComponent implements OnInit {
   loadReviews(): void {
     this.loading = true;
     this.reviewService.getAllReviews().subscribe({
-      next: (r) => {
-        this.reviews = r || [];
+      next: (reviews) => {
+        this.reviews = reviews || [];
+        this.totalPages = Math.ceil(this.reviews.length / this.pageSize);
+        if (this.currentPage >= this.totalPages) this.currentPage = 0;
         this.loading = false;
       },
       error: () => {
-        this.message = 'Erreur lors du chargement des avis';
+        this.message = 'Erreur de chargement des avis';
         this.loading = false;
       }
     });
+  }
+
+  get paginatedReviews(): Review[] {
+    const start = this.currentPage * this.pageSize;
+    return this.reviews.slice(start, start + this.pageSize);
+  }
+
+  get pages(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i);
+  }
+
+  changePage(page: number): void {
+    if (page < 0 || page >= this.totalPages) return;
+    this.currentPage = page;
   }
 
   approve(id: number): void {
@@ -39,7 +60,7 @@ export class AdminReviewsComponent implements OnInit {
         this.loadReviews();
         setTimeout(() => this.message = '', 3000);
       },
-      error: () => this.message = 'Erreur lors de l\'approbation'
+      error: () => this.message = 'Erreur lors de l’approbation'
     });
   }
 }

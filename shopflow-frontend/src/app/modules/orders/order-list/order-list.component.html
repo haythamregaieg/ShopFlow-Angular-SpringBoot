@@ -1,54 +1,62 @@
-<div class="container mt-4">
-  <h2>Mes Commandes</h2>
+<div class="orders-page">
+  <div class="orders-container">
+    <div class="page-header">
+      <h1 class="page-title">🧸 Mes commandes</h1>
+      <p class="page-subtitle">Suivez vos achats et l’état de vos colis</p>
+    </div>
 
-  <div *ngIf="orders.length === 0" class="alert alert-info">
-    Vous n'avez pas encore de commandes.
-  </div>
+    <!-- Message si aucune commande -->
+    <div *ngIf="orders.length === 0" class="empty-state">
+      <div class="empty-icon">📦</div>
+      <h3>Aucune commande pour le moment</h3>
+      <p>Votre historique est vide. Découvrez notre catalogue et passez votre première commande !</p>
+      <a routerLink="/products" class="btn-primary">Découvrir la collection</a>
+    </div>
 
-  <div class="table-responsive" *ngIf="orders.length > 0">
-    <table class="table table-hover">
-      <thead class="thead-light">
-        <tr>
-          <th>N° Commande</th>
-          <th>Date</th>
-          <th>Total</th>
-          <th>Statut</th>
-          <th>Notification</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let order of orders">
-          <td>{{ order.numeroCommande }}</td>
-          <td>{{ order.dateCommande | date:'dd/MM/yyyy' }}</td>
-          <td>{{ order.totalTTC | number:'1.2-2' }} €</td>
-          <td>
-            <span class="badge" [ngClass]="'badge-' + order.statut.toLowerCase()">
+    <!-- Grille de cartes -->
+    <div class="orders-grid" *ngIf="orders.length > 0">
+      <div class="order-card" *ngFor="let order of orders">
+        <div class="order-header">
+          <div>
+            <h2 class="order-number">Commande #{{ order.numeroCommande }}</h2>
+            <p class="order-date">Passée le {{ order.dateCommande | date:'dd MMMM yyyy' }}</p>
+          </div>
+          <div class="order-status-group">
+            <span class="new-badge" *ngIf="order.isNewStatus">✨ Nouveau</span>
+            <span class="status-badge" [ngClass]="'status-' + order.statut.toLowerCase()">
               {{ order.statut }}
             </span>
-          </td>
-          <td>
-            <span *ngIf="order.isNewStatus" class="badge badge-info" title="Statut mis a jour">
-              Nouveau statut
-            </span>
-          </td>
-          <td class="d-flex align-items-center gap-2">
-            <a [routerLink]="['/orders', order.id]" class="btn btn-sm btn-primary">
-              Voir détails
-            </a>
+          </div>
+        </div>
 
-            <!-- Seller controls: allow seller to change order status -->
-            <div *ngIf="isSeller" class="d-flex align-items-center">
-              <select class="form-select form-select-sm me-1" [(ngModel)]="order._selectedStatus">
-                <option *ngFor="let s of getAvailableStatusesFor(order)" [value]="s">{{ s }}</option>
-              </select>
-              <button class="btn btn-sm btn-outline-secondary" (click)="updateStatus(order.id, order._selectedStatus)">
-                Mettre à jour
-              </button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+        <div class="order-summary">
+          <div class="order-info">
+            <span class="info-label">Total TTC</span>
+            <span class="info-value total">{{ order.totalTTC | number:'1.2-2' }} €</span>
+          </div>
+          <div class="order-info" *ngIf="isSeller">
+            <span class="info-label">Rôle</span>
+            <span class="info-value">Vendeur</span>
+          </div>
+        </div>
+
+        <div class="order-actions">
+          <a [routerLink]="['/orders', order.id]" class="btn-detail">
+            Voir le détail
+          </a>
+          <!-- Zone vendeur : changement de statut -->
+          <div *ngIf="isSeller" class="seller-status-update">
+            <select class="status-select" [(ngModel)]="order._selectedStatus">
+              <option *ngFor="let s of getAvailableStatusesFor(order)" [value]="s">
+                {{ s }}
+              </option>
+            </select>
+            <button class="btn-update" (click)="updateStatus(order.id, order._selectedStatus)">
+              Mettre à jour
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

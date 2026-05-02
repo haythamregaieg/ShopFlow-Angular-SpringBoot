@@ -1,126 +1,182 @@
-<div class="container" style="padding-top: 30px;" *ngIf="product">
-  <a routerLink="/products" class="back-link">← Retour au catalogue</a>
+<div class="product-container" *ngIf="product">
+  <!-- Fil d’Ariane -->
+  <div class="breadcrumb">
+    <a routerLink="/" class="breadcrumb-link">Accueil</a>
+    <span class="breadcrumb-sep">›</span>
+    <a routerLink="/products" class="breadcrumb-link">Catalogue</a>
+    <span class="breadcrumb-sep">›</span>
+    <span class="breadcrumb-current">{{ product.nom }}</span>
+  </div>
 
-  <div class="product-detail card">
-    <div class="product-image-large">
-  <img *ngIf="imageUrlToShow; else noImage" [src]="imageUrlToShow" alt="{{product.nom}}" class="main-image" />
+  <div class="product-detail">
+    <!-- Galerie d’images -->
+    <div class="product-gallery">
+      <div class="main-image">
+        <img *ngIf="imageUrlToShow; else noImage" [src]="imageUrlToShow" alt="{{ product.nom }}" />
         <ng-template #noImage>
-          <div class="no-image">No image</div>
+          <div class="no-image-fallback">
+            <span class="fallback-icon" aria-hidden="true">🧸</span>
+            <span class="fallback-text">{{ product.nom.charAt(0) }}</span>
+          </div>
         </ng-template>
-
-        <div *ngIf="imageList && imageList.length > 1" class="thumbnails">
-          <img *ngFor="let img of imageList; let i = index"
-               [src]="img"
-               [class.selected]="i === selectedImageIndex"
-               (click)="selectImage(i)"
-               alt="thumb-{{i}}"
-               class="thumb" />
+        <div class="promo-ribbon" *ngIf="product.prixPromo">
+          <span>Promo</span>
+          <span class="ribbon-percent">-{{ ((1 - product.prixPromo/product.prix) * 100) | number:'1.0-0' }}%</span>
         </div>
+      </div>
+
+      <div class="thumbnails" *ngIf="imageList && imageList.length > 1">
+        <img *ngFor="let img of imageList; let i = index"
+             [src]="img"
+             [class.selected]="i === selectedImageIndex"
+             (click)="selectImage(i)"
+             alt="Miniature {{ i+1 }}"
+             class="thumb" />
+      </div>
     </div>
-    <div class="product-detail-info">
-      <h1>{{ product.nom }}</h1>
-      <p class="seller">Vendu par <strong>{{ product.sellerNom || 'ShopFlow' }}</strong></p>
+
+    <!-- Informations produit -->
+    <div class="product-info">
+      <div class="product-header">
+        <h1 class="product-title">{{ product.nom }}</h1>
+        <div class="seller-badge">
+          <span class="seller-icon" aria-hidden="true">🏷️</span>
+          Vendu par <strong>{{ product.sellerNom || 'Petits Piafs' }}</strong>
+        </div>
+      </div>
 
       <div class="categories" *ngIf="product.categories?.length">
-        <span class="badge badge-info" *ngFor="let cat of product.categories">{{ cat }}</span>
+        <span class="category-chip" *ngFor="let cat of product.categories">{{ cat }}</span>
       </div>
 
       <div class="rating" *ngIf="product.noteMoyenne">
-        ⭐ {{ product.noteMoyenne | number:'1.1-1' }}/5
+        <div class="stars">
+          <span class="star filled" *ngFor="let i of [1,2,3,4,5]">
+            {{ i <= product.noteMoyenne ? '★' : '☆' }}
+          </span>
+        </div>
+        <span class="rating-value">{{ product.noteMoyenne | number:'1.1-1' }}/5</span>
+        <span class="rating-count" *ngIf="reviews?.length">({{ reviews.length }} avis)</span>
       </div>
 
-      <div class="price-section">
-        <span class="price-main">
-          {{ (product.prixPromo || product.prix) | number:'1.2-2' }} €
-        </span>
-        <span class="price-old" *ngIf="product.prixPromo">{{ product.prix | number:'1.2-2' }} €</span>
-        <span class="promo-badge" *ngIf="product.prixPromo">
-          -{{ ((1 - product.prixPromo/product.prix) * 100) | number:'1.0-0' }}%
-        </span>
+      <div class="price-wrapper">
+        <div class="price-section">
+          <span class="price-main">
+            {{ (product.prixPromo || product.prix) | number:'1.2-2' }} €
+          </span>
+          <span class="price-old" *ngIf="product.prixPromo">{{ product.prix | number:'1.2-2' }} €</span>
+        </div>
+      </div>
+
+      <div class="stock-indicator" [class.low-stock]="product.stock > 0 && product.stock < 10" [class.out-stock]="product.stock === 0">
+        <span class="stock-dot"></span>
+        <ng-container *ngIf="product.stock === 0">Rupture de stock</ng-container>
+        <ng-container *ngIf="product.stock > 0 && product.stock < 10">En stock : plus que {{ product.stock }} pièces !</ng-container>
+        <ng-container *ngIf="product.stock >= 10">En stock ({{ product.stock }} disponibles)</ng-container>
       </div>
 
       <p class="description">{{ product.description }}</p>
 
-      <div class="stock-info" [class.out-stock]="product.stock === 0">
-        {{ product.stock === 0 ? 'Rupture de stock' : 'En stock (' + product.stock + ' disponibles)' }}
-      </div>
-      <div class="mb-4" *ngIf="variants && variants.length > 0">
-        <label class="form-label" style="font-weight: 600;">Choisir une variante :</label>
-        <div class="d-flex flex-wrap gap-2">
-          <select class="form-select" [(ngModel)]="selectedVariantId" (change)="onVariantChange()">
+      <!-- Variantes -->
+      <div class="variants-section" *ngIf="variants && variants.length > 0">
+        <label class="variant-label">Choisir la taille / couleur :</label>
+        <div class="variant-selector">
+          <select class="variant-select" [(ngModel)]="selectedVariantId" (change)="onVariantChange()">
             <option *ngFor="let v of variants" [value]="v.id">
               {{ v.taille }} / {{ v.couleur }} ({{ v.stock }} en stock)
             </option>
           </select>
         </div>
       </div>
-      
 
-      <div class="add-to-cart" *ngIf="product.stock > 0">
+      <!-- Ajout panier -->
+      <div class="cart-actions" *ngIf="product.stock > 0">
         <div class="quantity-selector">
-          <button (click)="decrement()">−</button>
-          <span>{{ quantity }}</span>
-          <button (click)="increment()">+</button>
+          <button class="qty-btn" (click)="decrement()" aria-label="Diminuer la quantité">−</button>
+          <span class="qty-value">{{ quantity }}</span>
+          <button class="qty-btn" (click)="increment()" aria-label="Augmenter la quantité">+</button>
         </div>
-        <button class="btn btn-primary btn-large" (click)="addToCart()">
-          🛒 Ajouter au panier
+        <button class="btn-add-cart" (click)="addToCart()">
+          <svg viewBox="0 0 20 20" fill="none" width="18" aria-hidden="true">
+            <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 4h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Ajouter au panier
         </button>
       </div>
 
-      <div class="alert alert-success" *ngIf="message">{{ message }}</div>
+      <div class="delivery-info">
+        <div class="delivery-item">
+          <span class="delivery-icon">🚚</span>
+          <span>Livraison offerte dès 50€</span>
+        </div>
+        <div class="delivery-item">
+          <span class="delivery-icon">🔄</span>
+          <span>Retours gratuits sous 14 jours</span>
+        </div>
+      </div>
+
+      <!-- Message de confirmation -->
+      <div class="toast-message" *ngIf="message">
+        <div class="toast-content">
+          <span class="toast-check">✓</span> {{ message }}
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- Section Avis -->
-  <div class="reviews-section mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2 class="m-0">⭐ Avis des clients ({{ reviews.length }})</h2>
-      <button class="btn btn-outline-primary" *ngIf="isLoggedIn" (click)="showReviewForm = !showReviewForm">
+  <div class="reviews-section">
+    <div class="reviews-header">
+      <h2 class="reviews-title">⭐ Avis des petits parents</h2>
+      <button class="btn-review" *ngIf="isLoggedIn" (click)="showReviewForm = !showReviewForm">
         {{ showReviewForm ? 'Annuler' : 'Laisser un avis' }}
       </button>
     </div>
 
-    <!-- Formulaire Nouvel Avis -->
-    <div class="card p-4 mb-4 shadow-sm" *ngIf="showReviewForm">
-      <h4 class="mb-3">Votre avis sur ce produit</h4>
-      <div class="mb-3">
-        <label class="form-label">Note :</label>
+    <!-- Formulaire d’avis amélioré -->
+    <div class="review-form" *ngIf="showReviewForm">
+      <div class="form-card">
+        <h4>Votre expérience avec ce produit</h4>
         <div class="rating-input">
-          <span *ngFor="let i of [1,2,3,4,5]"
-                class="star-icon"
-                [class.active]="newReview.note >= i"
-                (click)="newReview.note = i">
-            ★
-          </span>
+          <span class="rating-label">Note :</span>
+          <div class="stars-input">
+            <span *ngFor="let i of [1,2,3,4,5]"
+                  class="star-icon"
+                  [class.active]="newReview.note >= i"
+                  (click)="newReview.note = i">★</span>
+          </div>
         </div>
+        <div class="form-group">
+          <label>Commentaire (optionnel)</label>
+          <textarea class="form-control" [(ngModel)]="newReview.commentaire" rows="3" placeholder="Racontez votre expérience, la taille, la matière, etc."></textarea>
+        </div>
+        <button class="btn-submit-review" (click)="submitReview()" [disabled]="!newReview.note">
+          Envoyer mon avis
+        </button>
       </div>
-      <div class="mb-3">
-        <label class="form-label">Commentaire :</label>
-        <textarea class="form-control" [(ngModel)]="newReview.commentaire" rows="3" placeholder="Qu'avez-vous pensé de ce produit ?"></textarea>
-      </div>
-      <button class="btn btn-primary" (click)="submitReview()" [disabled]="!newReview.commentaire">
-        Envoyer mon avis
-      </button>
     </div>
 
-    <!-- Liste des Avis -->
-    <div class="review-list">
-      <div class="alert alert-light text-center py-4" *ngIf="reviews.length === 0">
-        <i class="far fa-comment-dots fa-3x mb-3 text-muted"></i>
-        <p class="m-0 text-muted">Aucun avis pour le moment. Soyez le premier à en laisser un !</p>
+    <!-- Liste des avis -->
+    <div class="reviews-list">
+      <div class="empty-reviews" *ngIf="reviews.length === 0">
+        <div class="empty-icon" aria-hidden="true">🧸</div>
+        <p>Aucun avis pour le moment. Soyez le premier à partager votre avis !</p>
       </div>
 
-      <div class="review-card card mb-3 p-3 shadow-sm border-0" *ngFor="let review of reviews">
-        <div class="d-flex justify-content-between align-items-start mb-2">
-          <div>
-            <div class="stars mb-1">
-              <span class="star" *ngFor="let i of [1,2,3,4,5]" [class.filled]="review.note >= i">★</span>
+      <div class="review-card" *ngFor="let review of reviews">
+        <div class="review-header">
+          <div class="reviewer-info">
+            <div class="reviewer-avatar">{{ (review.customerPrenom || 'C')[0] }}{{ (review.customerNom || 'l')[0] }}</div>
+            <div class="reviewer-details">
+              <span class="reviewer-name">{{ review.customerPrenom || 'Client' }} {{ review.customerNom || '' }}</span>
+              <div class="stars small">
+                <span class="star filled" *ngFor="let i of [1,2,3,4,5]">{{ i <= review.note ? '★' : '☆' }}</span>
+              </div>
             </div>
-            <strong class="d-block">{{ review.customerPrenom || 'Client' }} {{ review.customerNom || '' }}</strong>
           </div>
-          <small class="text-muted">{{ review.dateCreation | date:'dd/MM/yyyy' }}</small>
+          <span class="review-date">{{ review.dateCreation | date:'dd MMM yyyy' }}</span>
         </div>
-        <p class="review-comment mb-0">{{ review.commentaire }}</p>
+        <p class="review-comment">{{ review.commentaire }}</p>
       </div>
     </div>
   </div>

@@ -45,10 +45,8 @@ export class HomeComponent implements OnInit {
     request.subscribe({
       next: (response) => {
         this.products = response?.content || [];
-        // compute thumbnails for the home product cards
         this.products.forEach(p => {
           const imgs = this.parseImageList((p as any).images);
-          (p as any)._imageList = imgs;
           (p as any)._thumbnail = imgs.length > 0 ? imgs[0] : null;
         });
         this.loadingProducts = false;
@@ -65,36 +63,23 @@ export class HomeComponent implements OnInit {
     if (Array.isArray(images)) return images.filter(Boolean);
     if (typeof images !== 'string') return [];
     const imgs = images.split(',').map((s: string) => s.trim()).filter(Boolean);
-    return imgs.filter((s: string) => s.startsWith('http://') || s.startsWith('https://') || s.startsWith('data:'));
+    return imgs.filter((s: string) =>
+      s.startsWith('http://') || s.startsWith('https://') || s.startsWith('data:')
+    );
   }
 
   onCategoryChange(event: Event): void {
     const selected = (event.target as HTMLSelectElement).value;
     this.selectedCategoryId = selected;
-    const categoryId = selected ? Number(selected) : undefined;
-    this.loadProducts(categoryId);
+    this.loadProducts(selected ? Number(selected) : undefined);
   }
 
-  selectCategory(categoryId?: number): void {
-    this.selectedCategoryId = categoryId ? String(categoryId) : '';
-    this.loadProducts(categoryId);
-  }
-
-  getPrice(product: Product): number {
+  getDisplayPrice(product: Product): number {
     return product.prixPromo ?? product.prix;
   }
 
-  getCategoryIcon(name: string): string {
-    const key = name.toLowerCase();
-    if (key.includes('mode') || key.includes('vetement')) return '👕';
-    if (key.includes('beaute') || key.includes('cosmet')) return '💄';
-    if (key.includes('maison') || key.includes('deco')) return '🏠';
-    if (key.includes('sport')) return '🏀';
-    if (key.includes('jouet') || key.includes('enfant')) return '🧸';
-    if (key.includes('livre')) return '📚';
-    if (key.includes('aliment')) return '🛒';
-    if (key.includes('sante')) return '💊';
-    if (key.includes('auto')) return '🚗';
-    return '🛍️';
+  getPromoPercent(product: Product): number {
+    if (!product.prixPromo) return 0;
+    return Math.round((1 - product.prixPromo / product.prix) * 100);
   }
 }

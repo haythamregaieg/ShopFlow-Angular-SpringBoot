@@ -1,23 +1,58 @@
 <footer class="footer">
   <div class="footer-container">
-    <div class="footer-top">
-      <a routerLink="/products" class="footer-brand">
-        <span class="brand-mark">SF</span>
-        <span class="brand">ShopFlow</span>
-      </a>
-      <p class="footer-desc">Solution e-commerce professionnelle pour vendre, suivre et gerer vos commandes.</p>
-    </div>
+    <div class="footer-grid">
+      <!-- Colonne 1 : Marque et description -->
+      <div class="footer-brand-col">
+        <a routerLink="/products" class="footer-brand">
+          <div class="brand-icon"><span>🧸</span></div>
+          <div>
+            <span class="brand-text">ShopFlow</span>
+            <span class="brand-badge">enfants</span>
+          </div>
+        </a>
+        <p class="brand-description">
+          La boutique en ligne qui réchauffe le cœur des petits et rassure les parents.
+          Qualité, douceur et style pour chaque instant.
+        </p>
+        <div class="social-icons">
+          <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          <a href="#" aria-label="Pinterest"><i class="fab fa-pinterest-p"></i></a>
+          <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+        </div>
+      </div>
 
-    <div class="footer-links">
-      <a routerLink="/products">Catalogue</a>
-      <a routerLink="/cart">Panier</a>
-      <a routerLink="/orders">Commandes</a>
-      <a routerLink="/dashboard">Dashboard</a>
+      <!-- Colonne 2 : Liens rapides -->
+      <div class="footer-links-col">
+        <h4>Découvrir</h4>
+        <ul>
+          <li><a routerLink="/products"><i class="fas fa-tshirt"></i> Nouveautés</a></li>
+          <li><a routerLink="/products"><i class="fas fa-tag"></i> Promotions</a></li>
+          <li><a routerLink="/cart"><i class="fas fa-shopping-bag"></i> Panier</a></li>
+          <li><a routerLink="/orders"><i class="fas fa-box"></i> Commandes</a></li>
+        </ul>
+      </div>
+
+      <!-- Colonne 3 : Aide et contact -->
+      <div class="footer-contact-col">
+        <h4>Service client</h4>
+        <ul>
+          <li><a href="#"><i class="fas fa-question-circle"></i> FAQ</a></li>
+          <li><a href="#"><i class="fas fa-truck"></i> Livraison</a></li>
+          <li><a href="#"><i class="fas fa-undo-alt"></i> Retours</a></li>
+          <li><a href="#"><i class="fas fa-envelope"></i> Contact</a></li>
+        </ul>
+      </div>
     </div>
 
     <div class="footer-bottom">
-      <p class="footer-copy">(c) 2026 ShopFlow. Tous droits reserves.</p>
-      <p class="footer-meta">Spring Boot + Angular</p>
+      <p class="copyright">© 2026 ShopFlow Enfants — Tous droits réservés</p>
+      <div class="payment-methods">
+        <i class="fab fa-cc-visa"></i>
+        <i class="fab fa-cc-mastercard"></i>
+        <i class="fab fa-paypal"></i>
+        <i class="fas fa-lock"></i>
+      </div>
     </div>
   </div>
 </footer>

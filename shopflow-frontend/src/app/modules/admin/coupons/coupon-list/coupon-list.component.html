@@ -1,41 +1,86 @@
-<div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Gestion des coupons</h2>
-    <div>
-      <button class="btn btn-primary" (click)="create()">Nouveau coupon</button>
-    </div>
+<div class="coupons-container">
+  <!-- Navigation admin centrée -->
+  <div class="admin-nav">
+    <a routerLink="/admin/users" routerLinkActive="active" class="admin-tab">👥 Utilisateurs</a>
+    <a routerLink="/admin/products" routerLinkActive="active" class="admin-tab">📦 Produits</a>
+    <a routerLink="/admin/reviews" routerLinkActive="active" class="admin-tab">⭐ Avis</a>
+    <a routerLink="/admin/coupons" routerLinkActive="active" class="admin-tab active">🏷️ Coupons</a>
   </div>
 
-  <div *ngIf="loading">Chargement…</div>
-  <div *ngIf="!loading && coupons.length === 0" class="alert alert-light">Aucun coupon trouvé.</div>
+  <!-- En-tête -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">🏷️ Gestion des coupons</h1>
+      <p class="page-subtitle">Créez, modifiez ou supprimez vos codes promotionnels</p>
+    </div>
+    <button class="btn-primary" (click)="create()">+ Nouveau coupon</button>
+  </div>
 
-  <table class="table table-striped" *ngIf="!loading && coupons.length > 0">
-    <thead>
-      <tr>
-        <th>Code</th>
-        <th>Type</th>
-        <th>Valeur</th>
-        <th>Expires</th>
-        <th>Usages</th>
-        <th>Actif</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let c of coupons">
-        <td>{{ c.code }}</td>
-        <td>{{ c.type }}</td>
-        <td>{{ c.valeur }}</td>
-        <td>{{ c.dateExpiration ? (c.dateExpiration | date:'shortDate') : '-' }}</td>
-        <td>{{ c.usagesActuels || 0 }} / {{ c.usagesMax || '-' }}</td>
-        <td>{{ c.actif ? 'Oui' : 'Non' }}</td>
-        <td class="text-end">
-          <button class="btn btn-sm btn-outline-secondary me-2" (click)="edit(c.id)">Éditer</button>
-          <button class="btn btn-sm btn-outline-danger" (click)="deleteCoupon(c.id)">Supprimer</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <!-- Message d'erreur -->
+  <div class="alert-error" *ngIf="message">{{ message }}</div>
 
-  <div *ngIf="message" class="alert alert-danger mt-3">{{ message }}</div>
+  <!-- Carte tableau -->
+  <div class="coupons-card">
+    <div class="table-responsive">
+      <table class="coupons-table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Type</th>
+            <th>Valeur</th>
+            <th>Expiration</th>
+            <th>Usages</th>
+            <th>Statut</th>
+            <th class="actions-col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let coupon of paginatedCoupons">
+            <td class="code-cell"><strong>{{ coupon.code }}</strong></td>
+            <td>{{ coupon.type }}</td>
+            <td>{{ coupon.valeur }}{{ coupon.type === 'PERCENT' ? '%' : '€' }}</td>
+            <td>{{ coupon.dateExpiration ? (coupon.dateExpiration | date:'dd/MM/yyyy') : 'Illimité' }}</td>
+            <td>{{ coupon.usagesActuels || 0 }} / {{ coupon.usagesMax ?? '∞' }}</td>
+            <td>
+              <span class="status-badge" [class.active]="coupon.actif" [class.inactive]="!coupon.actif">
+                {{ coupon.actif ? 'Actif' : 'Inactif' }}
+              </span>
+            </td>
+            <td class="actions-cell">
+              <button class="action-btn edit" (click)="edit(coupon.id!)" title="Modifier">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="action-btn delete" (click)="deleteCoupon(coupon.id!)" title="Supprimer">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="paginatedCoupons.length === 0 && !loading">
+            <td colspan="7" class="empty-row">Aucun coupon trouvé</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-container" *ngIf="totalPages > 1">
+      <button class="page-btn" (click)="changePage(currentPage - 1)" [disabled]="currentPage === 0">
+        <i class="fas fa-chevron-left"></i> Précédent
+      </button>
+      <div class="page-numbers">
+        <button *ngFor="let p of pages" class="page-number" [class.active]="p === currentPage" (click)="changePage(p)">
+          {{ p + 1 }}
+        </button>
+      </div>
+      <button class="page-btn" (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages - 1">
+        Suivant <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+
+    <!-- Chargement -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Chargement des coupons...</span>
+    </div>
+  </div>
 </div>

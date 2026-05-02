@@ -1,13 +1,15 @@
 <div class="container" style="padding-top: 30px;">
+  <!-- Barre de navigation (div, pas de nav pour éviter les erreurs) -->
   <div class="admin-nav">
     <a routerLink="/admin/users" routerLinkActive="active" class="admin-tab">👥 Utilisateurs</a>
-    <a routerLink="/admin/products" routerLinkActive="active" class="admin-tab">📦 Produits</a>
+    <a routerLink="/admin/products" routerLinkActive="active" class="admin-tab active">📦 Produits</a>
     <a routerLink="/admin/reviews" routerLinkActive="active" class="admin-tab">⭐ Avis</a>
+    <a routerLink="/admin/coupons" routerLinkActive="active" class="admin-tab">🏷️ Coupons</a>
   </div>
 
   <div class="page-header">
     <h1 class="page-title">📦 Gestion des Produits</h1>
-    <a routerLink="/products/new/create" class="btn btn-primary">+ Nouveau Produit</a>
+    <a routerLink="/products/new/create" class="btn-primary">+ Nouveau Produit</a>
   </div>
 
   <div class="card">
@@ -27,26 +29,47 @@
         <tr *ngFor="let product of products">
           <td>{{ product.id }}</td>
           <td><strong>{{ product.nom }}</strong></td>
-          <td>{{ product.prix | number:'1.2-2' }} €</td>
-          <td>{{ product.stock }}</td>
-          <td>{{ product.sellerNom || 'ShopFlow' }}</td>
-          <td>
-            <span class="badge" [class]="product.actif ? 'badge-success' : 'badge-danger'">
+          <td>{{ product.prix | number:'1.2-2' }} €</td
+          ><td>{{ product.stock }}</td
+          ><td>{{ product.sellerNom || 'ShopFlow' }}</td
+          ><td>
+            <span class="badge" [ngClass]="product.actif ? 'badge-success' : 'badge-danger'">
               {{ product.actif ? 'Actif' : 'Inactif' }}
             </span>
           </td>
-          <td>
-            <div class="action-buttons">
-              <a [routerLink]="['/products', product.id, 'edit']" class="btn btn-outline-success btn-sm" title="Modifier">
-                <i class="fas fa-edit"></i>
-              </a>
-              <button class="btn btn-outline-danger btn-sm" (click)="delete(product.id)" title="Désactiver">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
+          <td class="action-buttons">
+            <a [routerLink]="['/products', product.id, 'edit']" class="btn-outline-success" title="Modifier">
+              <i class="fas fa-edit"></i>
+            </a>
+            <button class="btn-outline-danger" (click)="delete(product.id)" title="Désactiver">
+              <i class="fas fa-trash"></i>
+            </button>
           </td>
+        </tr>
+        <tr *ngIf="products.length === 0 && !loading">
+          <td colspan="7" class="empty-row">Aucun produit trouvé</td>
         </tr>
       </tbody>
     </table>
+
+    <!-- Pagination -->
+    <div class="pagination-container" *ngIf="totalPages > 1">
+      <button class="page-btn" (click)="changePage(currentPage - 1)" [disabled]="currentPage === 0">
+        <i class="fas fa-chevron-left"></i> Précédent
+      </button>
+      <div class="page-numbers">
+        <button *ngFor="let p of pages" class="page-number" [class.active]="p === currentPage" (click)="changePage(p)">
+          {{ p + 1 }}
+        </button>
+      </div>
+      <button class="page-btn" (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages - 1">
+        Suivant <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Chargement...</span>
+    </div>
   </div>
 </div>

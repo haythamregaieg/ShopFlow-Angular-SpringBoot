@@ -1,225 +1,165 @@
 <div class="seller-container">
+  <!-- En-tête -->
   <div class="page-head">
     <div>
       <h2>Espace vendeur</h2>
-      <p>Gerez vos produits, vos coupons de remise et vos categories.</p>
+      <p>Gérez vos produits, vos coupons et les informations de votre boutique</p>
     </div>
     <div class="head-actions">
-      <button
-        class="icon-action primary"
-        (click)="addProduct()"
-        title="Ajouter un produit"
-        aria-label="Ajouter un produit">
-        +
+      <button class="action-btn primary" (click)="addProduct()">
+        <i class="fas fa-plus-circle"></i> Nouveau produit
       </button>
-      <a
-        class="icon-action secondary"
-        routerLink="/dashboard/categories"
-        title="Gerer les categories"
-        aria-label="Gerer les categories">
-        &#9776;
+      <a class="action-btn secondary" routerLink="/dashboard/categories">
+        <i class="fas fa-tags"></i> Catégories
       </a>
     </div>
   </div>
 
+  <!-- Messages -->
   <div class="alert success" *ngIf="success">{{ success }}</div>
   <div class="alert error" *ngIf="error">{{ error }}</div>
 
-  <section class="panel">
-    <div class="panel-head">
-      <h3>Mes produits</h3>
+  <!-- Section Produits -->
+  <div class="panel">
+    <div class="panel-header">
+      <h3><i class="fas fa-box-open"></i> Mes produits</h3>
+      <span class="badge-count">{{ products.length }}</span>
     </div>
-
-    <div class="table-wrap" *ngIf="!loadingProducts; else loadingProductsTpl">
-      <table>
+    <div class="table-responsive" *ngIf="!loadingProducts; else loadingProductsTpl">
+      <table class="product-table">
         <thead>
           <tr>
             <th>Produit</th>
             <th>Prix</th>
             <th>Stock</th>
-            <th>Etat</th>
-            <th>Actions</th>
+            <th>Statut</th>
+            <th class="actions-col">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let product of products">
-            <td>
+            <td class="product-info">
               <strong>{{ product.nom }}</strong>
-              <div class="muted">{{ product.description }}</div>
+              <div class="product-desc">{{ product.description | slice:0:80 }}{{ (product.description?.length || 0) > 80 ? '…' : '' }}</div>
             </td>
-            <td>{{ product.prix | number:'1.2-2' }} EUR</td>
-            <td>{{ product.stock }}</td>
-            <td>
-              <span class="status" [class.inactive]="!product.actif">{{ product.actif ? 'Actif' : 'Inactif' }}</span>
-            </td>
+            <td class="price">{{ product.prix | number:'1.2-2' }} €</td>
+            <td class="stock">{{ product.stock }}</td>
+            <td><span class="status" [class.inactive]="!product.actif">{{ product.actif ? 'Actif' : 'Inactif' }}</span></td>
             <td class="actions">
-              <button
-                class="icon-btn"
-                (click)="editProduct(product.id)"
-                title="Modifier"
-                aria-label="Modifier le produit">
-                &#9998;
-              </button>
-              <button *ngIf="product.actif"
-                class="icon-btn warn"
-                (click)="deactivateProduct(product.id)"
-                title="Désactiver"
-                aria-label="Désactiver le produit">
-                &#9940;
-              </button>
-              <button *ngIf="!product.actif"
-                class="icon-btn success"
-                (click)="activateProduct(product.id)"
-                title="Reactiver"
-                aria-label="Reactiver le produit">
-                &#x21ba;
-              </button>
-              <button
-                class="icon-btn danger"
-                (click)="deleteProduct(product.id)"
-                title="Supprimer"
-                aria-label="Supprimer le produit">
-                &#128465;
-              </button>
+              <button class="icon-btn" (click)="editProduct(product.id)" title="Modifier"><i class="fas fa-edit"></i></button>
+              <button *ngIf="product.actif" class="icon-btn warn" (click)="deactivateProduct(product.id)" title="Désactiver"><i class="fas fa-eye-slash"></i></button>
+              <button *ngIf="!product.actif" class="icon-btn success" (click)="activateProduct(product.id)" title="Réactiver"><i class="fas fa-eye"></i></button>
+              <button class="icon-btn danger" (click)="deleteProduct(product.id)" title="Supprimer"><i class="fas fa-trash-alt"></i></button>
             </td>
           </tr>
-          <tr *ngIf="products.length === 0">
-            <td colspan="5" class="empty">Aucun produit trouve.</td>
-          </tr>
+          <tr *ngIf="products.length === 0"><td colspan="5" class="empty-row">Aucun produit trouvé</td></tr>
         </tbody>
       </table>
     </div>
-    <ng-template #loadingProductsTpl>
-      <div class="loading">Chargement des produits...</div>
-    </ng-template>
-  </section>
+    <ng-template #loadingProductsTpl><div class="loading-state"><i class="fas fa-spinner fa-pulse"></i> Chargement...</div></ng-template>
+  </div>
 
-  <section class="panel">
-    <div class="panel-head">
-      <h3>Donnees de ma boutique</h3>
+  <!-- Section Profil boutique -->
+  <div class="panel">
+    <div class="panel-header">
+      <h3><i class="fas fa-store"></i> Ma boutique</h3>
     </div>
     <form [formGroup]="sellerProfileForm" (ngSubmit)="saveSellerProfile()">
-      <div class="field-grid">
-        <div class="field">
-          <label for="shopName">Nom boutique</label>
-          <input id="shopName" type="text" formControlName="nomBoutique" />
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nom de la boutique</label>
+          <input type="text" formControlName="nomBoutique" placeholder="Ex: Petits Piafs">
         </div>
-        <div class="field">
-          <label for="shopLogo">Logo URL</label>
-          <input id="shopLogo" type="text" formControlName="logo" />
+        <div class="form-group">
+          <label>Logo URL</label>
+          <input type="url" formControlName="logo" placeholder="https://...">
         </div>
       </div>
-      <div class="field">
-        <label for="shopDescription">Description</label>
-        <textarea id="shopDescription" formControlName="description" rows="3"></textarea>
+      <div class="form-group full-width">
+        <label>Description</label>
+        <textarea formControlName="description" rows="3" placeholder="Décrivez votre univers..."></textarea>
       </div>
-      <button class="btn btn-primary" type="submit">Enregistrer boutique</button>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+      </div>
     </form>
-  </section>
+  </div>
 
-  <section class="panel">
-    <div class="panel-head">
-      <h3>Mes coupons</h3>
+  <!-- Section Coupons -->
+  <div class="panel">
+    <div class="panel-header">
+      <h3><i class="fas fa-ticket-alt"></i> Mes coupons</h3>
     </div>
-    <div class="coupon-grid">
-      <div class="coupon-form">
-        <h4>{{ selectedCouponId ? 'Modifier le coupon' : 'Ajouter un coupon' }}</h4>
+    <div class="coupon-layout">
+      <!-- Formulaire -->
+      <div class="coupon-form-card">
+        <h4>{{ selectedCouponId ? 'Modifier le coupon' : 'Créer un coupon' }}</h4>
         <form [formGroup]="couponForm" (ngSubmit)="submitCoupon()">
-          <div class="field">
-            <label for="couponCode">Code</label>
-            <input id="couponCode" type="text" formControlName="code" placeholder="EX: SHOP20" />
+          <div class="form-group">
+            <label>Code *</label>
+            <input type="text" formControlName="code" placeholder="EX: BIENVENUE20">
           </div>
-          <div class="field-grid">
-            <div class="field">
-              <label for="couponType">Type</label>
-              <select id="couponType" formControlName="type">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Type</label>
+              <select formControlName="type">
                 <option *ngFor="let t of couponTypes" [value]="t">{{ t }}</option>
               </select>
             </div>
-            <div class="field">
-              <label for="couponValue">Remise</label>
-              <input id="couponValue" type="number" step="0.01" min="0.01" formControlName="valeur" />
+            <div class="form-group">
+              <label>Valeur *</label>
+              <input type="number" step="0.01" formControlName="valeur" placeholder="0.00">
             </div>
           </div>
-          <div class="field-grid">
-            <div class="field">
-              <label for="couponExpire">Expiration</label>
-              <input id="couponExpire" type="datetime-local" formControlName="dateExpiration" />
+          <div class="form-row">
+            <div class="form-group">
+              <label>Date d'expiration</label>
+              <input type="datetime-local" formControlName="dateExpiration">
             </div>
-            <div class="field">
-              <label for="couponUsages">Usages max</label>
-              <input id="couponUsages" type="number" min="0" formControlName="usagesMax" />
+            <div class="form-group">
+              <label>Utilisations max</label>
+              <input type="number" min="0" formControlName="usagesMax" placeholder="Illimité">
             </div>
           </div>
-          <div class="field checkbox">
-            <input id="couponActif" type="checkbox" formControlName="actif" />
-            <label for="couponActif">Actif</label>
+          <div class="form-group checkbox">
+            <input type="checkbox" formControlName="actif" id="activeCoupon">
+            <label for="activeCoupon">Actif</label>
           </div>
           <div class="form-actions">
-            <button class="btn btn-primary" type="submit" [disabled]="savingCoupon">
-              {{ savingCoupon ? 'Enregistrement...' : (selectedCouponId ? 'Mettre a jour' : 'Ajouter') }}
+            <button type="submit" class="btn btn-primary" [disabled]="savingCoupon">
+              {{ savingCoupon ? 'Enregistrement...' : (selectedCouponId ? 'Mettre à jour' : 'Ajouter') }}
             </button>
-            <button class="btn btn-secondary" type="button" (click)="resetCouponForm()" *ngIf="selectedCouponId">
-              Annuler
-            </button>
+            <button type="button" class="btn btn-secondary" (click)="resetCouponForm()" *ngIf="selectedCouponId">Annuler</button>
           </div>
         </form>
       </div>
 
-      <div class="coupon-list">
-        <h4>Liste des coupons</h4>
-        <div class="table-wrap" *ngIf="!loadingCoupons; else loadingCouponsTpl">
-          <table>
+      <!-- Liste -->
+      <div class="coupon-list-card">
+        <h4>Coupons existants</h4>
+        <div class="table-responsive" *ngIf="!loadingCoupons; else loadingCouponsTpl">
+          <table class="coupon-table">
             <thead>
-              <tr>
-                <th>Code</th>
-                <th>Type</th>
-                <th>Remise</th>
-                <th>Utilise</th>
-                <th>Etat</th>
-                <th>Actions</th>
-              </tr>
+              <tr><th>Code</th><th>Type</th><th>Remise</th><th>Utilisé</th><th>Statut</th><th></th></tr>
             </thead>
             <tbody>
               <tr *ngFor="let coupon of coupons">
                 <td><strong>{{ coupon.code }}</strong></td>
                 <td>{{ coupon.type }}</td>
-                <td>
-                  {{ coupon.valeur }}
-                  <span *ngIf="coupon.type === 'PERCENT'">%</span>
-                  <span *ngIf="coupon.type === 'FIXED'">EUR</span>
-                </td>
-                <td>{{ coupon.usagesActuels || 0 }} / {{ coupon.usagesMax ?? '-' }}</td>
-                <td>
-                  <span class="status" [class.inactive]="!coupon.actif">{{ coupon.actif ? 'Actif' : 'Inactif' }}</span>
-                </td>
+                <td>{{ coupon.valeur }}{{ coupon.type === 'PERCENT' ? '%' : '€' }}</td>
+                <td>{{ coupon.usagesActuels || 0 }} / {{ coupon.usagesMax ?? '∞' }}</td>
+                <td><span class="status" [class.inactive]="!coupon.actif">{{ coupon.actif ? 'Actif' : 'Inactif' }}</span></td>
                 <td class="actions">
-                  <button
-                    class="icon-btn"
-                    (click)="editCoupon(coupon)"
-                    title="Modifier"
-                    aria-label="Modifier le coupon">
-                    &#9998;
-                  </button>
-                  <button
-                    class="icon-btn danger"
-                    (click)="deleteCoupon(coupon.id)"
-                    title="Supprimer"
-                    aria-label="Supprimer le coupon">
-                    &#128465;
-                  </button>
+                  <button class="icon-btn" (click)="editCoupon(coupon)" title="Modifier"><i class="fas fa-edit"></i></button>
+                  <button class="icon-btn danger" (click)="deleteCoupon(coupon.id)" title="Supprimer"><i class="fas fa-trash-alt"></i></button>
                 </td>
               </tr>
-              <tr *ngIf="coupons.length === 0">
-                <td colspan="6" class="empty">Aucun coupon trouve.</td>
-              </tr>
+              <tr *ngIf="coupons.length === 0"><td colspan="6" class="empty-row">Aucun coupon trouvé</td></tr>
             </tbody>
           </table>
         </div>
-        <ng-template #loadingCouponsTpl>
-          <div class="loading">Chargement des coupons...</div>
-        </ng-template>
+        <ng-template #loadingCouponsTpl><div class="loading-state"><i class="fas fa-spinner fa-pulse"></i> Chargement...</div></ng-template>
       </div>
     </div>
-  </section>
+  </div>
 </div>

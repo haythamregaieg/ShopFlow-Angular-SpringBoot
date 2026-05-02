@@ -1,50 +1,71 @@
-<div class="container" style="padding-top: 30px;">
-  <div class="admin-nav">
-    <a routerLink="/admin/users" routerLinkActive="active" class="admin-tab">👥 Utilisateurs</a>
-    <a routerLink="/admin/products" routerLinkActive="active" class="admin-tab">📦 Produits</a>
-  <a routerLink="/admin/reviews" routerLinkActive="active" class="admin-tab">⭐ Avis</a>
-  <a routerLink="/admin/coupons" routerLinkActive="active" class="admin-tab">🏷️ Coupons</a>
-  </div>
+<div class="admin-container">
+  <!-- Navigation admin améliorée -->
+  <nav class="admin-nav">
+    <a routerLink="/admin/users" routerLinkActive="active" class="nav-item">👥 Utilisateurs</a>
+    <a routerLink="/admin/products" routerLinkActive="active" class="nav-item">📦 Produits</a>
+    <a routerLink="/admin/reviews" routerLinkActive="active" class="nav-item">⭐ Avis</a>
+    <a routerLink="/admin/coupons" routerLinkActive="active" class="nav-item">🏷️ Coupons</a>
+  </nav>
 
+  <!-- En-tête de page -->
   <div class="page-header">
-    <h1 class="page-title">👥 Gestion des Utilisateurs</h1>
+    <div>
+      <h1 class="page-title">Gestion des utilisateurs</h1>
+      <p class="page-subtitle">Activez, désactivez ou consultez les comptes</p>
+    </div>
+    <!-- Optionnel : champ de recherche rapide -->
+    <div class="search-box">
+      <i class="fas fa-search"></i>
+      <input type="text" placeholder="Rechercher..." [(ngModel)]="searchTerm" (input)="filterUsers()">
+    </div>
   </div>
 
-  <div class="card">
-    <table class="table">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Utilisateur</th>
-          <th>Email</th>
-          <th>Rôle</th>
-          <th>Statut</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let user of users">
-          <td>{{ user.id }}</td>
-          <td>
-            <div class="user-info">
-              <strong>{{ user.prenom }} {{ user.nom }}</strong>
-            </div>
-          </td>
-          <td>{{ user.email }}</td>
-          <td><span class="badge badge-info">{{ user.role }}</span></td>
-          <td>
-            <span class="badge" [class]="user.actif ? 'badge-success' : 'badge-danger'">
-              {{ user.actif ? 'Actif' : 'Inactif' }}
-            </span>
-          </td>
-          <td>
-            <button class="btn btn-sm" [class]="user.actif ? 'btn-danger' : 'btn-success'"
-              (click)="toggle(user)">
-              {{ user.actif ? 'Désactiver' : 'Activer' }}
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <!-- Carte utilisateur -->
+  <div class="users-card">
+    <div class="table-responsive">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Utilisateur</th>
+            <th>Email</th>
+            <th>Rôle</th>
+            <th>Statut</th>
+            <th class="actions-col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of filteredUsers">
+            <td class="id-cell">{{ user.id }}</td>
+            <td class="user-cell">
+              <div class="user-avatar">{{ (user.prenom?.charAt(0) || 'U') + (user.nom?.charAt(0) || '') }}</div>
+              <div class="user-name">{{ user.prenom }} {{ user.nom }}</div>
+            </td>
+            <td class="email-cell">{{ user.email }}</td>
+            <td><span class="role-badge" [ngClass]="'role-' + user.role.toLowerCase()">{{ user.role }}</span></td>
+            <td>
+              <span class="status-badge" [ngClass]="user.actif ? 'status-active' : 'status-inactive'">
+                {{ user.actif ? 'Actif' : 'Inactif' }}
+              </span>
+            </td>
+            <td class="actions-cell">
+              <button class="action-btn" [class.btn-activate]="!user.actif" [class.btn-deactivate]="user.actif"
+                      (click)="toggle(user)">
+                <i [class]="user.actif ? 'fas fa-ban' : 'fas fa-check-circle'"></i>
+                {{ user.actif ? 'Désactiver' : 'Activer' }}
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="filteredUsers.length === 0 && !loading">
+            <td colspan="6" class="empty-row">Aucun utilisateur trouvé</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!-- Chargement -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Chargement des utilisateurs...</span>
+    </div>
   </div>
 </div>

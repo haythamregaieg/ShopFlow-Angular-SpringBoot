@@ -1,2 +1,237 @@
-/* Minimal form styling */
-.container { max-width: 700px; }
+/* =============================================
+   FORMULAIRE COUPON – version enfant & moderne
+   ============================================= */
+
+:host {
+  --cream: #FFF9F0;
+  --peach: #F3AB7E;
+  --peach-light: #FFF2E6;
+  --pine: #4F7A5E;
+  --pine-light: #EAF4EF;
+  --ink: #2E404F;
+  --ink-soft: #6A7F8C;
+  --border: #F0E4D4;
+  --card-white: #FFFFFF;
+  --shadow-sm: 0 4px 12px rgba(46, 64, 79, 0.05);
+  --shadow-md: 0 8px 24px rgba(46, 64, 79, 0.08);
+  --radius: 28px;
+  --radius-pill: 60px;
+  --transition: all 0.25s ease;
+}
+
+.coupon-form-container {
+  background: linear-gradient(145deg, var(--cream) 0%, #FFF7EE 100%);
+  min-height: 100vh;
+  padding: 96px 24px 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Inter', sans-serif;
+}
+
+.form-card {
+  max-width: 680px;
+  width: 100%;
+  background: var(--card-white);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 36px 40px;
+  box-shadow: var(--shadow-md);
+  transition: var(--transition);
+}
+
+.form-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.form-header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--border);
+}
+
+.header-icon {
+  font-size: 48px;
+  background: var(--peach-light);
+  width: 70px;
+  height: 70px;
+  border-radius: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form-title {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 6px;
+}
+
+.form-subtitle {
+  font-size: 14px;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+/* Form groups */
+.form-group {
+  margin-bottom: 24px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+
+.form-group input, .form-group select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 60px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  background: white;
+  transition: var(--transition);
+  outline: none;
+}
+
+.form-group input:focus, .form-group select:focus {
+  border-color: var(--peach);
+  box-shadow: 0 0 0 3px rgba(243,171,126,0.15);
+}
+
+.form-group small {
+  display: block;
+  font-size: 11px;
+  color: var(--ink-soft);
+  margin-top: 6px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 0;
+}
+
+/* Checkbox */
+.form-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 28px 0 20px;
+  padding: 16px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.form-checkbox input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--pine);
+  cursor: pointer;
+}
+
+.form-checkbox label {
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  margin: 0;
+}
+
+.form-checkbox small {
+  width: 100%;
+  font-size: 11px;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+/* Error message */
+.error-message {
+  background: #FEF0ED;
+  color: #D97A5C;
+  padding: 12px 18px;
+  border-radius: 60px;
+  margin: 20px 0;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Actions */
+.form-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.btn-save, .btn-cancel {
+  flex: 1;
+  padding: 12px 20px;
+  border-radius: 60px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: none;
+}
+
+.btn-save {
+  background: var(--pine);
+  color: white;
+}
+.btn-save:hover:not(:disabled) {
+  background: var(--peach);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+.btn-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-cancel {
+  background: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--ink-soft);
+}
+.btn-cancel:hover {
+  border-color: var(--peach);
+  color: var(--peach);
+  background: var(--peach-light);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .coupon-form-container {
+    padding: 88px 20px 48px;
+  }
+  .form-card {
+    padding: 24px 20px;
+  }
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .form-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  .form-actions {
+    flex-direction: column;
+  }
+}

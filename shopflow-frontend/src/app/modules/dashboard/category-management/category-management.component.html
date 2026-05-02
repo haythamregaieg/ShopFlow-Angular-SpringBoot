@@ -1,63 +1,86 @@
-<div class="category-container">
-  <div class="header">
-    <h2>Gestion des Catégories</h2>
-    <p>Créez et gérez les catégories pour vos produits.</p>
-  </div>
+<div class="categories-page">
+  <div class="categories-container">
 
-  <div class="content-grid">
-    <!-- Formulaire -->
-    <div class="card form-card">
-      <h3>{{ isEdit ? 'Modifier' : 'Ajouter' }} une Catégorie</h3>
-      <form [formGroup]="form" (ngSubmit)="onSubmit()">
-        <div class="form-group">
-          <label for="nom">Nom</label>
-          <input type="text" id="nom" formControlName="nom" placeholder="Ex: Électronique">
-        </div>
-        <div class="form-group">
-          <label for="description">Description</label>
-          <textarea id="description" formControlName="description" placeholder="Description de la catégorie"></textarea>
-        </div>
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary" [disabled]="form.invalid || loading">
-            {{ loading ? 'Chargement...' : (isEdit ? 'Enregistrer' : 'Créer') }}
-          </button>
-          <button type="button" class="btn btn-secondary" (click)="resetForm()" *ngIf="isEdit">Annuler</button>
-        </div>
-      </form>
-      <div class="error" *ngIf="error">{{ error }}</div>
-    </div>
-
-    <!-- Liste -->
-    <div class="card list-card">
-      <h3>Liste des Catégories</h3>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Nom</th>
-              <th>Description</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let cat of categories">
-              <td><strong>{{ cat.nom }}</strong></td>
-              <td>{{ cat.description }}</td>
-              <td class="actions">
-                <button class="btn-icon" (click)="edit(cat)" title="Modifier">
-                  <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn-icon delete" (click)="delete(cat.id!)" title="Supprimer">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </td>
-            </tr>
-            <tr *ngIf="categories.length === 0 && !loading">
-              <td colspan="3" class="empty">Aucune catégorie trouvée.</td>
-            </tr>
-          </tbody>
-        </table>
+    <!-- En-tête -->
+    <header class="page-header">
+      <div class="header-icon">🏷️</div>
+      <div>
+        <h1>Gestion des catégories</h1>
+        <p>Organisez votre catalogue en créant ou modifiant les catégories</p>
       </div>
+    </header>
+
+    <div class="two-columns">
+
+      <!-- Colonne gauche : formulaire -->
+      <div class="form-column">
+        <div class="form-card">
+          <div class="card-title">
+            <span class="emoji">{{ isEdit ? '✏️' : '➕' }}</span>
+            <h3>{{ isEdit ? 'Modifier la catégorie' : 'Nouvelle catégorie' }}</h3>
+          </div>
+          <form [formGroup]="form" (ngSubmit)="onSubmit()">
+            <div class="form-group">
+              <label>Nom *</label>
+              <input type="text" formControlName="nom" placeholder="Ex: Vêtements, Jouets...">
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <textarea formControlName="description" rows="3" placeholder="Courte description (optionnelle)"></textarea>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn-submit" [disabled]="form.invalid || loading">
+                {{ loading ? 'Enregistrement...' : (isEdit ? 'Mettre à jour' : 'Créer') }}
+              </button>
+              <button type="button" class="btn-cancel" (click)="resetForm()" *ngIf="isEdit">Annuler</button>
+            </div>
+          </form>
+          <div class="error-message" *ngIf="error">{{ error }}</div>
+        </div>
+      </div>
+
+      <!-- Colonne droite : liste des catégories en cartes -->
+      <div class="list-column">
+        <div class="list-header">
+          <h3>📋 Mes catégories</h3>
+          <span class="count-badge">{{ categories.length }}</span>
+        </div>
+
+        <!-- État de chargement -->
+        <div class="loading-state" *ngIf="loading && categories.length === 0">
+          <div class="spinner"></div>
+          <span>Chargement...</span>
+        </div>
+
+        <!-- Grille de cartes -->
+        <div class="categories-grid" *ngIf="!loading || categories.length > 0">
+          <div class="category-card" *ngFor="let cat of categories">
+            <div class="card-content">
+<div class="category-icon" style="background: var(--peach-light);">📁</div>              <div class="category-info">
+                <h4>{{ cat.nom }}</h4>
+                <p>{{ cat.description || 'Aucune description' | slice:0:60 }}{{ (cat.description?.length || 0) > 60 ? '…' : '' }}</p>
+              </div>
+            </div>
+            <div class="card-actions">
+              <button class="icon-btn edit" (click)="edit(cat)" title="Modifier"><i class="fas fa-edit"></i></button>
+              <button class="icon-btn delete" (click)="delete(cat.id!)" title="Supprimer"><i class="fas fa-trash-alt"></i></button>
+            </div>
+          </div>
+          <div class="empty-state" *ngIf="categories.length === 0 && !loading">
+            <span>📦</span>
+            <p>Aucune catégorie pour le moment</p>
+            <small>Utilisez le formulaire pour en créer une</small>
+          </div>
+        </div>
+      </div>
+
     </div>
+
+    <!-- Loading toast (en bas à droite pendant les actions) -->
+    <div class="toast-loading" *ngIf="loading && categories.length > 0">
+      <div class="spinner-small"></div>
+      <span>Mise à jour...</span>
+    </div>
+
   </div>
 </div>

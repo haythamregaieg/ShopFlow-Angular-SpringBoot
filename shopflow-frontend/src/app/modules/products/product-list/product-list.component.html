@@ -1,4 +1,4 @@
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;0,900;1,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <div class="products-page">
   <div class="container">
@@ -6,41 +6,41 @@
     <!-- Hero Header -->
     <header class="page-hero">
       <div class="hero-text">
-        <p class="hero-eyebrow">Notre Sélection</p>
-        <h1 class="page-title">Catalogue<br><em>Produits</em></h1>
+        <p class="hero-eyebrow">✨ La douceur à petits prix</p>
+        <h1 class="page-title">Notre<br><em>collection enfant</em></h1>
+        <p class="hero-description">Des matières naturelles, des couleurs tendres et des coupes pensées pour leurs aventures.</p>
       </div>
-      <button *ngIf="isAdmin || isSeller" routerLink="/products/new/create" class="btn-new-product">
-        <span class="btn-icon-plus">+</span>
-        Nouveau Produit
+      <button *ngIf="isAdmin || isSeller" routerLink="/products/new/create" class="btn-new-product" aria-label="Créer un nouveau produit">
+        <span class="btn-icon-plus" aria-hidden="true">+</span>
+        Nouveau produit
       </button>
     </header>
 
     <!-- Toast notification -->
-    <div class="toast" [class.toast-visible]="message">
-      <span class="toast-dot"></span>
-      {{ message }}
+    <div class="toast" [class.toast-visible]="message" role="status" aria-live="polite">
+      <span class="toast-dot" aria-hidden="true"></span>
+      <span class="toast-message">{{ message }}</span>
     </div>
 
     <div class="filter-layout">
 
       <!-- Sidebar -->
-      <aside class="filters-sidebar">
+      <aside class="filters-sidebar" aria-label="Filtres">
         <div class="sidebar-inner">
-
           <div class="filter-section">
-            <span class="filter-label">Recherche</span>
+            <span class="filter-label">🔍 Recherche</span>
             <div class="search-wrap">
-              <svg class="search-icon" viewBox="0 0 20 20" fill="none">
+              <svg class="search-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
                 <circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.5"/>
                 <path d="m14 14 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
               </svg>
-              <input type="text" [(ngModel)]="searchQuery" placeholder="Nom, description…"
-                     (keyup.enter)="search()" class="search-input" />
+              <input type="text" [(ngModel)]="searchQuery" placeholder="Nom, description, âge…"
+                     (keyup.enter)="search()" class="search-input" aria-label="Rechercher un produit" />
             </div>
           </div>
 
           <div class="filter-section">
-            <span class="filter-label">Catégories</span>
+            <span class="filter-label">🏷️ Catégories</span>
             <div class="categories-list">
               <label class="cat-chip" *ngFor="let category of categories"
                      [class.cat-chip-active]="selectedCategoryIds.includes(category.id)">
@@ -53,26 +53,26 @@
           </div>
 
           <div class="filter-section">
-            <span class="filter-label">Prix (EUR)</span>
+            <span class="filter-label">💰 Prix (EUR)</span>
             <div class="price-row">
               <div class="price-field">
-                <span class="price-prefix">Min</span>
-                <input type="number" [(ngModel)]="prixMin" placeholder="0" class="price-input" />
+                <span class="price-prefix">min</span>
+                <input type="number" [(ngModel)]="prixMin" placeholder="0" class="price-input" aria-label="Prix minimum" />
               </div>
-              <div class="price-sep">—</div>
+              <div class="price-sep" aria-hidden="true">—</div>
               <div class="price-field">
-                <span class="price-prefix">Max</span>
-                <input type="number" [(ngModel)]="prixMax" placeholder="∞" class="price-input" />
+                <span class="price-prefix">max</span>
+                <input type="number" [(ngModel)]="prixMax" placeholder="∞" class="price-input" aria-label="Prix maximum" />
               </div>
             </div>
           </div>
 
           <div class="filter-section">
-            <label class="promo-toggle">
+            <label class="promo-toggle" aria-label="Filtrer les promotions">
               <div class="toggle-track" [class.toggle-on]="promoOnly" (click)="promoOnly = !promoOnly">
                 <div class="toggle-thumb"></div>
               </div>
-              <span>En promotion uniquement</span>
+              <span>⭐ En promotion uniquement</span>
             </label>
           </div>
 
@@ -84,35 +84,39 @@
       </aside>
 
       <!-- Main content -->
-      <main class="products-main">
+      <main class="products-main" id="main-content">
 
         <!-- Results bar -->
         <div class="results-bar">
-          <span class="results-count">
-            <strong>{{ products.length }}</strong> produit{{ products.length !== 1 ? 's' : '' }} affiché{{ products.length !== 1 ? 's' : '' }}
-          </span>
-          <span class="results-total" *ngIf="totalElements !== undefined">
-            • Total: <strong>{{ totalElements }}</strong> produit{{ totalElements !== 1 ? 's' : '' }} sur le site
-          </span>
-          <span class="results-page" *ngIf="totalPages > 0">
-            • Page {{ currentPage + 1 }} / {{ totalPages }}
-          </span>
+          <div class="results-left">
+            <span class="results-count">
+              <strong>{{ products.length }}</strong> article{{ products.length !== 1 ? 's' : '' }}
+            </span>
+            <span class="results-total" *ngIf="totalElements !== undefined">
+              • <strong>{{ totalElements }}</strong> au total
+            </span>
+            <span class="results-page" *ngIf="totalPages > 0">
+              • Page {{ currentPage + 1 }} / {{ totalPages }}
+            </span>
+          </div>
           <div class="sort-wrap">
-            <label class="sort-label">Trier par</label>
-            <select [(ngModel)]="sortBy" (change)="search()" class="sort-select">
-              <option value="nouveautes">Nouveautés</option>
-              <option value="popularite">Popularité</option>
-              <option value="prix_asc">Prix croissant</option>
-              <option value="prix_desc">Prix décroissant</option>
+            <label class="sort-label" for="sortSelect">Trier par</label>
+            <select id="sortSelect" [(ngModel)]="sortBy" (change)="search()" class="sort-select">
+              <option value="nouveautes">✨ Nouveautés</option>
+              <option value="popularite">❤️ Popularité</option>
+              <option value="prix_asc">💰 Prix croissant</option>
+              <option value="prix_desc">💰 Prix décroissant</option>
             </select>
           </div>
         </div>
 
-        <!-- Loading -->
+        <!-- Loading skeleton -->
         <div class="loading-state" *ngIf="loading">
           <div class="skeleton-grid">
             <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6]">
-              <div class="skeleton-img"></div>
+              <div class="skeleton-img">
+                <div class="skeleton-bear" aria-hidden="true">🧸</div>
+              </div>
               <div class="skeleton-body">
                 <div class="skeleton-line w-60"></div>
                 <div class="skeleton-line w-40"></div>
@@ -127,6 +131,7 @@
           <ng-container *ngFor="let group of groupedProducts">
             <section class="category-section">
               <div class="category-header">
+                <div class="category-icon" aria-hidden="true">🧸</div>
                 <h2 class="category-title">{{ group.categoryName }}</h2>
                 <div class="category-line"></div>
                 <span class="category-count">{{ group.products.length }} article{{ group.products.length !== 1 ? 's' : '' }}</span>
@@ -134,16 +139,16 @@
 
               <div class="products-grid">
                 <article class="product-card" *ngFor="let product of group.products; let i = index"
-                         [style.animation-delay]="(i * 60) + 'ms'">
+                         [style.animation-delay]="(i * 50) + 'ms'">
 
                   <div class="card-badge promo-badge" *ngIf="product.prixPromo">
-                    <svg viewBox="0 0 12 12" fill="none"><path d="M6 1l1.3 2.6 2.9.4-2.1 2 .5 2.9L6 7.4 3.4 8.9l.5-2.9L2 4l2.9-.4z" fill="currentColor"/></svg>
-                    Promo
+                    <span class="badge-star" aria-hidden="true">⭐</span> Promo
                   </div>
 
-                  <div class="card-image" [routerLink]="['/products', product.id]">
+                  <!-- CORRECTION : aria-label dynamique supprimée -->
+                  <div class="card-image" [routerLink]="['/products', product.id]" role="button" tabindex="0">
                     <ng-container *ngIf="$any(product)._thumbnail; else letter">
-                      <img [src]="$any(product)._thumbnail" alt="{{ product.nom }}" class="card-thumb" />
+                      <img [src]="$any(product)._thumbnail" alt="{{ product.nom }}" class="card-thumb" loading="lazy" />
                     </ng-container>
                     <ng-template #letter>
                       <div class="product-letter-wrap">
@@ -151,16 +156,15 @@
                       </div>
                     </ng-template>
                     <div class="card-overlay">
-                      <span class="overlay-cta">Voir le produit →</span>
+                      <span class="overlay-cta">Voir la pièce →</span>
                     </div>
                   </div>
 
                   <div class="card-body">
                     <div class="card-meta">
-                      <span class="seller-name">{{ product.sellerNom || 'ShopFlow' }}</span>
+                      <span class="seller-name">{{ product.sellerNom || 'Petits Piafs' }}</span>
                       <div class="rating-pill" *ngIf="product.noteMoyenne">
-                        <svg viewBox="0 0 12 12" fill="currentColor" width="10"><path d="M6 1l1.3 2.6 2.9.4-2.1 2 .5 2.9L6 7.4 3.4 8.9l.5-2.9L2 4l2.9-.4z"/></svg>
-                        {{ product.noteMoyenne | number:'1.1-1' }}
+                        ⭐ {{ product.noteMoyenne | number:'1.1-1' }}
                       </div>
                     </div>
 
@@ -169,11 +173,12 @@
                     <div class="stock-indicator" [class.in-stock]="product.stock > 0" [class.out-stock]="product.stock <= 0">
                       <span class="stock-dot"></span>
                       {{ product.stock > 0 ? 'En stock' : 'Rupture' }}
+                      <span class="stock-quantity" *ngIf="product.stock > 0 && product.stock < 10">(plus que {{ product.stock }})</span>
                     </div>
 
                     <div class="variant-row" *ngIf="variantsByProduct[product.id]?.length">
                       <select class="variant-select" [ngModel]="selectedVariantByProduct[product.id]"
-                              (ngModelChange)="onVariantChange(product.id, $event)">
+                              (ngModelChange)="onVariantChange(product.id, $event)" aria-label="Choisir une variante">
                         <option *ngFor="let v of variantsByProduct[product.id]" [ngValue]="v.id">
                           {{ v.taille }} / {{ v.couleur }}
                         </option>
@@ -190,10 +195,11 @@
                           <span class="price-main">{{ product.prix | number:'1.2-2' }} €</span>
                         </ng-template>
                       </div>
+                      <!-- CORRECTION : aria-label dynamique supprimée -->
                       <button class="btn-cart"
                               [disabled]="!product.actif || product.stock <= 0"
                               (click)="addToCart(product)">
-                        <svg viewBox="0 0 20 20" fill="none" width="16">
+                        <svg viewBox="0 0 20 20" fill="none" width="16" aria-hidden="true">
                           <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 4h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
                         Ajouter
@@ -208,33 +214,30 @@
 
         <!-- Empty state -->
         <div class="empty-state" *ngIf="!loading && products.length === 0">
-          <div class="empty-visual">
-            <svg viewBox="0 0 80 80" fill="none" width="80">
-              <circle cx="40" cy="40" r="39" stroke="currentColor" stroke-width="1" stroke-dasharray="4 4" opacity=".3"/>
-              <path d="M25 30h30l-3 20H28L25 30z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" opacity=".5"/>
-              <path d="M33 30c0-3.9 3.1-7 7-7s7 3.1 7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".5"/>
-            </svg>
-          </div>
-          <h3 class="empty-title">Aucun produit trouvé</h3>
-          <p class="empty-text">Essayez de modifier vos filtres ou d'élargir votre recherche.</p>
+          <div class="empty-visual" aria-hidden="true">🧸🧸🧸</div>
+          <h3 class="empty-title">Aucun petit vêtement trouvé</h3>
+          <p class="empty-text">On a peut‑être égaré cette collection… Essaie d’autres filtres !</p>
           <button class="btn-apply" (click)="resetFilters()">Tout afficher</button>
         </div>
 
         <!-- Pagination -->
-        <nav class="pagination" *ngIf="totalPages > 1">
+        <nav class="pagination" *ngIf="totalPages > 1" aria-label="Pagination">
           <button class="page-btn" (click)="currentPage = currentPage - 1; loadProducts()"
-                  [disabled]="currentPage === 0">
+                  [disabled]="currentPage === 0" aria-label="Page précédente">
             ← Précédent
           </button>
-          <div class="page-dots">
-            <span *ngFor="let p of pagesArray(); let pi = index"
-                  class="page-dot"
-                  [class.page-dot-active]="pi === currentPage"
-                  (click)="currentPage = pi; loadProducts()">
-            </span>
+          <div class="page-numbers">
+            <button *ngFor="let p of pagesArray(); let pi = index"
+                    class="page-number"
+                    [class.active]="pi === currentPage"
+                    (click)="currentPage = pi; loadProducts()"
+                    [attr.aria-label]="'Aller à la page ' + (p + 1)"
+                    [attr.aria-current]="pi === currentPage ? 'page' : null">
+              {{ p + 1 }}
+            </button>
           </div>
           <button class="page-btn page-btn-next" (click)="currentPage = currentPage + 1; loadProducts()"
-                  [disabled]="currentPage === totalPages - 1">
+                  [disabled]="currentPage === totalPages - 1" aria-label="Page suivante">
             Suivant →
           </button>
         </nav>

@@ -15,6 +15,9 @@ export class ProfileComponent implements OnInit {
   isSeller = false;
   success = '';
   error = '';
+  loadingUser = true;
+  saving = false;
+  savingSeller = false;
 
   constructor(
     private fb: FormBuilder,
@@ -36,9 +39,16 @@ export class ProfileComponent implements OnInit {
 
   ngOnInit(): void {
     this.isSeller = this.authService.getRole() === 'SELLER';
+    this.loadingUser = true;
     this.userService.getMe().subscribe({
-      next: (user) => this.profileForm.patchValue({ prenom: user.prenom, nom: user.nom, email: user.email }),
-      error: () => this.error = 'Erreur de chargement du profil.'
+      next: (user) => {
+        this.profileForm.patchValue({ prenom: user.prenom, nom: user.nom, email: user.email });
+        this.loadingUser = false;
+      },
+      error: () => {
+        this.error = 'Erreur de chargement du profil.';
+        this.loadingUser = false;
+      }
     });
     if (this.isSeller) {
       this.sellerProfileService.getMyProfile().subscribe({
@@ -53,15 +63,20 @@ export class ProfileComponent implements OnInit {
       this.profileForm.markAllAsTouched();
       return;
     }
+    this.saving = true;
     const { prenom, nom } = this.profileForm.getRawValue();
     this.userService.updateMe({ prenom, nom }).subscribe({
       next: () => {
-        this.success = 'Profil utilisateur mis a jour.';
+        this.success = 'Profil utilisateur mis à jour.';
         this.error = '';
+        this.saving = false;
+        setTimeout(() => this.success = '', 3000);
       },
       error: () => {
-        this.error = 'Mise a jour du profil impossible.';
+        this.error = 'Mise à jour du profil impossible.';
         this.success = '';
+        this.saving = false;
+        setTimeout(() => this.error = '', 3000);
       }
     });
   }
@@ -71,14 +86,19 @@ export class ProfileComponent implements OnInit {
       this.sellerForm.markAllAsTouched();
       return;
     }
+    this.savingSeller = true;
     this.sellerProfileService.updateMyProfile(this.sellerForm.value).subscribe({
       next: () => {
-        this.success = 'Profil boutique mis a jour.';
+        this.success = 'Profil boutique mis à jour.';
         this.error = '';
+        this.savingSeller = false;
+        setTimeout(() => this.success = '', 3000);
       },
       error: () => {
-        this.error = 'Mise a jour de la boutique impossible.';
+        this.error = 'Mise à jour de la boutique impossible.';
         this.success = '';
+        this.savingSeller = false;
+        setTimeout(() => this.error = '', 3000);
       }
     });
   }

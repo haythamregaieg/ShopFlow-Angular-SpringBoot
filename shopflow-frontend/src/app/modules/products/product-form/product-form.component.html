@@ -1,24 +1,31 @@
 <div class="form-container">
   <div class="form-card">
-    <h2 class="page-title">{{ isEdit ? '✏️ Modifier le produit' : '➕ Nouveau produit' }}</h2>
+    <div class="form-header">
+      <div class="header-icon" aria-hidden="true">🧸</div>
+      <h2 class="page-title">{{ isEdit ? 'Modifier le produit' : 'Nouveau produit' }}</h2>
+    </div>
 
-    <div class="alert alert-danger border-0 shadow-sm mb-4" *ngIf="error">
-      <i class="fas fa-exclamation-circle me-2"></i> {{ error }}
+    <div class="alert alert-danger" *ngIf="error">
+      <span class="alert-icon">⚠️</span> {{ error }}
     </div>
 
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <!-- Section Informations générales -->
       <div class="form-section">
-        <span class="section-label">Informations Générales</span>
-        
+        <div class="section-title">
+          <span class="section-icon">📝</span>
+          <span class="section-label">Informations générales</span>
+        </div>
+
         <div class="form-group">
           <label>Nom du produit *</label>
-          <input type="text" class="form-control" formControlName="nom" placeholder="Ex: iPhone 15 Pro" />
+          <input type="text" class="form-control" formControlName="nom" placeholder="Ex: Pyjama en coton bio" />
           <span class="error-msg" *ngIf="form.get('nom')?.touched && form.get('nom')?.invalid">Le nom est requis</span>
         </div>
 
         <div class="form-group">
           <label>Description *</label>
-          <textarea class="form-control" formControlName="description" rows="4" placeholder="Décrivez votre produit en quelques lignes..."></textarea>
+          <textarea class="form-control" formControlName="description" rows="4" placeholder="Décrivez la matière, les couleurs, les tailles disponibles…"></textarea>
           <span class="error-msg" *ngIf="form.get('description')?.touched && form.get('description')?.invalid">La description est requise</span>
         </div>
 
@@ -40,7 +47,7 @@
           </div>
           <div class="form-group">
             <label>URL de l'image</label>
-            <input type="text" class="form-control" formControlName="images" placeholder="https://..." />
+            <input type="text" class="form-control" formControlName="images" placeholder="https://…" />
           </div>
         </div>
 
@@ -49,73 +56,85 @@
           <select class="form-control" formControlName="categoryIds" multiple style="height: 120px;">
             <option *ngFor="let category of categories" [ngValue]="category.id">{{ category.nom }}</option>
           </select>
-          <small class="text-muted">Maintenez Ctrl pour sélectionner plusieurs catégories</small>
+          <small class="form-hint">Maintenez Ctrl (Cmd sur Mac) pour sélectionner plusieurs catégories</small>
         </div>
       </div>
 
+      <!-- Section Livraison -->
       <div class="form-section">
-        <span class="section-label">Livraison</span>
+        <div class="section-title">
+          <span class="section-icon">🚚</span>
+          <span class="section-label">Livraison</span>
+        </div>
         <div class="form-grid">
           <div class="form-group">
             <label>Frais local (€)</label>
-            <input type="number" class="form-control" formControlName="fraisLivraisonLocal" step="0.01" />
+            <input type="number" class="form-control" formControlName="fraisLivraisonLocal" step="0.01" placeholder="0.00" />
           </div>
           <div class="form-group">
             <label>Frais international (€)</label>
-            <input type="number" class="form-control" formControlName="fraisLivraisonInternational" step="0.01" />
+            <input type="number" class="form-control" formControlName="fraisLivraisonInternational" step="0.01" placeholder="0.00" />
           </div>
         </div>
       </div>
 
+      <!-- Section Variantes -->
       <div class="form-section">
-        <span class="section-label">Variantes du Produit</span>
+        <div class="section-title">
+          <span class="section-icon">🎨</span>
+          <span class="section-label">Variantes (tailles / couleurs)</span>
+        </div>
+
         <div class="variant-list" formArrayName="variants">
           <div *ngFor="let variant of variantsForm.controls; let i = index" [formGroupName]="i" class="variant-card">
-            <button type="button" class="btn-remove-variant" (click)="removeVariant(i)" title="Supprimer la variante">
-              <i class="fas fa-trash"></i>
+            <button type="button" class="btn-remove-variant" (click)="removeVariant(i)" title="Supprimer cette variante">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
             </button>
-            
-            <div class="form-grid mb-3">
-              <div class="form-group mb-0">
-                <label class="small">Taille (optionnel)</label>
-                <input type="text" class="form-control" formControlName="taille" placeholder="Ex: XL, 42..." />
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="small-label">Taille</label>
+                <input type="text" class="form-control" formControlName="taille" placeholder="Ex: 2 ans, 4 ans, XS…" />
               </div>
-              <div class="form-group mb-0">
-                <label class="small">Couleur (optionnel)</label>
-                <input type="text" class="form-control" formControlName="couleur" placeholder="Ex: Rouge, Bleu..." />
+              <div class="form-group">
+                <label class="small-label">Couleur</label>
+                <input type="text" class="form-control" formControlName="couleur" placeholder="Ex: Bleu ciel, Rose poudré…" />
               </div>
             </div>
             <div class="error-msg" *ngIf="variant.invalid && (variant.touched || variant.dirty) && variant.errors?.['variantIdentity']">
-              Renseignez au moins une taille ou une couleur pour cette variante.
+              ⚠️ Renseignez au moins une taille ou une couleur.
             </div>
 
             <div class="form-grid">
-              <div class="form-group mb-0">
-                <label class="small">Stock spécifique</label>
-                <input type="number" class="form-control" formControlName="stock" />
+              <div class="form-group">
+                <label class="small-label">Stock spécifique</label>
+                <input type="number" class="form-control" formControlName="stock" placeholder="Quantité" />
               </div>
-              <div class="form-group mb-0">
-                <label class="small">Delta Prix (+/- €)</label>
-                <input type="number" class="form-control" step="0.01" formControlName="prixDelta" />
+              <div class="form-group">
+                <label class="small-label">Delta prix (€)</label>
+                <input type="number" class="form-control" step="0.01" formControlName="prixDelta" placeholder="0.00" />
               </div>
-              <div class="form-group mb-0" style="grid-column: span 2;">
-                <label class="small">SKU (Optionnel)</label>
-                <input type="text" class="form-control" formControlName="sku" placeholder="Référence interne" />
+              <div class="form-group">
+                <label class="small-label">SKU (référence)</label>
+                <input type="text" class="form-control" formControlName="sku" placeholder="Optionnel" />
               </div>
             </div>
           </div>
         </div>
-        
+
         <button type="button" class="btn-add-variant" (click)="addVariant()">
-          <i class="fas fa-plus-circle me-2"></i> Ajouter une variante (taille seule, couleur seule, ou les deux)
+          <span class="plus-icon">+</span> Ajouter une variante
         </button>
       </div>
 
+      <!-- Actions -->
       <div class="form-actions">
         <a routerLink="/products" class="btn-cancel">Annuler</a>
         <button type="submit" class="btn-submit" [disabled]="loading || form.invalid">
-          <span *ngIf="!loading">{{ isEdit ? 'Enregistrer les modifications' : 'Créer le produit' }}</span>
-          <span *ngIf="loading"><i class="fas fa-spinner fa-spin me-2"></i>Traitement...</span>
+          <span *ngIf="!loading">{{ isEdit ? 'Enregistrer' : 'Créer le produit' }}</span>
+          <span *ngIf="loading">Traitement en cours…</span>
         </button>
       </div>
     </form>

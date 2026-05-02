@@ -1,69 +1,84 @@
 <div class="profile-page">
-  <div class="profile-shell">
-    <header class="page-head">
+  <div class="profile-container">
+
+    <!-- En-tête moderne -->
+    <header class="profile-header">
+      <div class="header-icon" aria-hidden="true">👤</div>
       <div>
         <h1>Mon profil</h1>
-        <p class="page-subtitle">Gerez vos informations personnelles et, si besoin, les donnees de votre boutique.</p>
+        <p class="header-subtitle">Gérez vos informations personnelles et, si besoin, les données de votre boutique.</p>
       </div>
     </header>
 
-    <div class="alerts">
+    <!-- Messages -->
+    <div class="alerts" *ngIf="success || error">
       <div class="alert success" *ngIf="success">{{ success }}</div>
       <div class="alert error" *ngIf="error">{{ error }}</div>
     </div>
 
-    <section class="surface">
-      <div class="surface-head">
+    <!-- Informations utilisateur -->
+    <section class="profile-card">
+      <div class="card-header">
+        <span class="card-icon">📝</span>
         <h2>Informations utilisateur</h2>
       </div>
 
       <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
-        <div class="field-grid">
-          <div class="field">
-            <label>Prenom</label>
-            <input type="text" formControlName="prenom" placeholder="Votre prenom" />
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Prénom *</label>
+            <input type="text" formControlName="prenom" placeholder="Votre prénom">
           </div>
-          <div class="field">
-            <label>Nom</label>
-            <input type="text" formControlName="nom" placeholder="Votre nom" />
+          <div class="form-group">
+            <label>Nom *</label>
+            <input type="text" formControlName="nom" placeholder="Votre nom">
           </div>
         </div>
 
-        <div class="field">
+        <div class="form-group">
           <label>Email</label>
-          <input type="text" formControlName="email" placeholder="email@domaine.com" />
-          <small>Adresse associee au compte (non modifiable).</small>
+          <input type="email" formControlName="email" [disabled]="true">
+          <small>Adresse associée au compte (non modifiable)</small>
         </div>
 
         <div class="form-actions">
-          <button class="btn btn-primary" type="submit">Enregistrer les changements</button>
+          <button type="submit" class="btn-save" [disabled]="profileForm.invalid">
+            Enregistrer les changements
+          </button>
         </div>
       </form>
     </section>
 
-    <section class="surface" *ngIf="isSeller">
-      <div class="surface-head">
+    <!-- Section boutique (uniquement pour vendeur) -->
+    <section class="profile-card" *ngIf="isSeller">
+      <div class="card-header">
+        <span class="card-icon">🏪</span>
         <h2>Ma boutique</h2>
       </div>
 
       <form [formGroup]="sellerForm" (ngSubmit)="saveSellerProfile()">
-        <div class="field">
-          <label>Nom boutique</label>
-          <input type="text" formControlName="nomBoutique" placeholder="Nom de la boutique" />
+        <div class="form-group">
+          <label>Nom de la boutique *</label>
+          <input type="text" formControlName="nomBoutique" placeholder="Nom de votre boutique">
         </div>
-        <div class="field">
+
+        <div class="form-group">
           <label>Description</label>
-          <textarea formControlName="description" rows="4" placeholder="Decrivez votre boutique"></textarea>
+          <textarea formControlName="description" rows="4" placeholder="Décrivez votre univers, vos valeurs..."></textarea>
         </div>
-        <div class="field">
+
+        <div class="form-group">
           <label>Logo (URL)</label>
-          <input type="text" formControlName="logo" placeholder="https://..." />
+          <input type="url" formControlName="logo" placeholder="https://...">
         </div>
 
         <div class="form-actions">
-          <button class="btn btn-primary" type="submit">Mettre a jour la boutique</button>
+          <button type="submit" class="btn-save" [disabled]="sellerForm.invalid">
+            Mettre à jour la boutique
+          </button>
         </div>
       </form>
     </section>
+
   </div>
 </div>

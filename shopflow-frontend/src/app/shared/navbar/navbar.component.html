@@ -1,65 +1,48 @@
 <nav class="navbar">
   <div class="nav-container">
     <a routerLink="/" class="nav-brand">
-      <span class="brand-mark">SF</span>
+      <span class="brand-mark">🧸</span>
       <span class="brand-block">
         <span class="brand-text">ShopFlow</span>
-        <span class="brand-sub">Marketplace</span>
+        <span class="brand-sub">enfants</span>
       </span>
     </a>
-    <div class="nav-links">
 
-      <a
-        routerLink="/products"
-        routerLinkActive="active"
-        class="nav-icon-link"
-        title="Produits"
-        aria-label="Produits">
-        <i class="fas fa-box-open"></i>
+    <div class="nav-links">
+      <a routerLink="/products" routerLinkActive="active" class="nav-icon-link" title="Catalogue">
+        <i class="fas fa-tshirt"></i>
       </a>
-      <a
-        routerLink="/orders"
-        routerLinkActive="active"
-        *ngIf="isLoggedIn"
-        class="nav-icon-link"
-        title="Commandes"
-        aria-label="Commandes">
-        <i class="fas fa-receipt"></i>
+      <a routerLink="/orders" routerLinkActive="active" *ngIf="isLoggedIn" class="nav-icon-link" title="Mes commandes">
+        <i class="fas fa-gift"></i>
         <span class="notification-badge" *ngIf="notificationCount > 0">{{ notificationCount }}</span>
       </a>
-      <a
-        routerLink="/cart"
-        routerLinkActive="active"
-        *ngIf="isLoggedIn"
-        class="nav-icon-link cart-link"
-        title="Panier"
-        aria-label="Panier">
-        <i class="fas fa-cart-shopping"></i>
+      <a routerLink="/cart" routerLinkActive="active" *ngIf="isLoggedIn" class="nav-icon-link cart-link" title="Panier">
+        <i class="fas fa-shopping-bag"></i>
         <span class="cart-badge" *ngIf="cartCount > 0">{{ cartCount }}</span>
       </a>
     </div>
+
     <div class="nav-auth">
       <ng-container *ngIf="!isLoggedIn">
-        <a routerLink="/auth/login" class="btn btn-sm nav-login-btn">Connexion</a>
-        <a routerLink="/auth/register" class="btn btn-sm nav-register-btn">Inscription</a>
+        <a routerLink="/auth/login" class="btn-link login-btn">Connexion</a>
+        <a routerLink="/auth/register" class="btn-primary register-btn">Inscription</a>
       </ng-container>
       <ng-container *ngIf="isLoggedIn">
         <div class="user-menu-wrap">
-          <button class="user-menu-trigger" (click)="toggleUserMenu()" type="button" aria-label="Ouvrir le menu utilisateur">
+          <button class="user-menu-trigger" (click)="toggleUserMenu()">
             <div class="user-avatar">{{ userInitial }}</div>
             <div class="user-info">
-              <span class="user-name">{{ userFullName || (userEmail.split('@')[0]) }}</span>
+              <span class="user-name">{{ userFullName || userEmail.split('@')[0] }}</span>
               <span class="user-role-badge">{{ userRole }}</span>
             </div>
-            <span class="menu-caret">&#9662;</span>
+            <i class="fas fa-chevron-down menu-caret"></i>
           </button>
-
           <div class="user-dropdown" *ngIf="isUserMenuOpen">
-            <a routerLink="/dashboard" (click)="closeUserMenu()">Dashboard</a>
-            <a routerLink="/profile" (click)="closeUserMenu()">Profil</a>
-            <a routerLink="/dashboard/seller" *ngIf="isSeller" (click)="closeUserMenu()">Gestion boutique</a>
-            <a routerLink="/admin" *ngIf="isAdmin" (click)="closeUserMenu()">Admin</a>
-            <button type="button" class="logout-item" (click)="logout()">Deconnexion</button>
+            <a routerLink="/dashboard" (click)="closeUserMenu()">👤 Mon compte</a>
+            <a routerLink="/profile" (click)="closeUserMenu()">📝 Profil</a>
+            <a routerLink="/dashboard/seller" *ngIf="isSeller" (click)="closeUserMenu()">🏪 Gérer ma boutique</a>
+            <a routerLink="/admin" *ngIf="isAdmin" (click)="closeUserMenu()">⚙️ Administration</a>
+            <button class="logout-item" (click)="logout()">🚪 Déconnexion</button>
           </div>
         </div>
       </ng-container>

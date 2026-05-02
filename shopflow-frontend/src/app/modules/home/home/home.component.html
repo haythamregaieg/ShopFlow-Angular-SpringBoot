@@ -1,94 +1,78 @@
 <section class="home-page">
   <div class="container">
-    <section class="hero-band">
+
+    <!-- Hero bande -->
+    <div class="hero-band">
       <div class="hero-content">
         <p class="hero-kicker">ShopFlow Kids</p>
         <h1>La boutique enfant qui rassure les parents et fait plaisir aux petits.</h1>
         <p class="hero-subtext">
-          Vetements, jouets, deco et essentiels du quotidien selectionnes pour leur qualite, leur style et leur praticite.
+          Vêtements, jouets, déco et essentiels du quotidien sélectionnés pour leur qualité, leur style et leur praticité.
         </p>
         <div class="hero-actions">
-          <a routerLink="/products" class="btn btn-primary">Voir les produits</a>
-          <a routerLink="/auth/register" class="btn btn-outline">Ouvrir ma boutique</a>
+          <a routerLink="/products" class="btn-primary">Voir les produits</a>
+          <a routerLink="/auth/register" class="btn-outline">Ouvrir ma boutique</a>
+        </div>
+      </div>
+      <div class="hero-tools">
+        <label for="categorySelect">Catégorie</label>
+        <select id="categorySelect" [value]="selectedCategoryId" (change)="onCategoryChange($event)">
+          <option value="">Toutes les catégories</option>
+          <option *ngFor="let category of categories" [value]="category.id">{{ category.nom }}</option>
+        </select>
+        <small>Filtre instantané pour trouver rapidement les articles adaptés à vos besoins.</small>
+      </div>
+    </div>
+
+    <!-- Produits coup de cœur -->
+    <section class="products-section">
+      <div class="products-head">
+        <h2>Produits coups de cœur</h2>
+      </div>
+
+      <!-- État de chargement (skeleton) -->
+      <div class="skeleton-grid" *ngIf="loadingProducts">
+        <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6,7,8]">
+          <div class="skeleton-thumb"></div>
+          <div class="skeleton-body">
+            <div class="skeleton-line w-70"></div>
+            <div class="skeleton-line w-50"></div>
+            <div class="skeleton-line w-40"></div>
+          </div>
         </div>
       </div>
 
-      <div class="hero-tools">
-        <label for="categorySelect">Categorie</label>
-        <select id="categorySelect" [value]="selectedCategoryId" (change)="onCategoryChange($event)">
-          <option value="">Toutes les categories</option>
-          <option *ngFor="let category of categories" [value]="category.id">{{ category.nom }}</option>
-        </select>
-        <small>Filtre instantane pour trouver rapidement les articles adaptes a vos besoins.</small>
-      </div>
-    </section>
-
-    <section class="categories-strip" *ngIf="categories.length > 0">
-      <div class="strip-head">
-        <h2>Categories populaires</h2>
-      </div>
-
-      <div class="categories-list">
-        <button
-          type="button"
-          class="cat-pill"
-          [class.active]="!selectedCategoryId"
-          (click)="selectCategory()">
-          <span class="cat-icon">✨</span>
-          <span>Toutes</span>
-        </button>
-        <button
-          type="button"
-          class="cat-pill"
-          *ngFor="let category of categories; let i = index"
-          [class.active]="selectedCategoryId === (category.id + '')"
-          [style.animationDelay.ms]="i * 70"
-          (click)="selectCategory(category.id)">
-          <span class="cat-icon">{{ getCategoryIcon(category.nom) }}</span>
-          <span>{{ category.nom }}</span>
-        </button>
-      </div>
-    </section>
-
-    <section class="products-section">
-      <div class="products-head">
-        <h2>Produits coups de coeur</h2>
-      </div>
-
+      <!-- Grille produits -->
       <div class="products-grid" *ngIf="!loadingProducts && products.length > 0">
-          <a
-          class="product-card"
-          *ngFor="let product of products"
-          [routerLink]="['/products', product.id]">
-          <div class="thumb">
-            <ng-container *ngIf="$any(product)._thumbnail; else letter">
-              <img [src]="$any(product)._thumbnail" alt="{{ product.nom }}" class="home-thumb" />
-            </ng-container>
-            <ng-template #letter>
-              <span>{{ product.nom.charAt(0) }}</span>
-            </ng-template>
+        <a class="product-card" *ngFor="let product of products" [routerLink]="['/products', product.id]">
+          <div class="product-thumb">
+            <img *ngIf="$any(product)._thumbnail" [src]="$any(product)._thumbnail" [alt]="product.nom" loading="lazy">
+            <div class="thumb-placeholder" *ngIf="!$any(product)._thumbnail">{{ product.nom.charAt(0) }}</div>
+            <div class="promo-tag" *ngIf="product.prixPromo">-{{ getPromoPercent(product) }}%</div>
           </div>
-          <div class="content">
+          <div class="product-content">
             <h3>{{ product.nom }}</h3>
-            <p>{{ product.description || 'Article fiable, pratique et adapte aux enfants.' }}</p>
-            <div class="meta">
-              <strong>{{ getPrice(product) | number:'1.0-0' }} TND</strong>
+            <p>{{ (product.description | slice:0:80) }}{{ (product.description?.length || 0) > 80 ? '…' : '' }}</p>
+            <div class="price-block">
+              <span class="current-price">{{ getDisplayPrice(product) | number:'1.2-2' }} €</span>
+              <span class="old-price" *ngIf="product.prixPromo">{{ product.prix | number:'1.2-2' }} €</span>
             </div>
           </div>
         </a>
       </div>
 
+      <!-- Message vide -->
+      <div class="empty-state" *ngIf="!loadingProducts && products.length === 0">
+        <span class="empty-icon" aria-hidden="true">🧸</span>
+        <p>Aucun produit dans cette catégorie.</p>
+        <a routerLink="/products" class="btn-primary small">Découvrir le catalogue</a>
+      </div>
+
+      <!-- Lien vers tout le catalogue -->
       <div class="products-footer-link" *ngIf="!loadingProducts && products.length > 0">
-        <a routerLink="/products">Voir tout le catalogue</a>
+        <a routerLink="/products">Découvrir toute la collection</a>
       </div>
     </section>
 
-    <div class="state" *ngIf="loadingProducts">
-      Chargement des produits...
-    </div>
-
-    <div class="state" *ngIf="!loadingProducts && products.length === 0">
-      Aucun produit disponible pour cette categorie.
-    </div>
   </div>
 </section>

@@ -1,46 +1,70 @@
-<div class="container py-4">
-  <h2>{{ isEdit ? 'Modifier le coupon' : 'Nouveau coupon' }}</h2>
-
-  <form [formGroup]="form" (ngSubmit)="save()">
-    <div class="mb-3">
-      <label class="form-label">Code</label>
-      <input class="form-control" formControlName="code" />
+<div class="coupon-form-container">
+  <div class="form-card">
+    <div class="form-header">
+      <span class="header-icon">🏷️</span>
+      <div>
+        <h1 class="form-title">{{ isEdit ? 'Modifier le coupon' : 'Nouveau coupon' }}</h1>
+        <p class="form-subtitle">{{ isEdit ? 'Ajustez les informations du code promotionnel' : 'Créez un nouveau code de réduction' }}</p>
+      </div>
     </div>
 
-    <div class="mb-3">
-      <label class="form-label">Type</label>
-      <select class="form-select" formControlName="type">
-        <option value="PERCENT">Pourcentage</option>
-        <option value="AMOUNT">Montant fixe</option>
-      </select>
-    </div>
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <!-- Code -->
+      <div class="form-group">
+        <label>Code du coupon *</label>
+        <input type="text" formControlName="code" placeholder="Ex: BIENVENUE20" class="form-control">
+        <small>Le code que les clients devront saisir</small>
+      </div>
 
-    <div class="mb-3">
-      <label class="form-label">Valeur</label>
-      <input type="number" class="form-control" formControlName="valeur" />
-    </div>
+      <!-- Type + Valeur (grille 2 colonnes) -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Type *</label>
+          <select formControlName="type" class="form-control">
+            <option value="PERCENT">Pourcentage (%)</option>
+            <option value="FIXED">Montant fixe (€)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Valeur *</label>
+          <input type="number" step="0.01" formControlName="valeur" placeholder="0.00" class="form-control">
+          <small>Remise en % ou en euros</small>
+        </div>
+      </div>
 
-    <div class="mb-3">
-      <label class="form-label">Usages max</label>
-      <input type="number" class="form-control" formControlName="usagesMax" />
-    </div>
+      <!-- Usages max + Date expiration (grille 2 colonnes) -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Utilisations max</label>
+          <input type="number" min="0" formControlName="usagesMax" placeholder="Illimité" class="form-control">
+          <small>Nombre maximum d’utilisations (laisser vide = illimité)</small>
+        </div>
+        <div class="form-group">
+          <label>Date d’expiration</label>
+          <input type="date" formControlName="dateExpiration" class="form-control">
+          <small>Optionnel – après cette date, le coupon expire</small>
+        </div>
+      </div>
 
-    <div class="mb-3">
-      <label class="form-label">Date d'expiration</label>
-      <input type="date" class="form-control" formControlName="dateExpiration" />
-    </div>
+      <!-- Actif -->
+      <div class="form-checkbox">
+        <input type="checkbox" formControlName="actif" id="actif">
+        <label for="actif">Coupon actif</label>
+        <small>Un coupon inactif ne sera pas applicable</small>
+      </div>
 
-    <div class="form-check mb-3">
-      <input class="form-check-input" type="checkbox" formControlName="actif" id="actif" />
-      <label class="form-check-label" for="actif">Actif</label>
-    </div>
+      <!-- Message d’erreur -->
+      <div class="error-message" *ngIf="error">{{ error }}</div>
 
-    <div class="d-flex gap-2">
-      <button class="btn btn-primary" [disabled]="loading">Enregistrer</button>
-      <button type="button" class="btn btn-secondary" (click)="cancel()">Annuler</button>
-    </div>
-  </form>
-
-  <div *ngIf="error" class="alert alert-danger mt-3">{{ error }}</div>
+      <!-- Boutons -->
+      <div class="form-actions">
+        <button type="submit" class="btn-save" [disabled]="loading">
+          <i class="fas fa-save"></i> {{ loading ? 'Enregistrement...' : (isEdit ? 'Mettre à jour' : 'Créer') }}
+        </button>
+        <button type="button" class="btn-cancel" (click)="cancel()">
+          <i class="fas fa-times"></i> Annuler
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
-

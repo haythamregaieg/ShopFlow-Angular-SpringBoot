@@ -14,6 +14,11 @@ export class CouponListComponent implements OnInit {
   loading = false;
   message = '';
 
+  // Pagination
+  currentPage = 0;
+  pageSize = 10;
+  totalPages = 0;
+
   constructor(
     private couponService: CouponService,
     private authService: AuthService,
@@ -27,12 +32,31 @@ export class CouponListComponent implements OnInit {
   load(): void {
     this.loading = true;
     this.couponService.getAllForSeller().subscribe({
-      next: (c) => {
-        this.coupons = c || [];
+      next: (coupons) => {
+        this.coupons = coupons || [];
+        this.totalPages = Math.ceil(this.coupons.length / this.pageSize);
+        if (this.currentPage >= this.totalPages) this.currentPage = 0;
         this.loading = false;
       },
-      error: () => this.loading = false
+      error: () => {
+        this.loading = false;
+        this.message = 'Erreur de chargement des coupons';
+      }
     });
+  }
+
+  get paginatedCoupons(): Coupon[] {
+    const start = this.currentPage * this.pageSize;
+    return this.coupons.slice(start, start + this.pageSize);
+  }
+
+  get pages(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i);
+  }
+
+  changePage(page: number): void {
+    if (page < 0 || page >= this.totalPages) return;
+    this.currentPage = page;
   }
 
   create(): void {
@@ -46,7 +70,10 @@ export class CouponListComponent implements OnInit {
   deleteCoupon(id: number): void {
     if (!confirm('Supprimer ce coupon ?')) return;
     this.couponService.delete(id).subscribe({
-      next: () => this.load(),
+      next: () => {
+        this.load();
+        this.message = '';
+      },
       error: () => this.message = 'Erreur lors de la suppression'
     });
   }

@@ -1,62 +1,88 @@
-<div class="container" style="padding-top: 30px;">
+<div class="reviews-container">
+  <!-- Navigation admin centrée -->
   <div class="admin-nav">
     <a routerLink="/admin/users" routerLinkActive="active" class="admin-tab">👥 Utilisateurs</a>
     <a routerLink="/admin/products" routerLinkActive="active" class="admin-tab">📦 Produits</a>
-    <a routerLink="/admin/reviews" routerLinkActive="active" class="admin-tab">⭐ Avis</a>
+    <a routerLink="/admin/reviews" routerLinkActive="active" class="admin-tab active">⭐ Avis</a>
+    <a routerLink="/admin/coupons" routerLinkActive="active" class="admin-tab">🏷️ Coupons</a>
   </div>
 
+  <!-- En-tête -->
   <div class="page-header">
-    <h1 class="page-title">⭐ Modération des Avis</h1>
+    <div>
+      <h1 class="page-title">⭐ Modération des avis</h1>
+      <p class="page-subtitle">Approuvez ou consultez les avis clients</p>
+    </div>
   </div>
 
-  <div class="alert alert-success" *ngIf="message">{{ message }}</div>
+  <!-- Message flash -->
+  <div class="alert-success" *ngIf="message">{{ message }}</div>
 
-  <div class="loading" *ngIf="loading">Chargement...</div>
+  <!-- Carte principale -->
+  <div class="reviews-card">
+    <div class="table-responsive">
+      <table class="reviews-table">
+        <thead>
+          <tr>
+            <th>Produit</th>
+            <th>Client</th>
+            <th>Note</th>
+            <th>Commentaire</th>
+            <th>Statut</th>
+            <th class="actions-col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let review of paginatedReviews">
+            <td class="product-cell"><strong>{{ review.productNom || 'Produit #' + (review.productId || '?') }}</strong></td>
+            <td class="customer-cell">
+              {{ review.customerPrenom }} {{ review.customerNom }}
+              <div class="customer-email">{{ review.customerEmail }}</div>
+            </td>
+            <td class="rating-cell">
+              <div class="stars">
+                <span class="star" *ngFor="let i of [1,2,3,4,5]" [class.filled]="review.note >= i">★</span>
+              </div>
+            </td>
+            <td class="comment-cell">{{ review.commentaire || '—' }}</td
+            ><td>
+              <span class="status-badge" [class.approved]="review.approuve" [class.pending]="!review.approuve">
+                {{ review.approuve ? 'Approuvé' : 'En attente' }}
+              </span>
+            </td>
+            <td class="actions-cell">
+              <button class="action-btn approve" *ngIf="!review.approuve" (click)="approve(review.id)">
+                <i class="fas fa-check-circle"></i> Approuver
+              </button>
+              <span class="approved-badge" *ngIf="review.approuve">✅ Déjà approuvé</span>
+            </td>
+          </tr>
+          <tr *ngIf="paginatedReviews.length === 0 && !loading">
+            <td colspan="6" class="empty-row">Aucun avis à modérer</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-  <div class="card" *ngIf="!loading">
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Produit</th>
-          <th>Client</th>
-          <th>Note</th>
-          <th>Commentaire</th>
-          <th>Statut</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let review of reviews">
-          <td>
-            <strong>{{ review.productNom || 'Produit #' + (review.productId || '??') }}</strong>
-          </td>
-          <td>
-            {{ review.customerPrenom }} {{ review.customerNom }}
-            <br>
-            <small class="text-muted">{{ review.customerEmail }}</small>
-          </td>
-          <td>
-            <div class="stars">
-              <span class="star" *ngFor="let i of [1,2,3,4,5]" [class.filled]="review.note >= i">★</span>
-            </div>
-          </td>
-          <td class="comment-cell">{{ review.commentaire }}</td>
-          <td>
-            <span class="badge" [class]="review.approuve ? 'badge-success' : 'badge-warning'">
-              {{ review.approuve ? 'Approuvé' : 'En attente' }}
-            </span>
-          </td>
-          <td>
-            <button class="btn btn-success btn-sm" *ngIf="!review.approuve" (click)="approve(review.id)">
-              Approuver
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <!-- Pagination -->
+    <div class="pagination-container" *ngIf="totalPages > 1">
+      <button class="page-btn" (click)="changePage(currentPage - 1)" [disabled]="currentPage === 0">
+        <i class="fas fa-chevron-left"></i> Précédent
+      </button>
+      <div class="page-numbers">
+        <button *ngFor="let p of pages" class="page-number" [class.active]="p === currentPage" (click)="changePage(p)">
+          {{ p + 1 }}
+        </button>
+      </div>
+      <button class="page-btn" (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages - 1">
+        Suivant <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
 
-    <div class="text-center py-4" *ngIf="reviews.length === 0">
-      <p class="text-muted">Aucun avis à modérer.</p>
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Chargement des avis...</span>
     </div>
   </div>
 </div>

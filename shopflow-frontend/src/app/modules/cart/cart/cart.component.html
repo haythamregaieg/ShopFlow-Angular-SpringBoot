@@ -27,7 +27,7 @@
               <div *ngIf="variantsByProduct[item.productId]?.length" class="variant-wrap">
                 <label>Variante</label>
                 <select [ngModel]="item.variantId" (ngModelChange)="updateVariant(item.id, item.quantite, $event)">
-                  <option [ngValue]="undefined">Par defaut</option>
+                  <option [ngValue]="undefined">Par défaut</option>
                   <option *ngFor="let v of variantsByProduct[item.productId]" [ngValue]="v.id">
                     {{ v.taille }} / {{ v.couleur }} ({{ v.stock }} en stock)
                   </option>
@@ -40,7 +40,7 @@
               <button class="qty-btn" (click)="updateQuantity(item.id, item.quantite + 1)">+</button>
             </div>
             <div class="item-subtotal">{{ item.sousTotal | number:'1.2-2' }} EUR</div>
-            <button class="remove-btn" (click)="removeItem(item.id)" title="Supprimer">x</button>
+            <button class="remove-btn" (click)="removeItem(item.id)" title="Supprimer">✕</button>
           </article>
         </section>
 
@@ -48,16 +48,14 @@
         <section class="cart-card delivery-form">
           <h3 class="form-title">Informations de livraison</h3>
 
-          <!-- Telephone -->
           <div class="form-group">
-            <label>Numero de telephone *</label>
+            <label>Numéro de téléphone *</label>
             <input type="tel" class="input-field" [(ngModel)]="telephone"
                    placeholder="Ex: +216 22 000 000">
           </div>
 
-          <!-- Adresses sauvegardees -->
           <div class="form-group" *ngIf="savedAddresses.length > 0">
-            <label>Choisir une adresse sauvegardee</label>
+            <label>Choisir une adresse sauvegardée</label>
             <select class="input-field" [ngModel]="selectedAddressId" (ngModelChange)="onAddressSelect($event)">
               <option [ngValue]="null">-- Saisir une nouvelle adresse --</option>
               <option *ngFor="let addr of savedAddresses" [ngValue]="addr.id">
@@ -67,7 +65,6 @@
             </select>
           </div>
 
-          <!-- Adresse sauvegardee selectionnee (champs bloques) -->
           <div *ngIf="selectedAddressId && selectedAddress" class="form-grid">
             <div class="full-width">
               <label>Adresse</label>
@@ -83,12 +80,11 @@
             </div>
           </div>
 
-          <!-- Nouvelle adresse (si pas d'adresse selectionnee) -->
           <div *ngIf="!selectedAddressId" class="form-grid">
             <div class="full-width">
-              <label>Adresse complete *</label>
+              <label>Adresse complète *</label>
               <textarea class="input-field" [(ngModel)]="adresseTexte" rows="2"
-                        placeholder="Rue, numero, appartement..."></textarea>
+                        placeholder="Rue, numéro, appartement..."></textarea>
             </div>
             <div>
               <label>Gouvernorat *</label>
@@ -106,10 +102,10 @@
         </section>
       </div>
 
-      <!-- ─── Recapitulatif ─────────────────────────────────────────── -->
+      <!-- ─── Récapitulatif ─────────────────────────────────────────── -->
       <aside class="cart-sidebar">
         <section class="cart-card">
-          <h3 class="summary-title">Recapitulatif</h3>
+          <h3 class="summary-title">Récapitulatif</h3>
 
           <div class="coupon-box">
             <label>Code promo</label>
@@ -119,7 +115,7 @@
             </div>
             <div class="coupon-tag" *ngIf="cart.couponCode">
               <span>{{ cart.couponCode }}</span>
-              <button class="coupon-remove" (click)="removeCoupon()">x</button>
+              <button class="coupon-remove" (click)="removeCoupon()">✕</button>
             </div>
           </div>
 
@@ -150,10 +146,10 @@
     </div>
 
     <section class="empty-state" *ngIf="!cart || cart.lignes.length === 0">
-      <div class="empty-icon">PANIER</div>
+      <div class="empty-icon">🧸</div>
       <h2>Votre panier est vide</h2>
-      <p>Vous n'avez pas encore ajoute de produit.</p>
-      <a routerLink="/products" class="btn btn-primary">Decouvrir nos produits</a>
+      <p>Vous n'avez pas encore ajouté de produit.</p>
+      <a routerLink="/products" class="btn btn-primary">Découvrir nos produits</a>
     </section>
   </div>
 </div>
