@@ -227,6 +227,44 @@ input {
     color: #111827;
 }
 
+/* Password input with eye button */
+.password-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-input-wrapper input {
+    padding-right: 46px; /* room for the eye button */
+}
+
+.eye-btn {
+    position: absolute;
+    right: 8px;
+    background: transparent;
+    border: none;
+    height: 32px;
+    width: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    cursor: pointer;
+    color: #61738f;
+    transition: background 0.12s, color 0.12s, transform 0.08s;
+}
+
+.eye-btn:hover {
+    background: rgba(6, 78, 159, 0.06);
+    color: var(--secondary);
+    transform: translateY(-1px);
+}
+
+.eye-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(0,66,133,0.12);
+}
+
 input:focus {
     border-color: var(--secondary);
     outline: none;

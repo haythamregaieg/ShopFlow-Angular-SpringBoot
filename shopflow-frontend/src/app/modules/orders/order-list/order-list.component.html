@@ -13,6 +13,7 @@
           <th>Date</th>
           <th>Total</th>
           <th>Statut</th>
+          <th>Notification</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -24,6 +25,11 @@
           <td>
             <span class="badge" [ngClass]="'badge-' + order.statut.toLowerCase()">
               {{ order.statut }}
+            </span>
+          </td>
+          <td>
+            <span *ngIf="order.isNewStatus" class="badge badge-info" title="Statut mis a jour">
+              Nouveau statut
             </span>
           </td>
           <td class="d-flex align-items-center gap-2">

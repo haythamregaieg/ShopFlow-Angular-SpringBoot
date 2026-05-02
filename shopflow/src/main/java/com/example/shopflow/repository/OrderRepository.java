@@ -13,7 +13,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Optional<Order> findByNumeroCommande(String numeroCommande);
 
     @Query("""
-            SELECT COUNT(o) > 0
+            SELECT CASE WHEN COUNT(o) > 0 THEN true ELSE false END
             FROM Order o JOIN o.lignes l
             WHERE o.customer.id = :customerId
               AND l.product.id = :productId

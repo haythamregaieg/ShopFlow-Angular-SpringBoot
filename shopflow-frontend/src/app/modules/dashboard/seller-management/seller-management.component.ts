@@ -122,6 +122,37 @@ export class SellerManagementComponent implements OnInit {
     });
   }
 
+  deactivateProduct(productId: number): void {
+    if (!confirm('Desactiver ce produit ? Il ne sera plus visible sur le site.')) {
+      return;
+    }
+    // Backend delete is a soft-delete (sets actif=false)
+    this.productService.delete(productId).subscribe({
+      next: () => {
+        this.success = 'Produit desactive.';
+        this.loadProducts();
+      },
+      error: () => {
+        this.error = 'La desactivation du produit a echoue.';
+      }
+    });
+  }
+
+  activateProduct(productId: number): void {
+    if (!confirm('Reactiver ce produit ? Il redeviendra visible sur le site.')) {
+      return;
+    }
+    this.productService.activate(productId).subscribe({
+      next: () => {
+        this.success = 'Produit reactive.';
+        this.loadProducts();
+      },
+      error: () => {
+        this.error = 'La reactivation du produit a echoue.';
+      }
+    });
+  }
+
   submitCoupon(): void {
     if (this.couponForm.invalid) {
       this.couponForm.markAllAsTouched();

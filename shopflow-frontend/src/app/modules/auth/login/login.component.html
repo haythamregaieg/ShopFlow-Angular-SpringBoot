@@ -40,14 +40,19 @@
                     </div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group password-group">
                     <label><i class="fas fa-lock"></i> Mot de passe</label>
-                    <input
-                        type="password"
-                        formControlName="motDePasse"
-                        placeholder="••••••••"
-                        autocomplete="current-password"
-                        [class.is-invalid]="f['motDePasse'].touched && f['motDePasse'].invalid">
+                    <div class="password-input-wrapper">
+                        <input
+                            [type]="showPassword ? 'text' : 'password'"
+                            formControlName="motDePasse"
+                            placeholder="••••••••"
+                            autocomplete="current-password"
+                            [class.is-invalid]="f['motDePasse'].touched && f['motDePasse'].invalid">
+                        <button type="button" class="eye-btn" (click)="toggleShowPassword()" aria-label="Afficher/masquer le mot de passe">
+                            <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                        </button>
+                    </div>
                     <div class="error-msg" *ngIf="f['motDePasse'].touched && f['motDePasse'].invalid">
                         <i class="fas fa-exclamation-circle"></i>
                         <span *ngIf="f['motDePasse'].errors?.['required']">Le mot de passe est obligatoire</span>

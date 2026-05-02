@@ -52,6 +52,12 @@ public class OrderController {
         return orderService.cancel(id, userDetails.getUsername());
     }
 
+    @PutMapping("/{id}/seen")
+    public OrderResponse markAsSeen(@PathVariable Long id,
+                                    @AuthenticationPrincipal UserDetails userDetails) {
+        return orderService.markAsSeen(id, userDetails.getUsername());
+    }
+
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public List<OrderResponse> getAll() {

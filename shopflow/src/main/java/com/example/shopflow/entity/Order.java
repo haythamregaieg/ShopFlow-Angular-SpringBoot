@@ -34,7 +34,10 @@ public class Order {
     @JoinColumn(name = "address_id")
     private Address adresseLivraison;
 
+    private String telephone;
     private BigDecimal sousTotal;
+    private BigDecimal remise;
+    private String couponCode;
     private BigDecimal fraisLivraison;
     private BigDecimal totalTTC;
     private BigDecimal montantRembourse;

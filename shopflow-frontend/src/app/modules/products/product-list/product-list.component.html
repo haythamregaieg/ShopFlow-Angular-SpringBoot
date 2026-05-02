@@ -89,7 +89,13 @@
         <!-- Results bar -->
         <div class="results-bar">
           <span class="results-count">
-            <strong>{{ products.length }}</strong> produit{{ products.length !== 1 ? 's' : '' }} trouvé{{ products.length !== 1 ? 's' : '' }}
+            <strong>{{ products.length }}</strong> produit{{ products.length !== 1 ? 's' : '' }} affiché{{ products.length !== 1 ? 's' : '' }}
+          </span>
+          <span class="results-total" *ngIf="totalElements !== undefined">
+            • Total: <strong>{{ totalElements }}</strong> produit{{ totalElements !== 1 ? 's' : '' }} sur le site
+          </span>
+          <span class="results-page" *ngIf="totalPages > 0">
+            • Page {{ currentPage + 1 }} / {{ totalPages }}
           </span>
           <div class="sort-wrap">
             <label class="sort-label">Trier par</label>

@@ -16,6 +16,7 @@ export class RegisterComponent {
 
   asSeller = false;
   acceptedTerms = false;
+  showPassword = false;
 
   readonly strongPasswordRegex =
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&._#^()\-\+=]).{8,}$/;
@@ -66,6 +67,11 @@ export class RegisterComponent {
     }
 
     if (this.form.invalid) {
+      // Mark all controls as touched to trigger validation messages in the template
+      Object.keys(this.form.controls).forEach(key => {
+        const control = this.form.get(key);
+        control?.markAsTouched();
+      });
       this.error = "Veuillez remplir correctement le formulaire.";
       return;
     }
@@ -74,7 +80,8 @@ export class RegisterComponent {
 
     const payload = {
       ...this.form.value,
-      role: this.asSeller ? 'seller' : 'client'
+      // Backend expects enum values: CUSTOMER, SELLER, ADMIN
+      role: this.asSeller ? 'SELLER' : 'CUSTOMER'
     };
 
     const request$ = this.asSeller
@@ -91,5 +98,9 @@ export class RegisterComponent {
         this.error = err.error?.message || 'Erreur lors de l’inscription';
       }
     });
+  }
+
+  toggleShowPassword(): void {
+    this.showPassword = !this.showPassword;
   }
 }

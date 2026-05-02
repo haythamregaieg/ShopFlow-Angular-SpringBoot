@@ -1,6 +1,7 @@
 package com.example.shopflow.controller;
 
 import com.example.shopflow.dto.request.AddressRequest;
+import com.example.shopflow.dto.response.AddressResponse;
 import com.example.shopflow.entity.Address;
 import com.example.shopflow.service.AddressService;
 import jakarta.validation.Valid;
@@ -19,8 +20,17 @@ public class AddressController {
     private final AddressService addressService;
 
     @GetMapping("/my")
-    public List<Address> getMyAddresses(@AuthenticationPrincipal UserDetails userDetails) {
-        return addressService.getMyAddresses(userDetails.getUsername());
+    public List<AddressResponse> getMyAddresses(@AuthenticationPrincipal UserDetails userDetails) {
+        List<Address> addresses = addressService.getMyAddresses(userDetails.getUsername());
+        return addresses.stream().map(a -> AddressResponse.builder()
+                .id(a.getId())
+                .rue(a.getRue())
+                .ville(a.getVille())
+                .codePostal(a.getCodePostal())
+                .pays(a.getPays())
+                .principal(a.isPrincipal())
+                .build()
+        ).toList();
     }
 
     @PostMapping

@@ -13,6 +13,7 @@ export class LoginComponent {
   form: FormGroup;
   error = '';
   loading = false;
+  showPassword = false;
 
   constructor(
     private fb: FormBuilder,
@@ -27,6 +28,10 @@ export class LoginComponent {
 
   // Getter pour accès facile aux champs du formulaire
   get f() { return this.form.controls; }
+
+  toggleShowPassword(): void {
+    this.showPassword = !this.showPassword;
+  }
 
   onSubmit(): void {
     if (this.form.invalid) {

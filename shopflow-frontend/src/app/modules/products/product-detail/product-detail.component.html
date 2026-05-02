@@ -116,7 +116,7 @@
             <div class="stars mb-1">
               <span class="star" *ngFor="let i of [1,2,3,4,5]" [class.filled]="review.note >= i">★</span>
             </div>
-            <strong class="d-block">{{ review.customer?.prenom || 'Client' }} {{ review.customer?.nom || '' }}</strong>
+            <strong class="d-block">{{ review.customerPrenom || 'Client' }} {{ review.customerNom || '' }}</strong>
           </div>
           <small class="text-muted">{{ review.dateCreation | date:'dd/MM/yyyy' }}</small>
         </div>

@@ -28,12 +28,12 @@
       <tbody>
         <tr *ngFor="let review of reviews">
           <td>
-            <strong>{{ review.product?.nom || 'Produit #' + (review.productId || '??') }}</strong>
+            <strong>{{ review.productNom || 'Produit #' + (review.productId || '??') }}</strong>
           </td>
           <td>
-            {{ review.customer?.prenom }} {{ review.customer?.nom }}
+            {{ review.customerPrenom }} {{ review.customerNom }}
             <br>
-            <small class="text-muted">{{ review.customer?.email }}</small>
+            <small class="text-muted">{{ review.customerEmail }}</small>
           </td>
           <td>
             <div class="stars">

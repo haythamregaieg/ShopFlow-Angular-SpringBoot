@@ -6,16 +6,19 @@ import com.example.shopflow.dto.response.OrderResponse;
 import com.example.shopflow.dto.response.AddressResponse;
 import com.example.shopflow.entity.Address;
 import com.example.shopflow.entity.Cart;
+import com.example.shopflow.entity.Coupon;
 import com.example.shopflow.entity.Order;
 import com.example.shopflow.entity.OrderItem;
 import com.example.shopflow.entity.Product;
 import com.example.shopflow.entity.ProductVariant;
 import com.example.shopflow.entity.User;
+import com.example.shopflow.entity.enums.CouponType;
 import com.example.shopflow.entity.enums.OrderStatus;
 import com.example.shopflow.exception.BadRequestException;
 import com.example.shopflow.exception.ResourceNotFoundException;
 import com.example.shopflow.repository.AddressRepository;
 import com.example.shopflow.repository.CartRepository;
+import com.example.shopflow.repository.CouponRepository;
 import com.example.shopflow.repository.OrderRepository;
 import com.example.shopflow.repository.ProductRepository;
 import com.example.shopflow.repository.ProductVariantRepository;
@@ -27,12 +30,61 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class OrderService {
+
+    // ── Frais de livraison par gouvernorat tunisien ───────────────────────────
+    private static final Map<String, BigDecimal> FRAIS_PAR_VILLE;
+    static {
+        Map<String, BigDecimal> m = new HashMap<>();
+        m.put("Tunis",       BigDecimal.valueOf(3.00));
+        m.put("Ariana",      BigDecimal.valueOf(3.00));
+        m.put("Ben Arous",   BigDecimal.valueOf(3.00));
+        m.put("Manouba",     BigDecimal.valueOf(3.00));
+        m.put("Nabeul",      BigDecimal.valueOf(5.00));
+        m.put("Zaghouan",    BigDecimal.valueOf(5.00));
+        m.put("Bizerte",     BigDecimal.valueOf(5.00));
+        m.put("Beja",        BigDecimal.valueOf(7.00));
+        m.put("Jendouba",    BigDecimal.valueOf(7.00));
+        m.put("Le Kef",      BigDecimal.valueOf(7.00));
+        m.put("Siliana",     BigDecimal.valueOf(7.00));
+        m.put("Sousse",      BigDecimal.valueOf(5.00));
+        m.put("Monastir",    BigDecimal.valueOf(5.00));
+        m.put("Mahdia",      BigDecimal.valueOf(6.00));
+        m.put("Sfax",        BigDecimal.valueOf(6.00));
+        m.put("Kairouan",    BigDecimal.valueOf(6.00));
+        m.put("Kasserine",   BigDecimal.valueOf(8.00));
+        m.put("Sidi Bouzid", BigDecimal.valueOf(8.00));
+        m.put("Gabes",       BigDecimal.valueOf(8.00));
+        m.put("Medenine",    BigDecimal.valueOf(9.00));
+        m.put("Tataouine",   BigDecimal.valueOf(10.00));
+        m.put("Gafsa",       BigDecimal.valueOf(8.00));
+        m.put("Tozeur",      BigDecimal.valueOf(9.00));
+        m.put("Kebili",      BigDecimal.valueOf(9.00));
+        FRAIS_PAR_VILLE = java.util.Collections.unmodifiableMap(m);
+    }
+
+    public static BigDecimal calculerFrais(String ville, BigDecimal sousApresRemise) {
+        if (sousApresRemise != null && sousApresRemise.compareTo(BigDecimal.valueOf(100)) >= 0) {
+            return BigDecimal.ZERO;
+        }
+        if (ville != null && FRAIS_PAR_VILLE.containsKey(ville)) {
+            return FRAIS_PAR_VILLE.get(ville);
+        }
+        return BigDecimal.valueOf(7.99);
+    }
+
+    public static Map<String, BigDecimal> getFraisParVille() {
+        return FRAIS_PAR_VILLE;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
 
     private final OrderRepository orderRepository;
     private final CartRepository cartRepository;
@@ -40,6 +92,7 @@ public class OrderService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final ProductVariantRepository productVariantRepository;
+    private final CouponRepository couponRepository;
 
     @Transactional
     public OrderResponse createOrder(String email, OrderRequest request) {
@@ -83,8 +136,30 @@ public class OrderService {
         BigDecimal sousTotal = items.stream()
                 .map(i -> i.getPrixUnitaire().multiply(BigDecimal.valueOf(i.getQuantite())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-    // Fixed shipping fee per order (7.99 EUR)
-    BigDecimal frais = BigDecimal.valueOf(7.99);
+
+        // Appliquer le coupon du panier
+        BigDecimal remise = BigDecimal.ZERO;
+        String couponCode = cart.getCouponCode();
+        if (couponCode != null) {
+            Coupon coupon = couponRepository.findByCodeAndActifTrue(couponCode).orElse(null);
+            if (coupon != null) {
+                if (coupon.getType() == CouponType.PERCENT) {
+                    remise = sousTotal.multiply(coupon.getValeur()).divide(BigDecimal.valueOf(100));
+                } else {
+                    remise = coupon.getValeur().min(sousTotal);
+                }
+                coupon.setUsagesActuels(coupon.getUsagesActuels() + 1);
+                if (coupon.getUsagesMax() != null && coupon.getUsagesActuels() >= coupon.getUsagesMax()) {
+                    coupon.setActif(false);
+                }
+                couponRepository.save(coupon);
+            } else {
+                couponCode = null;
+            }
+        }
+
+        BigDecimal sousApresRemise = sousTotal.subtract(remise).max(BigDecimal.ZERO);
+        BigDecimal frais = calculerFrais(address.getVille(), sousApresRemise);
 
         long nextOrderNumber = orderRepository.count() + 1;
         String numeroCommande = String.format("ORD-%d-%05d", LocalDate.now().getYear(), nextOrderNumber);
@@ -94,9 +169,12 @@ public class OrderService {
                 .statut(OrderStatus.PENDING)
                 .numeroCommande(numeroCommande)
                 .adresseLivraison(address)
+                .telephone(request.getTelephone())
                 .sousTotal(sousTotal)
+                .couponCode(couponCode)
+                .remise(remise)
                 .fraisLivraison(frais)
-                .totalTTC(sousTotal.add(frais))
+                .totalTTC(sousApresRemise.add(frais))
                 .montantRembourse(BigDecimal.ZERO)
                 .isNewStatus(true)
                 .build();
@@ -106,6 +184,7 @@ public class OrderService {
         Order saved = orderRepository.save(order);
 
         cart.getLignes().clear();
+        cart.setCouponCode(null);
         cartRepository.save(cart);
 
         return toResponse(saved);
@@ -116,41 +195,34 @@ public class OrderService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable"));
         return orderRepository.findByCustomerIdOrderByDateCommandeDesc(user.getId())
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+                .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<OrderResponse> getSellerOrders(String email, boolean isAdmin) {
         if (isAdmin) {
-            return orderRepository.findAll().stream()
-                    .map(this::toResponse)
-                    .collect(Collectors.toList());
+            return orderRepository.findAll().stream().map(this::toResponse).collect(Collectors.toList());
         }
         User seller = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable"));
-        return orderRepository.findBySellerIdOrderByDateCommandeDesc(seller.getId()).stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+        return orderRepository.findBySellerIdOrderByDateCommandeDesc(seller.getId())
+                .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public OrderResponse getById(Long id, String email, java.util.Collection<? extends org.springframework.security.core.GrantedAuthority> authorities) {
+    public OrderResponse getById(Long id, String email,
+            java.util.Collection<? extends org.springframework.security.core.GrantedAuthority> authorities) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Commande introuvable"));
-
         boolean isAdmin = authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         boolean isOwner = order.getCustomer() != null && order.getCustomer().getEmail().equals(email);
         boolean isSeller = authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_SELLER"));
-
         boolean sellerCanView = false;
         if (isSeller && !isAdmin) {
             User seller = userRepository.findByEmail(email)
                     .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable"));
             sellerCanView = isSellerParticipant(order, seller.getId());
         }
-
         if (!isAdmin && !isOwner && !sellerCanView) {
             throw new BadRequestException("Vous n'etes pas autorise a consulter cette commande");
         }
@@ -161,9 +233,7 @@ public class OrderService {
     public OrderResponse updateStatus(Long id, OrderStatus status) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Commande introuvable"));
-        if (order.getStatut() == status) {
-            return toResponse(order);
-        }
+        if (order.getStatut() == status) return toResponse(order);
         if (!isValidStatusTransition(order.getStatut(), status)) {
             throw new BadRequestException("Transition invalide : " + order.getStatut() + " -> " + status);
         }
@@ -210,93 +280,87 @@ public class OrderService {
         return toResponse(orderRepository.save(order));
     }
 
+    @Transactional
+    public OrderResponse markAsSeen(Long id, String email) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Commande introuvable"));
+        boolean isOwner = order.getCustomer() != null && order.getCustomer().getEmail().equals(email);
+        if (!isOwner) throw new BadRequestException("Non autorise");
+        order.setNewStatus(false);
+        return toResponse(orderRepository.save(order));
+    }
+
     @Transactional(readOnly = true)
     public List<OrderResponse> getAllOrders() {
-        return orderRepository.findAll().stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+        return orderRepository.findAll().stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     private OrderResponse toResponse(Order o) {
-    List<OrderItemResponse> lignes = o.getLignes() != null
-        ? o.getLignes().stream().map(i -> {
-            Long sellerId = null;
-            String sellerNom = null;
-            if (i.getProduct() != null && i.getProduct().getSeller() != null) {
-            sellerId = i.getProduct().getSeller().getId();
-            sellerNom = i.getProduct().getSeller().getNom();
-            }
-            return OrderItemResponse.builder()
-                .id(i.getId())
-                .productNom(i.getProduct().getNom())
-                .quantite(i.getQuantite())
-                .prixUnitaire(i.getPrixUnitaire())
-                .sousTotal(i.getPrixUnitaire().multiply(BigDecimal.valueOf(i.getQuantite())))
-                .sellerId(sellerId)
-                .sellerNom(sellerNom)
-                .build();
-        }).collect(Collectors.toList())
-        : List.of();
+        List<OrderItemResponse> lignes = o.getLignes() != null
+            ? o.getLignes().stream().map(i -> {
+                Long sellerId = null;
+                String sellerNom = null;
+                if (i.getProduct() != null && i.getProduct().getSeller() != null) {
+                    sellerId = i.getProduct().getSeller().getId();
+                    sellerNom = i.getProduct().getSeller().getNom();
+                }
+                return OrderItemResponse.builder()
+                    .id(i.getId())
+                    .productNom(i.getProduct().getNom())
+                    .quantite(i.getQuantite())
+                    .prixUnitaire(i.getPrixUnitaire())
+                    .sousTotal(i.getPrixUnitaire().multiply(BigDecimal.valueOf(i.getQuantite())))
+                    .sellerId(sellerId)
+                    .sellerNom(sellerNom)
+                    .build();
+            }).collect(Collectors.toList())
+            : List.of();
 
-    AddressResponse addr = null;
-    if (o.getAdresseLivraison() != null) {
-        addr = AddressResponse.builder()
-            .rue(o.getAdresseLivraison().getRue())
-            .ville(o.getAdresseLivraison().getVille())
-            .codePostal(o.getAdresseLivraison().getCodePostal())
-            .pays(o.getAdresseLivraison().getPays())
+        AddressResponse addr = null;
+        if (o.getAdresseLivraison() != null) {
+            addr = AddressResponse.builder()
+                .rue(o.getAdresseLivraison().getRue())
+                .ville(o.getAdresseLivraison().getVille())
+                .codePostal(o.getAdresseLivraison().getCodePostal())
+                .pays(o.getAdresseLivraison().getPays())
+                .build();
+        }
+
+        return OrderResponse.builder()
+            .id(o.getId())
+            .numeroCommande(o.getNumeroCommande())
+            .statut(o.getStatut().name())
+            .customerNom(o.getCustomer() != null ? o.getCustomer().getNom() : null)
+            .customerPrenom(o.getCustomer() != null ? o.getCustomer().getPrenom() : null)
+            .customerEmail(o.getCustomer() != null ? o.getCustomer().getEmail() : null)
+            .telephone(o.getTelephone())
+            .adresseLivraison(addr)
+            .sousTotal(o.getSousTotal())
+            .couponCode(o.getCouponCode())
+            .remise(o.getRemise())
+            .fraisLivraison(o.getFraisLivraison())
+            .totalTTC(o.getTotalTTC())
+            .montantRembourse(o.getMontantRembourse())
+            .isNewStatus(o.isNewStatus())
+            .dateCommande(o.getDateCommande())
+            .lignes(lignes)
             .build();
     }
 
-    return OrderResponse.builder()
-        .id(o.getId())
-        .numeroCommande(o.getNumeroCommande())
-        .statut(o.getStatut().name())
-        .customerNom(o.getCustomer() != null ? o.getCustomer().getNom() : null)
-        .customerPrenom(o.getCustomer() != null ? o.getCustomer().getPrenom() : null)
-        .customerEmail(o.getCustomer() != null ? o.getCustomer().getEmail() : null)
-        .adresseLivraison(addr)
-        .sousTotal(o.getSousTotal())
-        .fraisLivraison(o.getFraisLivraison())
-        .totalTTC(o.getTotalTTC())
-        .montantRembourse(o.getMontantRembourse())
-        .isNewStatus(o.isNewStatus())
-        .dateCommande(o.getDateCommande())
-        .lignes(lignes)
-        .build();
-    }
-
     private boolean isValidStatusTransition(OrderStatus current, OrderStatus next) {
-        if (current == next) {
-            return true;
-        }
+        if (current == next) return true;
         return switch (current) {
-            case PENDING -> next == OrderStatus.PAID
-                    || next == OrderStatus.PROCESSING
-                    || next == OrderStatus.SHIPPED
-                    || next == OrderStatus.DELIVERED
-                    || next == OrderStatus.CANCELLED;
-            case PAID -> next == OrderStatus.PROCESSING
-                    || next == OrderStatus.SHIPPED
-                    || next == OrderStatus.DELIVERED
-                    || next == OrderStatus.REFUNDED
-                    || next == OrderStatus.CANCELLED;
-            case PROCESSING -> next == OrderStatus.SHIPPED
-                    || next == OrderStatus.DELIVERED
-                    || next == OrderStatus.CANCELLED
-                    || next == OrderStatus.REFUNDED;
-            case SHIPPED -> next == OrderStatus.DELIVERED;
-            default -> false;
+            case PENDING    -> next == OrderStatus.PAID || next == OrderStatus.PROCESSING
+                            || next == OrderStatus.SHIPPED || next == OrderStatus.DELIVERED
+                            || next == OrderStatus.CANCELLED;
+            case PAID       -> next == OrderStatus.PROCESSING || next == OrderStatus.SHIPPED
+                            || next == OrderStatus.DELIVERED || next == OrderStatus.REFUNDED
+                            || next == OrderStatus.CANCELLED;
+            case PROCESSING -> next == OrderStatus.SHIPPED || next == OrderStatus.DELIVERED
+                            || next == OrderStatus.CANCELLED || next == OrderStatus.REFUNDED;
+            case SHIPPED    -> next == OrderStatus.DELIVERED;
+            default         -> false;
         };
-    }
-
-    private BigDecimal resolveShippingFee(Product product, Address address) {
-        String pays = address.getPays() != null ? address.getPays().trim().toLowerCase() : "";
-        boolean local = pays.equals("tunisie") || pays.equals("tn");
-        if (local) {
-            return product.getFraisLivraisonLocal() != null ? product.getFraisLivraisonLocal() : BigDecimal.ZERO;
-        }
-        return product.getFraisLivraisonInternational() != null ? product.getFraisLivraisonInternational() : BigDecimal.ZERO;
     }
 
     private Address resolveDeliveryAddress(User user, OrderRequest request) {
@@ -316,7 +380,7 @@ public class OrderService {
                 .rue(request.getAdresseTexte())
                 .ville(request.getVille() != null ? request.getVille() : "")
                 .codePostal(request.getCodePostal() != null ? request.getCodePostal() : "")
-                .pays(request.getPays() != null ? request.getPays() : "Tunisie")
+                .pays("Tunisie")
                 .principal(false)
                 .build();
         return addressRepository.save(address);
@@ -324,28 +388,21 @@ public class OrderService {
 
     private boolean isSellerParticipant(Order order, Long sellerId) {
         return order.getLignes() != null && order.getLignes().stream()
-                .anyMatch(l -> l.getProduct() != null
-                        && l.getProduct().getSeller() != null
+                .anyMatch(l -> l.getProduct() != null && l.getProduct().getSeller() != null
                         && l.getProduct().getSeller().getId().equals(sellerId));
     }
 
     private void restockOrder(Order order) {
-        if (order.getLignes() == null) {
-            return;
-        }
+        if (order.getLignes() == null) return;
         for (OrderItem item : order.getLignes()) {
             Product product = item.getProduct();
-            if (product == null || item.getQuantite() == null) {
-                continue;
-            }
+            if (product == null || item.getQuantite() == null) continue;
             ProductVariant variant = item.getVariant();
             if (variant != null) {
-                int currentStock = variant.getStock() != null ? variant.getStock() : 0;
-                variant.setStock(currentStock + item.getQuantite());
+                variant.setStock((variant.getStock() != null ? variant.getStock() : 0) + item.getQuantite());
                 productVariantRepository.save(variant);
             } else {
-                int currentStock = product.getStock() != null ? product.getStock() : 0;
-                product.setStock(currentStock + item.getQuantite());
+                product.setStock((product.getStock() != null ? product.getStock() : 0) + item.getQuantite());
                 productRepository.save(product);
             }
         }

@@ -1,6 +1,6 @@
 <div class="detail-container" *ngIf="order">
   <a routerLink="/orders" class="back-link">
-    <i class="fas fa-arrow-left"></i> Retour à mes commandes
+    <i class="fas fa-arrow-left"></i> Retour a mes commandes
   </a>
 
   <div class="detail-card">
@@ -8,38 +8,41 @@
       <div class="order-title">
         <h1>Commande {{ order.numeroCommande }}</h1>
         <p class="order-meta">
-          <i class="far fa-calendar-alt me-1"></i> Passée le {{ order.dateCommande | date:'dd MMMM yyyy à HH:mm' }}
+          Passee le {{ order.dateCommande | date:'dd MMMM yyyy a HH:mm' }}
         </p>
       </div>
-      <span class="status-badge" [ngClass]="'status-' + order.statut.toLowerCase()">
-        {{ order.statut }}
-      </span>
+      <div class="d-flex align-items-center gap-2">
+        <span *ngIf="order.isNewStatus" class="badge badge-warning">Nouveau statut</span>
+        <span class="status-badge" [ngClass]="'status-' + order.statut.toLowerCase()">
+          {{ order.statut }}
+        </span>
+      </div>
     </div>
 
+    <!-- Informations client -->
     <div class="customer-section mt-3">
       <h4>Informations client</h4>
       <p><strong>Nom :</strong> {{ order.customerPrenom }} {{ order.customerNom }}</p>
       <p><strong>Email :</strong> {{ order.customerEmail }}</p>
+      <p *ngIf="order.telephone"><strong>Telephone :</strong> {{ order.telephone }}</p>
       <div *ngIf="order.adresseLivraison">
         <p><strong>Adresse de livraison :</strong></p>
         <p>
-          {{ order.adresseLivraison.rue }}<br />
-          {{ order.adresseLivraison.ville }} {{ order.adresseLivraison.codePostal }}<br />
+          {{ order.adresseLivraison.rue }}<br>
+          {{ order.adresseLivraison.ville }} {{ order.adresseLivraison.codePostal }}<br>
           {{ order.adresseLivraison.pays }}
         </p>
       </div>
     </div>
 
-    <h3 class="section-title">
-      <i class="fas fa-shopping-bag text-primary"></i> Articles commandés
-    </h3>
-
+    <!-- Articles -->
+    <h3 class="section-title">Articles commandes</h3>
     <div class="table-responsive">
       <table class="items-table">
         <thead>
           <tr>
             <th>Produit</th>
-            <th>Quantité</th>
+            <th>Quantite</th>
             <th>Prix Unitaire</th>
             <th class="text-end">Sous-total</th>
           </tr>
@@ -48,12 +51,9 @@
           <tr *ngFor="let item of visibleLignes">
             <td>
               <div class="d-flex align-items-center gap-2">
-                <ng-container *ngIf="$any(item)._thumbnail; else noThumb">
-                  <img [src]="$any(item)._thumbnail" alt="{{ item.productNom }}" class="order-item-thumb" />
+                <ng-container *ngIf="$any(item)._thumbnail">
+                  <img [src]="$any(item)._thumbnail" alt="{{ item.productNom }}" class="order-item-thumb">
                 </ng-container>
-                <ng-template #noThumb>
-                  <div class="product-name">{{ item.productNom }}</div>
-                </ng-template>
                 <div>
                   <div class="product-name">{{ item.productNom }}</div>
                   <div *ngIf="item.sellerNom" class="small text-muted">Vendeur: {{ item.sellerNom }}</div>
@@ -61,29 +61,55 @@
               </div>
             </td>
             <td>{{ item.quantite }}</td>
-            <td>{{ item.prixUnitaire | number:'1.2-2' }} €</td>
-            <td class="text-end font-weight-bold">{{ item.sousTotal | number:'1.2-2' }} €</td>
+            <td>{{ item.prixUnitaire | number:'1.2-2' }} EUR</td>
+            <td class="text-end">{{ item.sousTotal | number:'1.2-2' }} EUR</td>
           </tr>
           <tr *ngIf="isSeller && visibleLignes.length === 0">
-            <td colspan="4" class="text-center text-muted">Aucun article de votre boutique dans cette commande.</td>
+            <td colspan="4" class="text-center text-muted">Aucun article de votre boutique.</td>
           </tr>
         </tbody>
       </table>
     </div>
 
+    <!-- Totaux -->
     <div class="totals-section">
       <div class="total-row">
         <span>Sous-total</span>
-        <span>{{ order.sousTotal | number:'1.2-2' }} €</span>
+        <span>{{ order.sousTotal | number:'1.2-2' }} EUR</span>
+      </div>
+      <div class="total-row" *ngIf="order.remise && order.remise > 0">
+        <span>Remise <span *ngIf="order.couponCode">({{ order.couponCode }})</span></span>
+        <span style="color:#e53e3e">-{{ order.remise | number:'1.2-2' }} EUR</span>
       </div>
       <div class="total-row">
         <span>Frais de livraison</span>
-        <span>{{ order.fraisLivraison === 0 ? 'Gratuit' : (order.fraisLivraison | number:'1.2-2') + ' €' }}</span>
+        <span>{{ order.fraisLivraison === 0 ? 'Gratuit' : (order.fraisLivraison | number:'1.2-2') + ' EUR' }}</span>
       </div>
       <div class="total-row grand-total">
         <span>Total TTC</span>
-        <span>{{ order.totalTTC | number:'1.2-2' }} €</span>
+        <span>{{ order.totalTTC | number:'1.2-2' }} EUR</span>
       </div>
+      <div class="total-row" *ngIf="order.montantRembourse && order.montantRembourse > 0" style="color:#e53e3e">
+        <span>Montant rembourse</span>
+        <span>{{ order.montantRembourse | number:'1.2-2' }} EUR</span>
+      </div>
+    </div>
+
+    <!-- Controle vendeur -->
+    <div *ngIf="isSeller && order.statut !== 'DELIVERED' && order.statut !== 'CANCELLED' && order.statut !== 'REFUNDED'"
+         class="mt-3 d-flex gap-2 align-items-center">
+      <label class="mb-0"><strong>Changer statut :</strong></label>
+      <select class="form-select form-select-sm" style="max-width:200px" #statusSelect>
+        <option value="PAID">PAID</option>
+        <option value="PROCESSING">PROCESSING</option>
+        <option value="SHIPPED">SHIPPED</option>
+        <option value="DELIVERED">DELIVERED</option>
+        <option value="CANCELLED">CANCELLED</option>
+        <option value="REFUNDED">REFUNDED</option>
+      </select>
+      <button class="btn btn-sm btn-outline-secondary" (click)="updateStatus(order.id, statusSelect.value)">
+        Valider
+      </button>
     </div>
   </div>
 </div>

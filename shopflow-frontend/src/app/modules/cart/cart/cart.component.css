@@ -260,6 +260,13 @@
   box-shadow: 0 0 0 3px rgba(0, 66, 133, 0.14);
 }
 
+.input-disabled {
+  background: #f0f4f8 !important;
+  color: #7a8fa6 !important;
+  cursor: not-allowed;
+  border-color: #c8d8e8 !important;
+}
+
 .summary-title {
   font-size: 20px;
   font-weight: 700;

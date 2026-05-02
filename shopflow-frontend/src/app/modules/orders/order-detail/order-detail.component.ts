@@ -34,6 +34,13 @@ export class OrderDetailComponent implements OnInit {
           this.order = o;
           this.computeVisibleLignes();
           this.enrichOrderImages();
+          // Mark new-status notification as seen if this user is the customer
+          if (!this.isSeller && o.isNewStatus) {
+            this.orderService.markAsSeen(o.id).subscribe(() => {
+              if (this.order) this.order = { ...this.order, isNewStatus: false };
+              this.orderService.notificationRefreshSubject.next();
+            });
+          }
         });
       });
     }

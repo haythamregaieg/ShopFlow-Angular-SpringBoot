@@ -1,7 +1,7 @@
 package com.example.shopflow.controller;
 
 import com.example.shopflow.dto.request.ReviewRequest;
-import com.example.shopflow.entity.Review;
+import com.example.shopflow.dto.response.ReviewResponse;
 import com.example.shopflow.service.ReviewService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,25 +21,25 @@ public class ReviewController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Review addReview(@AuthenticationPrincipal UserDetails userDetails,
-                            @Valid @RequestBody ReviewRequest request) {
+    public ReviewResponse addReview(@AuthenticationPrincipal UserDetails userDetails,
+                                    @Valid @RequestBody ReviewRequest request) {
         return reviewService.addReview(userDetails.getUsername(), request);
     }
 
     @GetMapping("/product/{productId}")
-    public List<Review> getProductReviews(@PathVariable Long productId) {
+    public List<ReviewResponse> getProductReviews(@PathVariable Long productId) {
         return reviewService.getProductReviews(productId);
     }
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public List<Review> getAllReviews() {
+    public List<ReviewResponse> getAllReviews() {
         return reviewService.getAllReviews();
     }
 
     @PutMapping("/{id}/approve")
     @PreAuthorize("hasRole('ADMIN')")
-    public Review approve(@PathVariable Long id) {
+    public ReviewResponse approve(@PathVariable Long id) {
         return reviewService.approve(id);
     }
 }

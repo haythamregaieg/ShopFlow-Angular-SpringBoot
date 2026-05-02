@@ -1,0 +1,41 @@
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Gestion des coupons</h2>
+    <div>
+      <button class="btn btn-primary" (click)="create()">Nouveau coupon</button>
+    </div>
+  </div>
+
+  <div *ngIf="loading">Chargement…</div>
+  <div *ngIf="!loading && coupons.length === 0" class="alert alert-light">Aucun coupon trouvé.</div>
+
+  <table class="table table-striped" *ngIf="!loading && coupons.length > 0">
+    <thead>
+      <tr>
+        <th>Code</th>
+        <th>Type</th>
+        <th>Valeur</th>
+        <th>Expires</th>
+        <th>Usages</th>
+        <th>Actif</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let c of coupons">
+        <td>{{ c.code }}</td>
+        <td>{{ c.type }}</td>
+        <td>{{ c.valeur }}</td>
+        <td>{{ c.dateExpiration ? (c.dateExpiration | date:'shortDate') : '-' }}</td>
+        <td>{{ c.usagesActuels || 0 }} / {{ c.usagesMax || '-' }}</td>
+        <td>{{ c.actif ? 'Oui' : 'Non' }}</td>
+        <td class="text-end">
+          <button class="btn btn-sm btn-outline-secondary me-2" (click)="edit(c.id)">Éditer</button>
+          <button class="btn btn-sm btn-outline-danger" (click)="deleteCoupon(c.id)">Supprimer</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="message" class="alert alert-danger mt-3">{{ message }}</div>
+</div>

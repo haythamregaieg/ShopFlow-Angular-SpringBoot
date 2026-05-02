@@ -25,6 +25,7 @@
         title="Commandes"
         aria-label="Commandes">
         <i class="fas fa-receipt"></i>
+        <span class="notification-badge" *ngIf="notificationCount > 0">{{ notificationCount }}</span>
       </a>
       <a
         routerLink="/cart"

@@ -3,6 +3,7 @@ package com.example.shopflow.dto.request;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.util.List;
@@ -22,7 +23,7 @@ public class ProductRequest {
     private BigDecimal prixPromo;
 
     @NotNull
-    @Positive(message = "Stock doit etre positif")
+    @PositiveOrZero(message = "Stock doit etre positif ou zero")
     private Integer stock;
 
     private String images;

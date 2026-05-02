@@ -11,4 +11,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     @Query("SELECT AVG(r.note) FROM Review r WHERE r.product.id = :productId AND r.approuve = true")
     Double findAverageNoteByProductId(@Param("productId") Long productId);
+
+    boolean existsByCustomerIdAndProductId(Long customerId, Long productId);
 }

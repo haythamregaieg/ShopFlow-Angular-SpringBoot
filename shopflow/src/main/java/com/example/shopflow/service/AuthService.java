@@ -100,11 +100,19 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getMotDePasse())
-        );
+        // First ensure the user exists so we can return a specific message for missing accounts
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new BadRequestException("Utilisateur introuvable"));
+
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getMotDePasse())
+            );
+        } catch (org.springframework.security.core.AuthenticationException ex) {
+            // Authentication failed -> wrong password
+            throw new BadRequestException("Mot de passe incorrect");
+        }
+
         return buildResponse(user);
     }
 

@@ -48,15 +48,30 @@ export class ProductFormComponent implements OnInit {
     return this.form.get('variants') as FormArray;
   }
 
+  get hasVariants(): boolean {
+    return this.variantsForm.length > 0;
+  }
+
+  get totalVariantStock(): number {
+    return this.variantsForm.controls.reduce((total, control) => {
+      const stock = Number(control.get('stock')?.value ?? 0);
+      return total + (Number.isFinite(stock) ? stock : 0);
+    }, 0);
+  }
+
   addVariant(v?: ProductVariant): void {
-    this.variantsForm.push(this.fb.group({
+    const variantGroup = this.fb.group({
       id: [v?.id || null],
       taille: [v?.taille || ''],
       couleur: [v?.couleur || ''],
       stock: [v?.stock ?? 0, [Validators.required, Validators.min(0)]],
       prixDelta: [v?.prixDelta ?? 0],
       sku: [v?.sku || '']
-    }, { validators: this.variantIdentityValidator }));
+    }, { validators: this.variantIdentityValidator });
+
+    variantGroup.get('stock')?.valueChanges.subscribe(() => this.syncDisplayedStock());
+    this.variantsForm.push(variantGroup);
+    this.syncDisplayedStock();
   }
 
   removeVariant(index: number): void {
@@ -65,6 +80,7 @@ export class ProductFormComponent implements OnInit {
       this.removedVariantIds.push(variant.id);
     }
     this.variantsForm.removeAt(index);
+    this.syncDisplayedStock();
   }
 
   ngOnInit(): void {
@@ -98,7 +114,8 @@ export class ProductFormComponent implements OnInit {
     if (this.form.invalid) return;
     this.loading = true;
     const { variants, ...payload } = this.form.value;
-    const data = { ...payload };
+    const hasVariants = (variants || []).length > 0;
+    const data = { ...payload, stock: hasVariants ? 0 : payload.stock };
 
     const action = this.isEdit && this.productId
       ? this.productService.update(this.productId, data)
@@ -174,5 +191,11 @@ export class ProductFormComponent implements OnInit {
     const taille = (group.get('taille')?.value || '').toString().trim();
     const couleur = (group.get('couleur')?.value || '').toString().trim();
     return (taille || couleur) ? null : { variantIdentity: true };
+  }
+
+  private syncDisplayedStock(): void {
+    if (this.hasVariants) {
+      this.form.get('stock')?.setValue(this.totalVariantStock, { emitEvent: false });
+    }
   }
 }

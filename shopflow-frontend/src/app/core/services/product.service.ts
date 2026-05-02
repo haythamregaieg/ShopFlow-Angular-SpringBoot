@@ -10,7 +10,7 @@ export class ProductService {
   constructor(private http: HttpClient) {}
 
   getAll(page = 0, size = 12): Observable<PageResponse<Product>> {
-    const params = new HttpParams().set("page", page).set("size", size);
+    const params = new HttpParams().set("page", String(page)).set("size", String(size));
     return this.http.get<PageResponse<Product>>(this.apiUrl, { params });
   }
 
@@ -21,14 +21,14 @@ export class ProductService {
   search(paramsInput: ProductSearchParams): Observable<PageResponse<Product>> {
     let params = new HttpParams();
     if (paramsInput.q) params = params.set("q", paramsInput.q);
-    if (paramsInput.prixMin !== undefined && paramsInput.prixMin !== null) params = params.set("prixMin", paramsInput.prixMin);
-    if (paramsInput.prixMax !== undefined && paramsInput.prixMax !== null) params = params.set("prixMax", paramsInput.prixMax);
+    if (paramsInput.prixMin !== undefined && paramsInput.prixMin !== null) params = params.set("prixMin", String(paramsInput.prixMin));
+    if (paramsInput.prixMax !== undefined && paramsInput.prixMax !== null) params = params.set("prixMax", String(paramsInput.prixMax));
     if (paramsInput.promoOnly) params = params.set("promoOnly", "true");
     if (paramsInput.sortBy) params = params.set("sortBy", paramsInput.sortBy);
-    if (paramsInput.page !== undefined) params = params.set("page", paramsInput.page);
-    if (paramsInput.size !== undefined) params = params.set("size", paramsInput.size);
+    if (paramsInput.page !== undefined) params = params.set("page", String(paramsInput.page));
+    if (paramsInput.size !== undefined) params = params.set("size", String(paramsInput.size));
     (paramsInput.categoryIds || []).forEach(id => {
-      params = params.append("categoryIds", id);
+      params = params.append("categoryIds", String(id));
     });
     return this.http.get<PageResponse<Product>>(`${this.apiUrl}/search`, { params });
   }
@@ -43,6 +43,10 @@ export class ProductService {
 
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  activate(id: number): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/${id}/activate`, {});
   }
 
   getSellerProducts(page = 0, size = 20): Observable<PageResponse<Product>> {

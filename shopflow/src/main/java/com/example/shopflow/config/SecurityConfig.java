@@ -9,6 +9,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -103,6 +104,9 @@ public class SecurityConfig {
                 String username = authentication.getName();
                 String password = authentication.getCredentials() == null ? null : authentication.getCredentials().toString();
                 UserDetails user = userDetailsService.loadUserByUsername(username);
+                if (!user.isEnabled()) {
+                    throw new DisabledException("Compte desactive");
+                }
                 if (password == null || !passwordEncoder().matches(password, user.getPassword())) {
                     throw new BadCredentialsException("Bad credentials");
                 }

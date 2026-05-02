@@ -15,8 +15,11 @@ public class OrderResponse {
     private String customerNom;
     private String customerPrenom;
     private String customerEmail;
+    private String telephone;
     private AddressResponse adresseLivraison;
     private BigDecimal sousTotal;
+    private String couponCode;
+    private BigDecimal remise;
     private BigDecimal fraisLivraison;
     private BigDecimal totalTTC;
     private BigDecimal montantRembourse;

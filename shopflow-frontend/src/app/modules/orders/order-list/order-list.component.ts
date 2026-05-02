@@ -30,11 +30,31 @@ export class OrderListComponent implements OnInit {
     this.isSeller = role === "SELLER";
     this.isAdmin = role === "ADMIN";
 
-    const source$ = this.isSeller ? this.orderService.getSellerOrders() : this.orderService.getMyOrders();
+    const source$ = this.isSeller || this.isAdmin
+      ? this.orderService.getSellerOrders()
+      : this.orderService.getMyOrders();
+
     source$.subscribe({
       next: (orders) => {
         this.prepareOrders(orders);
         this.orders = orders;
+        // Auto-mark new-status notifications as seen for customers
+        if (!this.isSeller && !this.isAdmin) {
+          const newOrders = orders.filter(o => o.isNewStatus);
+          if (newOrders.length > 0) {
+            let markedCount = 0;
+            newOrders.forEach(o => {
+              this.orderService.markAsSeen(o.id).subscribe(updated => {
+                const idx = this.orders.findIndex(x => x.id === updated.id);
+                if (idx !== -1) this.orders[idx] = { ...this.orders[idx], isNewStatus: false };
+                markedCount++;
+                if (markedCount === newOrders.length) {
+                  this.orderService.notificationRefreshSubject.next();
+                }
+              });
+            });
+          }
+        }
       },
       error: (err) => console.error("Orders error:", err)
     });

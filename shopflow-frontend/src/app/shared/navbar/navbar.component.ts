@@ -1,15 +1,17 @@
-import { Component, ElementRef, HostListener, OnInit } from "@angular/core";
+import { Component, ElementRef, HostListener, OnInit, OnDestroy } from "@angular/core";
 import { Router } from "@angular/router";
 import { AuthService } from "../../core/services/auth.service";
 import { HttpClient } from "@angular/common/http";
 import { UserService } from "../../core/services/user.service";
+import { OrderService } from "../../core/services/order.service";
+import { Order } from "../../core/models/order.model";
 
 @Component({
   selector: "app-navbar",
   templateUrl: "./navbar.component.html",
   styleUrls: ["./navbar.component.css"]
 })
-export class NavbarComponent implements OnInit {
+export class NavbarComponent implements OnInit, OnDestroy {
   isLoggedIn = false;
   isAdmin = false;
   isSeller = false;
@@ -17,14 +19,17 @@ export class NavbarComponent implements OnInit {
   userFullName = "";
   userRole = "";
   cartCount = 0;
+  notificationCount = 0;
   isUserMenuOpen = false;
+  private pollingInterval: any = null;
 
   constructor(
     private authService: AuthService,
     private router: Router,
     private http: HttpClient,
     private userService: UserService,
-    private elementRef: ElementRef
+    private elementRef: ElementRef,
+    private orderService: OrderService
   ) {}
 
   ngOnInit(): void {
@@ -37,11 +42,40 @@ export class NavbarComponent implements OnInit {
       if (user) {
         this.loadCartCount();
         this.loadUserIdentity();
+        this.loadNotificationCount();
+        this.startPolling();
       } else {
         this.userFullName = "";
         this.isUserMenuOpen = false;
+        this.notificationCount = 0;
+        this.stopPolling();
       }
     });
+
+    this.orderService.notificationRefresh$.subscribe(() => {
+      this.loadNotificationCount();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.stopPolling();
+  }
+
+  private startPolling(): void {
+    if (this.pollingInterval) return;
+    this.pollingInterval = setInterval(() => {
+      if (this.isLoggedIn) {
+        this.loadNotificationCount();
+        this.loadCartCount();
+      }
+    }, 5000);
+  }
+
+  private stopPolling(): void {
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+      this.pollingInterval = null;
+    }
   }
 
   loadCartCount(): void {
@@ -49,6 +83,26 @@ export class NavbarComponent implements OnInit {
       next: (cart) => this.cartCount = cart?.lignes?.length || 0,
       error: () => this.cartCount = 0
     });
+  }
+
+  loadNotificationCount(): void {
+    console.log("Navbar: loadNotificationCount called");
+    this.orderService.getMyOrders().subscribe({
+      next: (orders: Order[]) => {
+        console.log("Navbar: orders received", orders);
+        console.log("Navbar: isNewStatus orders", orders.filter(o => o.isNewStatus));
+        this.notificationCount = orders.filter(o => o.isNewStatus).length;
+        console.log("Navbar: notificationCount set to", this.notificationCount);
+      },
+      error: (err) => {
+        console.error("Navbar: error loading orders", err);
+        this.notificationCount = 0;
+      }
+    });
+  }
+
+  refreshNotificationCount(): void {
+    this.loadNotificationCount();
   }
 
   logout(): void {

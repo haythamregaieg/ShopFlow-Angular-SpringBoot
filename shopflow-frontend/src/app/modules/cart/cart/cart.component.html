@@ -5,15 +5,15 @@
         <p class="cart-kicker">Panier</p>
         <h1>Votre panier</h1>
       </div>
-      <div class="cart-count" *ngIf="cart">
-        {{ cart.lignes.length }} article(s)
-      </div>
+      <div class="cart-count" *ngIf="cart">{{ cart.lignes.length }} article(s)</div>
     </header>
 
     <div class="alert success" *ngIf="message">{{ message }}</div>
-    <div class="alert error" *ngIf="error">{{ error }}</div>
+    <div class="alert error"   *ngIf="error">{{ error }}</div>
 
     <div *ngIf="cart && cart.lignes.length > 0" class="cart-layout">
+
+      <!-- ─── Articles ─────────────────────────────────────────────────── -->
       <div class="cart-main">
         <section class="cart-card">
           <article class="cart-item" *ngFor="let item of cart.lignes">
@@ -21,7 +21,6 @@
               <img [src]="item.productImage" *ngIf="isImageUrl(item.productImage)" alt="Produit">
               <div class="item-placeholder" *ngIf="!isImageUrl(item.productImage)">{{ item.productNom.charAt(0) }}</div>
             </div>
-
             <div class="item-details">
               <h3>{{ item.productNom }}</h3>
               <p class="item-price">{{ item.prixUnitaire | number:'1.2-2' }} EUR</p>
@@ -30,46 +29,84 @@
                 <select [ngModel]="item.variantId" (ngModelChange)="updateVariant(item.id, item.quantite, $event)">
                   <option [ngValue]="undefined">Par defaut</option>
                   <option *ngFor="let v of variantsByProduct[item.productId]" [ngValue]="v.id">
-                    {{ v.taille }} / {{ v.couleur }} ({{ v.stock }} stock)
+                    {{ v.taille }} / {{ v.couleur }} ({{ v.stock }} en stock)
                   </option>
                 </select>
               </div>
             </div>
-
             <div class="quantity-controls">
               <button class="qty-btn" (click)="updateQuantity(item.id, item.quantite - 1)">-</button>
               <span class="qty-val">{{ item.quantite }}</span>
               <button class="qty-btn" (click)="updateQuantity(item.id, item.quantite + 1)">+</button>
             </div>
-
             <div class="item-subtotal">{{ item.sousTotal | number:'1.2-2' }} EUR</div>
             <button class="remove-btn" (click)="removeItem(item.id)" title="Supprimer">x</button>
           </article>
         </section>
 
+        <!-- ─── Formulaire livraison ───────────────────────────────────── -->
         <section class="cart-card delivery-form">
           <h3 class="form-title">Informations de livraison</h3>
-          <div class="form-grid">
+
+          <!-- Telephone -->
+          <div class="form-group">
+            <label>Numero de telephone *</label>
+            <input type="tel" class="input-field" [(ngModel)]="telephone"
+                   placeholder="Ex: +216 22 000 000">
+          </div>
+
+          <!-- Adresses sauvegardees -->
+          <div class="form-group" *ngIf="savedAddresses.length > 0">
+            <label>Choisir une adresse sauvegardee</label>
+            <select class="input-field" [ngModel]="selectedAddressId" (ngModelChange)="onAddressSelect($event)">
+              <option [ngValue]="null">-- Saisir une nouvelle adresse --</option>
+              <option *ngFor="let addr of savedAddresses" [ngValue]="addr.id">
+                {{ addr.rue }}, {{ addr.ville }} {{ addr.codePostal }}
+                <span *ngIf="addr.principal"> (Principale)</span>
+              </option>
+            </select>
+          </div>
+
+          <!-- Adresse sauvegardee selectionnee (champs bloques) -->
+          <div *ngIf="selectedAddressId && selectedAddress" class="form-grid">
             <div class="full-width">
-              <label>Adresse complete</label>
-              <textarea class="input-field" [(ngModel)]="adresseTexte" rows="2" placeholder="Rue, numero, appartement..."></textarea>
+              <label>Adresse</label>
+              <textarea class="input-field input-disabled" [value]="selectedAddress!.rue" rows="2" disabled></textarea>
             </div>
             <div>
-              <label>Ville</label>
-              <input type="text" class="input-field" [(ngModel)]="ville" placeholder="Ex: Paris">
+              <label>Gouvernorat</label>
+              <input type="text" class="input-field input-disabled" [value]="selectedAddress!.ville" disabled>
             </div>
             <div>
               <label>Code postal</label>
-              <input type="text" class="input-field" [(ngModel)]="codePostal" placeholder="Ex: 75001">
+              <input type="text" class="input-field input-disabled" [value]="selectedAddress!.codePostal" disabled>
             </div>
+          </div>
+
+          <!-- Nouvelle adresse (si pas d'adresse selectionnee) -->
+          <div *ngIf="!selectedAddressId" class="form-grid">
             <div class="full-width">
-              <label>Pays</label>
-              <input type="text" class="input-field" [(ngModel)]="pays" placeholder="Ex: France">
+              <label>Adresse complete *</label>
+              <textarea class="input-field" [(ngModel)]="adresseTexte" rows="2"
+                        placeholder="Rue, numero, appartement..."></textarea>
+            </div>
+            <div>
+              <label>Gouvernorat *</label>
+              <select class="input-field" [(ngModel)]="ville">
+                <option *ngFor="let v of villes" [value]="v.nom">
+                  {{ v.nom }} — {{ v.frais | number:'1.2-2' }} EUR
+                </option>
+              </select>
+            </div>
+            <div>
+              <label>Code postal</label>
+              <input type="text" class="input-field" [(ngModel)]="codePostal" placeholder="Ex: 1001">
             </div>
           </div>
         </section>
       </div>
 
+      <!-- ─── Recapitulatif ─────────────────────────────────────────── -->
       <aside class="cart-sidebar">
         <section class="cart-card">
           <h3 class="summary-title">Recapitulatif</h3>
@@ -86,10 +123,22 @@
             </div>
           </div>
 
-          <div class="summary-row"><span>Sous-total</span><span>{{ cart.sousTotal | number:'1.2-2' }} EUR</span></div>
-          <div class="summary-row discount" *ngIf="cart.remise > 0"><span>Remise</span><span>-{{ cart.remise | number:'1.2-2' }} EUR</span></div>
-          <div class="summary-row"><span>Frais de livraison</span><span>{{ cart.fraisLivraison === 0 ? 'Gratuit' : (cart.fraisLivraison | number:'1.2-2') + ' EUR' }}</span></div>
-          <div class="summary-row total"><span>Total TTC</span><span>{{ cart.totalTTC | number:'1.2-2' }} EUR</span></div>
+          <div class="summary-row">
+            <span>Sous-total</span>
+            <span>{{ cart.sousTotal | number:'1.2-2' }} EUR</span>
+          </div>
+          <div class="summary-row discount" *ngIf="cart.remise > 0">
+            <span>Remise ({{ cart.couponCode }})</span>
+            <span>-{{ cart.remise | number:'1.2-2' }} EUR</span>
+          </div>
+          <div class="summary-row">
+            <span>Frais de livraison</span>
+            <span>{{ fraisPreview === 0 ? 'Gratuit' : (fraisPreview | number:'1.2-2') + ' EUR' }}</span>
+          </div>
+          <div class="summary-row total">
+            <span>Total TTC</span>
+            <span>{{ totalPreview | number:'1.2-2' }} EUR</span>
+          </div>
 
           <button class="checkout-btn" (click)="checkout()" [disabled]="loading || cart.lignes.length === 0">
             <span *ngIf="!loading">Confirmer la commande</span>

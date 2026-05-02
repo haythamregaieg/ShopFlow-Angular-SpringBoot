@@ -16,6 +16,7 @@ export interface Order {
   customerNom?: string;
   customerPrenom?: string;
   customerEmail?: string;
+  telephone?: string;
   adresseLivraison?: {
     rue?: string;
     ville?: string;
@@ -23,6 +24,8 @@ export interface Order {
     pays?: string;
   } | null;
   sousTotal: number;
+  couponCode?: string | null;
+  remise?: number | null;
   fraisLivraison: number;
   totalTTC: number;
   montantRembourse?: number;

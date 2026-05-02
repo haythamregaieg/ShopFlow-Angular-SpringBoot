@@ -79,6 +79,20 @@ public class ProductController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/{id}/activate")
+    @PreAuthorize("hasAnyRole('SELLER','ADMIN')")
+    public ResponseEntity<Void> activate(@PathVariable Long id) {
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = false;
+        String username = null;
+        if (auth != null && auth.getPrincipal() instanceof org.springframework.security.core.userdetails.UserDetails ud) {
+            username = ud.getUsername();
+            isAdmin = ud.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        }
+        productService.activateForUser(id, username, isAdmin);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/seller")
     @PreAuthorize("hasAnyRole('SELLER','ADMIN')")
     public org.springframework.data.domain.Page<ProductResponse> getSellerProducts(org.springframework.data.domain.Pageable pageable,

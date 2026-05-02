@@ -4,6 +4,7 @@ import com.example.shopflow.dto.request.ProductRequest;
 import com.example.shopflow.dto.response.ProductResponse;
 import com.example.shopflow.entity.Category;
 import com.example.shopflow.entity.Product;
+import com.example.shopflow.entity.ProductVariant;
 import com.example.shopflow.entity.User;
 import com.example.shopflow.exception.ResourceNotFoundException;
 import com.example.shopflow.repository.CategoryRepository;
@@ -164,6 +165,21 @@ public class ProductService {
         delete(id);
     }
 
+    @Transactional
+    public void activateForUser(Long id, String sellerEmail, boolean isAdmin) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Produit introuvable : " + id));
+        if (!isAdmin) {
+            com.example.shopflow.entity.User seller = userRepository.findByEmail(sellerEmail)
+                    .orElseThrow(() -> new ResourceNotFoundException("Vendeur introuvable"));
+            if (product.getSeller() == null || !product.getSeller().getId().equals(seller.getId())) {
+                throw new org.springframework.security.access.AccessDeniedException("Not owner");
+            }
+        }
+        product.setActif(true);
+        productRepository.save(product);
+    }
+
     private ProductResponse toResponse(Product p) {
         Double note = reviewRepository.findAverageNoteByProductId(p.getId());
 
@@ -200,7 +216,7 @@ public class ProductService {
                 .description(p.getDescription())
                 .prix(p.getPrix())
                 .prixPromo(p.getPrixPromo())
-                .stock(p.getStock())
+                .stock(getDisplayStock(p))
                 .images(p.getImages())
                 .actif(p.isActif())
                 .dateCreation(p.getDateCreation())
@@ -221,5 +237,16 @@ public class ProductService {
         }
         BigDecimal reduction = prix.subtract(prixPromo).multiply(BigDecimal.valueOf(100)).divide(prix, 0, java.math.RoundingMode.HALF_UP);
         return reduction.intValue();
+    }
+
+    private Integer getDisplayStock(Product product) {
+        if (product.getVariantes() != null && !product.getVariantes().isEmpty()) {
+            return product.getVariantes().stream()
+                    .map(ProductVariant::getStock)
+                    .filter(stock -> stock != null)
+                    .mapToInt(Integer::intValue)
+                    .sum();
+        }
+        return product.getStock() != null ? product.getStock() : 0;
     }
 }

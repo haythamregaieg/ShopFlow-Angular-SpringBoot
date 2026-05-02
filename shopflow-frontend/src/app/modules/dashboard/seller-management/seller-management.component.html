@@ -60,6 +60,20 @@
                 aria-label="Modifier le produit">
                 &#9998;
               </button>
+              <button *ngIf="product.actif"
+                class="icon-btn warn"
+                (click)="deactivateProduct(product.id)"
+                title="Désactiver"
+                aria-label="Désactiver le produit">
+                &#9940;
+              </button>
+              <button *ngIf="!product.actif"
+                class="icon-btn success"
+                (click)="activateProduct(product.id)"
+                title="Reactiver"
+                aria-label="Reactiver le produit">
+                &#x21ba;
+              </button>
               <button
                 class="icon-btn danger"
                 (click)="deleteProduct(product.id)"

@@ -1,0 +1,3 @@
+/* Minimal styling for coupon list */
+.container { max-width: 980px; }
+.table th, .table td { vertical-align: middle; }

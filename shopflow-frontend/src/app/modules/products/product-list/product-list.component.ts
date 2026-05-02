@@ -24,6 +24,7 @@ export class ProductListComponent implements OnInit {
 
   totalPages = 0;
   currentPage = 0;
+  totalElements = 0;
 
   searchQuery = '';
   prixMin?: number;
@@ -91,6 +92,7 @@ export class ProductListComponent implements OnInit {
       next: (page) => {
         this.products = page.content || [];
         this.totalPages = page.totalPages;
+        this.totalElements = page.totalElements || 0;
 
         this.computeGroupedProducts(); // ✅ FIX
 
