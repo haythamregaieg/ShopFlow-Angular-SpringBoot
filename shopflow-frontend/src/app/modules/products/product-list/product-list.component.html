@@ -40,13 +40,18 @@
           </div>
 
           <div class="filter-section">
-            <span class="filter-label">🏷️ Catégories</span>
+            <div class="filter-label-row">
+              <span class="filter-label">🏷️ Catégories</span>
+              <button class="cat-clear" *ngIf="selectedCategoryIds.length > 0"
+                      (click)="selectedCategoryIds = []; search()">Tout effacer</button>
+            </div>
             <div class="categories-list">
               <label class="cat-chip" *ngFor="let category of categories"
                      [class.cat-chip-active]="selectedCategoryIds.includes(category.id)">
                 <input type="checkbox" hidden
                        [checked]="selectedCategoryIds.includes(category.id)"
-                       (change)="toggleCategory(category.id, $any($event.target).checked)" />
+                       (change)="toggleCategory(category.id, $any($event.target).checked); search()" />
+                <span class="cat-check" *ngIf="selectedCategoryIds.includes(category.id)" aria-hidden="true">✓</span>
                 {{ category.nom }}
               </label>
             </div>
@@ -54,16 +59,23 @@
 
           <div class="filter-section">
             <span class="filter-label">💰 Prix (EUR)</span>
-            <div class="price-row">
-              <div class="price-field">
-                <span class="price-prefix">min</span>
-                <input type="number" [(ngModel)]="prixMin" placeholder="0" class="price-input" aria-label="Prix minimum" />
+            <div class="price-display">
+              <span class="price-val-badge">{{ sliderMin }} €</span>
+              <span class="price-dash">—</span>
+              <span class="price-val-badge">{{ sliderMax >= PRIX_MAX ? '∞' : sliderMax + ' €' }}</span>
+            </div>
+            <div class="range-wrap">
+              <div class="range-track">
+                <div class="range-fill"
+                     [style.left.%]="sliderFillLeft"
+                     [style.right.%]="sliderFillRight"></div>
               </div>
-              <div class="price-sep" aria-hidden="true">—</div>
-              <div class="price-field">
-                <span class="price-prefix">max</span>
-                <input type="number" [(ngModel)]="prixMax" placeholder="∞" class="price-input" aria-label="Prix maximum" />
-              </div>
+              <input type="range" class="range-thumb" aria-label="Prix minimum"
+                     [min]="0" [max]="PRIX_MAX" [value]="sliderMin" step="5"
+                     (input)="onMinRange($any($event.target).value)" />
+              <input type="range" class="range-thumb" aria-label="Prix maximum"
+                     [min]="0" [max]="PRIX_MAX" [value]="sliderMax" step="5"
+                     (input)="onMaxRange($any($event.target).value)" />
             </div>
           </div>
 

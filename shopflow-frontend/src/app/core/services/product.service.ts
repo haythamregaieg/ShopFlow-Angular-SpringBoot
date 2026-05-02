@@ -14,6 +14,11 @@ export class ProductService {
     return this.http.get<PageResponse<Product>>(this.apiUrl, { params });
   }
 
+  getAllForAdmin(page = 0, size = 20): Observable<PageResponse<Product>> {
+    const params = new HttpParams().set("page", String(page)).set("size", String(size));
+    return this.http.get<PageResponse<Product>>(`${this.apiUrl}/all`, { params });
+  }
+
   getById(id: number): Observable<Product> {
     return this.http.get<Product>(`${this.apiUrl}/${id}`);
   }
@@ -45,12 +50,16 @@ export class ProductService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
+  deactivate(id: number): Observable<void> {
+    return this.delete(id);
+  }
+
   activate(id: number): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/${id}/activate`, {});
   }
 
   getSellerProducts(page = 0, size = 20): Observable<PageResponse<Product>> {
-    const params = new HttpParams().set("page", page).set("size", size);
+    const params = new HttpParams().set("page", String(page)).set("size", String(size));
     return this.http.get<PageResponse<Product>>(`${this.apiUrl}/seller`, { params });
   }
 

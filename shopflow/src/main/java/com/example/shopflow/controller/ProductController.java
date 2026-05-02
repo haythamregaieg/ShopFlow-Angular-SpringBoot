@@ -28,6 +28,12 @@ public class ProductController {
         return productService.getAllProducts(pageable);
     }
 
+    @GetMapping("/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Page<ProductResponse> getAllForAdmin(Pageable pageable) {
+        return productService.getAllProductsForAdmin(pageable);
+    }
+
     @GetMapping("/{id}")
     public ProductResponse getById(@PathVariable Long id) {
         return productService.getById(id);

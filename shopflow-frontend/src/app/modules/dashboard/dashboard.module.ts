@@ -6,9 +6,10 @@ import { CategoryManagementComponent } from './category-management/category-mana
 import { SellerManagementComponent } from './seller-management/seller-management.component';
 import { NgChartsModule } from 'ng2-charts';
 import { ReactiveFormsModule } from '@angular/forms';
+import { SharedModule } from '../../shared/shared.module';
 
 @NgModule({
   declarations: [DashboardComponent, CategoryManagementComponent, SellerManagementComponent],
-  imports: [CommonModule, DashboardRoutingModule, NgChartsModule, ReactiveFormsModule]
+  imports: [CommonModule, DashboardRoutingModule, NgChartsModule, ReactiveFormsModule, SharedModule]
 })
 export class DashboardModule {}

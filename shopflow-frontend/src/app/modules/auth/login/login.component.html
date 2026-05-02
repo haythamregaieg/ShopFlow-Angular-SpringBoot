@@ -1,72 +1,208 @@
-<!-- login.component.html -->
 <div class="auth-page">
-    <!-- LEFT SIDE - amélioration des messages et icônes -->
-    <div class="auth-left">
-        <a class="auth-logo" routerLink="/products">
-            <div class="logo-icon">🧸</div>
-            <h1>ShopFlow</h1>
-        </a>
-        <h2>Bon retour !</h2>
-        <p>Connectez-vous pour suivre vos commandes, gérer votre boutique et profiter de nos offres enfants.</p>
-        <div class="auth-features">
-            <div class="feature"><i class="fas fa-gift"></i> Idées cadeaux</div>
-            <div class="feature"><i class="fas fa-truck"></i> Livraison offerte dès 50€</div>
-            <div class="feature"><i class="fas fa-shield-alt"></i> Paiement sécurisé</div>
-        </div>
+
+  <!-- ══ GAUCHE — fond kraft + illustration ══ -->
+  <div class="auth-left">
+    <div class="left-content">
+      <a class="brand" routerLink="/products">
+        <div class="brand-badge">SF</div>
+        <span class="brand-name">ShopFlow</span>
+      </a>
+      <h2 class="left-title">Rejoignez la<br>ShopFlow!</h2>
+      <p class="left-desc">
+        Connectez-vous pour voir les dernières collections,
+        suivre vos commandes et gérer votre liste de souhaits familiale.
+      </p>
     </div>
 
-    <!-- RIGHT SIDE - formulaire modernisé -->
-    <div class="auth-right">
-        <div class="auth-form-container fade-in">
-            <div class="auth-header">
-                <h2>Connexion</h2>
-                <p>Accédez à votre espace personnel</p>
-            </div>
+    <!-- Illustration famille SVG -->
+    <svg class="family-svg" viewBox="0 0 480 260" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="skin1" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#D4956A"/>
+          <stop offset="100%" style="stop-color:#C07848"/>
+        </linearGradient>
+        <linearGradient id="skin2" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#8B5E3C"/>
+          <stop offset="100%" style="stop-color:#704828"/>
+        </linearGradient>
+      </defs>
 
-            <div class="alert-error" *ngIf="error">
-                <i class="fas fa-circle-exclamation"></i> {{ error }}
-            </div>
+      <ellipse cx="240" cy="255" rx="200" ry="8" fill="rgba(0,0,0,0.12)"/>
 
-            <form [formGroup]="form" (ngSubmit)="onSubmit()">
-                <div class="form-group">
-                    <label><i class="fas fa-envelope"></i> Email</label>
-                    <input type="email" formControlName="email" placeholder="exemple@email.com"
-                           autocomplete="email" [class.is-invalid]="f['email'].touched && f['email'].invalid">
-                    <div class="error-msg" *ngIf="f['email'].touched && f['email'].invalid">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <span *ngIf="f['email'].errors?.['required']">L'email est obligatoire</span>
-                        <span *ngIf="f['email'].errors?.['email']">Format invalide</span>
-                    </div>
-                </div>
+      <!-- Enfant gauche — robe jaune -->
+      <rect x="58" y="195" width="10" height="50" rx="5" fill="#D4956A"/>
+      <rect x="72" y="195" width="10" height="50" rx="5" fill="#D4956A"/>
+      <ellipse cx="63" cy="247" rx="8" ry="5" fill="#5C3820"/>
+      <ellipse cx="77" cy="247" rx="8" ry="5" fill="#5C3820"/>
+      <rect x="54" y="138" width="32" height="55" rx="10" fill="#E8C878"/>
+      <ellipse cx="50" cy="158" rx="7" ry="18" fill="#D4956A" transform="rotate(-10 50 158)"/>
+      <ellipse cx="90" cy="165" rx="7" ry="18" fill="#D4956A" transform="rotate(20 90 165)"/>
+      <ellipse cx="70" cy="125" rx="18" ry="20" fill="url(#skin1)"/>
+      <path d="M52 118 Q70 98 88 118 Q88 108 70 105 Q52 108 52 118Z" fill="#4A2810"/>
+      <circle cx="64" cy="124" r="2" fill="#3A1808"/>
+      <circle cx="76" cy="124" r="2" fill="#3A1808"/>
+      <path d="M65 132 Q70 136 75 132" stroke="#C07848" stroke-width="1.5" fill="none" stroke-linecap="round"/>
 
-                <div class="form-group password-group">
-                    <label><i class="fas fa-lock"></i> Mot de passe</label>
-                    <div class="password-input-wrapper">
-                        <input [type]="showPassword ? 'text' : 'password'"
-                               formControlName="motDePasse"
-                               placeholder="••••••••"
-                               autocomplete="current-password"
-                               [class.is-invalid]="f['motDePasse'].touched && f['motDePasse'].invalid">
-                        <button type="button" class="eye-btn" (click)="toggleShowPassword()" aria-label="Afficher/masquer">
-                            <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
-                        </button>
-                    </div>
-                    <div class="error-msg" *ngIf="f['motDePasse'].touched && f['motDePasse'].invalid">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <span *ngIf="f['motDePasse'].errors?.['required']">Mot de passe requis</span>
-                        <span *ngIf="f['motDePasse'].errors?.['minlength']">Minimum 4 caractères</span>
-                    </div>
-                </div>
+      <!-- Enfant 2 — peau foncée, tresses -->
+      <rect x="105" y="200" width="10" height="48" rx="5" fill="url(#skin2)"/>
+      <rect x="119" y="200" width="10" height="48" rx="5" fill="url(#skin2)"/>
+      <ellipse cx="110" cy="249" rx="9" ry="5" fill="#3A2010"/>
+      <ellipse cx="124" cy="249" rx="9" ry="5" fill="#3A2010"/>
+      <path d="M98 185 L136 185 L142 240 L92 240 Z" fill="#E8A850"/>
+      <rect x="100" y="148" width="34" height="40" rx="8" fill="#F0E8D8"/>
+      <ellipse cx="96" cy="165" rx="7" ry="17" fill="url(#skin2)" transform="rotate(-8 96 165)"/>
+      <ellipse cx="138" cy="170" rx="7" ry="17" fill="url(#skin2)" transform="rotate(15 138 170)"/>
+      <rect x="136" y="185" width="18" height="22" rx="3" fill="#C4956A"/>
+      <path d="M139 185 Q145 178 151 185" stroke="#8B5E3C" stroke-width="1.5" fill="none"/>
+      <ellipse cx="117" cy="136" rx="17" ry="19" fill="url(#skin2)"/>
+      <ellipse cx="117" cy="122" rx="18" ry="10" fill="#2A1808"/>
+      <rect x="100" y="120" width="6" height="20" rx="3" fill="#2A1808"/>
+      <rect x="128" y="120" width="6" height="20" rx="3" fill="#2A1808"/>
+      <circle cx="111" cy="136" r="2" fill="#1A0808"/>
+      <circle cx="123" cy="136" r="2" fill="#1A0808"/>
+      <path d="M112 144 Q117 148 122 144" stroke="#8B4820" stroke-width="1.5" fill="none" stroke-linecap="round"/>
 
-                <button type="submit" class="btn-primary" [disabled]="loading || form.invalid">
-                    <i class="fas fa-arrow-right-to-bracket"></i>
-                    {{ loading ? 'Connexion...' : 'Se connecter' }}
-                </button>
-            </form>
+      <!-- Adulte homme -->
+      <rect x="168" y="185" width="14" height="68" rx="7" fill="#6A5038"/>
+      <rect x="188" y="185" width="14" height="68" rx="7" fill="#6A5038"/>
+      <ellipse cx="175" cy="255" rx="12" ry="6" fill="#3A2010"/>
+      <ellipse cx="195" cy="255" rx="12" ry="6" fill="#3A2010"/>
+      <rect x="168" y="185" width="34" height="20" rx="5" fill="#5A4028"/>
+      <rect x="160" y="115" width="50" height="75" rx="12" fill="#C4956A"/>
+      <ellipse cx="153" cy="140" rx="9" ry="28" fill="#C4956A" transform="rotate(-12 153 140)"/>
+      <ellipse cx="217" cy="145" rx="9" ry="28" fill="#C4956A" transform="rotate(10 217 145)"/>
+      <rect x="215" y="130" width="20" height="24" rx="4" fill="#F0E8D8"/>
+      <path d="M215 133 L208 126 L220 126 Z" fill="#F0E8D8"/>
+      <path d="M235 133 L228 126 L240 126 Z" fill="#F0E8D8"/>
+      <ellipse cx="185" cy="100" rx="22" ry="25" fill="url(#skin1)"/>
+      <path d="M163 95 Q185 70 207 95 Q207 78 185 75 Q163 78 163 95Z" fill="#3A2010"/>
+      <path d="M166 110 Q185 122 204 110 Q204 118 185 122 Q166 118 166 110Z" fill="#3A2010" opacity=".7"/>
+      <circle cx="178" cy="98" r="2.5" fill="#2A1808"/>
+      <circle cx="192" cy="98" r="2.5" fill="#2A1808"/>
+      <path d="M179 109 Q185 114 191 109" stroke="#C07848" stroke-width="1.8" fill="none" stroke-linecap="round"/>
 
-            <p class="auth-link">
-                Pas encore de compte ? <a routerLink="/auth/register">Créer un compte</a>
-            </p>
+      <!-- Adulte femme -->
+      <rect x="238" y="185" width="13" height="68" rx="6" fill="#D4956A"/>
+      <rect x="256" y="185" width="13" height="68" rx="6" fill="#D4956A"/>
+      <ellipse cx="244" cy="255" rx="11" ry="6" fill="#4A2810"/>
+      <ellipse cx="262" cy="255" rx="11" ry="6" fill="#4A2810"/>
+      <path d="M228 175 L280 175 L285 253 L223 253 Z" fill="#B07840" opacity=".7"/>
+      <rect x="228" y="115" width="48" height="65" rx="10" fill="#D4A878"/>
+      <ellipse cx="222" cy="138" rx="8" ry="26" fill="#D4956A" transform="rotate(-8 222 138)"/>
+      <ellipse cx="283" cy="143" rx="8" ry="26" fill="#D4956A" transform="rotate(12 283 143)"/>
+      <rect x="278" y="148" width="16" height="20" rx="3" fill="#F5DEB3"/>
+      <ellipse cx="252" cy="98" rx="20" ry="23" fill="url(#skin1)"/>
+      <ellipse cx="252" cy="79" rx="21" ry="10" fill="#5A3018"/>
+      <rect x="230" y="94" width="8" height="40" rx="4" fill="#5A3018"/>
+      <rect x="264" y="94" width="8" height="40" rx="4" fill="#5A3018"/>
+      <circle cx="245" cy="97" r="2.2" fill="#2A1808"/>
+      <circle cx="259" cy="97" r="2.2" fill="#2A1808"/>
+      <path d="M246 107 Q252 112 258 107" stroke="#C07848" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+
+      <!-- Petit enfant droite — robe jaune coeur -->
+      <rect x="315" y="210" width="10" height="44" rx="5" fill="url(#skin2)"/>
+      <rect x="328" y="210" width="10" height="44" rx="5" fill="url(#skin2)"/>
+      <ellipse cx="320" cy="255" rx="8" ry="5" fill="#3A2010"/>
+      <ellipse cx="333" cy="255" rx="8" ry="5" fill="#3A2010"/>
+      <rect x="308" y="170" width="30" height="42" rx="8" fill="#E8C878"/>
+      <path d="M320 196 Q322 193 325 196 Q328 193 330 196 Q330 202 323 207 Q316 202 320 196Z" fill="#E07878" opacity=".7"/>
+      <ellipse cx="304" cy="183" rx="6" ry="15" fill="url(#skin2)" transform="rotate(-5 304 183)"/>
+      <ellipse cx="342" cy="185" rx="6" ry="15" fill="url(#skin2)" transform="rotate(8 342 185)"/>
+      <rect x="338" y="195" width="16" height="20" rx="3" fill="#E8D0A0"/>
+      <path d="M341 195 Q346 189 351 195" stroke="#C4A060" stroke-width="1.2" fill="none"/>
+      <ellipse cx="323" cy="157" rx="16" ry="18" fill="url(#skin2)"/>
+      <ellipse cx="323" cy="146" rx="19" ry="13" fill="#2A1808"/>
+      <circle cx="317" cy="157" r="2" fill="#1A0808"/>
+      <circle cx="329" cy="157" r="2" fill="#1A0808"/>
+      <path d="M318 165 Q323 169 328 165" stroke="#8B4820" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+
+      <!-- Sac au sol -->
+      <rect x="30" y="215" width="24" height="30" rx="4" fill="#E8D890"/>
+      <path d="M34 215 Q42 206 50 215" stroke="#C4B060" stroke-width="1.5" fill="none"/>
+
+      <!-- Étoiles décoratives -->
+      <path d="M145 80 L147 86 L153 88 L147 90 L145 96 L143 90 L137 88 L143 86 Z" fill="#F0D060" opacity=".9"/>
+      <path d="M370 70 L372 76 L378 78 L372 80 L370 86 L368 80 L362 78 L368 76 Z" fill="#F0D060" opacity=".8"/>
+      <circle cx="155" cy="60" r="3" fill="#F0D060" opacity=".7"/>
+      <circle cx="360" cy="95" r="2.5" fill="#F0D060" opacity=".6"/>
+    </svg>
+  </div>
+
+  <!-- ══ DROITE — carte flottante ══ -->
+  <div class="auth-right">
+    <!-- Décorations flottantes -->
+    <span class="deco deco-balloon">🎈</span>
+    <span class="deco deco-rocket">🚀</span>
+    <span class="deco deco-star1">⭐</span>
+    <span class="deco deco-star2">✨</span>
+    <span class="deco deco-shoe">👟</span>
+    <div class="diamond"></div>
+
+    <div class="card-wrapper">
+      <!-- Ours au dessus de la carte -->
+      <span class="bear-emoji">🐻</span>
+
+      <div class="auth-card fade-in">
+        <h2 class="card-title">Connexion</h2>
+        <p class="card-sub">Accédez à votre compte KiddoFlow</p>
+        <div class="sep"></div>
+
+        <!-- Erreur globale -->
+        <div class="alert-error" *ngIf="error">
+          <i class="fas fa-circle-exclamation"></i> {{ error }}
         </div>
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+
+          <div class="form-group">
+            <div class="flabel"><i class="fas fa-envelope"></i> Adresse email</div>
+            <input class="finput" type="email" formControlName="email"
+                   placeholder="exemple@email.com" autocomplete="email"
+                   [class.is-invalid]="f['email'].touched && f['email'].invalid" />
+            <div class="error-msg" *ngIf="f['email'].touched && f['email'].invalid">
+              <i class="fas fa-exclamation-circle"></i>
+              <span *ngIf="f['email'].errors?.['required']">L'email est obligatoire</span>
+              <span *ngIf="f['email'].errors?.['email']">Format invalide</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="flabel"><i class="fas fa-lock"></i> Mot de passe</div>
+            <div class="pw-wrap">
+              <input class="finput"
+                     [type]="showPassword ? 'text' : 'password'"
+                     formControlName="motDePasse"
+                     placeholder="••••••••"
+                     autocomplete="current-password"
+                     [class.is-invalid]="f['motDePasse'].touched && f['motDePasse'].invalid" />
+              <button type="button" class="eye-btn"
+                      (click)="toggleShowPassword()" aria-label="Afficher/masquer">
+                <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+              </button>
+            </div>
+            <div class="error-msg" *ngIf="f['motDePasse'].touched && f['motDePasse'].invalid">
+              <i class="fas fa-exclamation-circle"></i>
+              <span *ngIf="f['motDePasse'].errors?.['required']">Mot de passe requis</span>
+              <span *ngIf="f['motDePasse'].errors?.['minlength']">Minimum 4 caractères</span>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit" [disabled]="loading || form.invalid">
+            <i class="fas fa-arrow-right-to-bracket"></i>
+            {{ loading ? 'Connexion…' : 'Se connecter' }}
+          </button>
+
+        </form>
+
+        <div class="forgot-center">
+          <a routerLink="/auth/forgot-password">Mot de passe oublié</a>
+        </div>
+
+        <p class="auth-switch">
+          Pas encore de compte ? <a routerLink="/auth/register">Créer un compte</a>
+        </p>
+      </div>
     </div>
+  </div>
+
 </div>

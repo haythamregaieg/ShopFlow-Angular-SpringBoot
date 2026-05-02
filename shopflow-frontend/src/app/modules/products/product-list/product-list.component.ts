@@ -31,6 +31,10 @@ export class ProductListComponent implements OnInit {
   prixMax?: number;
   promoOnly = false;
 
+  sliderMin = 0;
+  sliderMax = 500;
+  readonly PRIX_MAX = 500;
+
   sortBy: 'prix_asc' | 'prix_desc' | 'popularite' | 'nouveautes' = 'nouveautes';
 
   categories: Category[] = [];
@@ -165,11 +169,28 @@ export class ProductListComponent implements OnInit {
     this.searchQuery = '';
     this.prixMin = undefined;
     this.prixMax = undefined;
+    this.sliderMin = 0;
+    this.sliderMax = this.PRIX_MAX;
     this.promoOnly = false;
     this.sortBy = 'nouveautes';
     this.selectedCategoryIds = [];
     this.currentPage = 0;
     this.loadProducts();
+  }
+
+  get sliderFillLeft(): number { return (this.sliderMin / this.PRIX_MAX) * 100; }
+  get sliderFillRight(): number { return 100 - (this.sliderMax / this.PRIX_MAX) * 100; }
+
+  onMinRange(val: string): void {
+    const n = Math.min(Number(val), this.sliderMax - 5);
+    this.sliderMin = n;
+    this.prixMin = n > 0 ? n : undefined;
+  }
+
+  onMaxRange(val: string): void {
+    const n = Math.max(Number(val), this.sliderMin + 5);
+    this.sliderMax = n;
+    this.prixMax = n < this.PRIX_MAX ? n : undefined;
   }
 
   toggleCategory(categoryId: number, checked: boolean): void {

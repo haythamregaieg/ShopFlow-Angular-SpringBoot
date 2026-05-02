@@ -42,6 +42,16 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
+    public Page<ProductResponse> getAllProductsForAdmin(Pageable pageable) {
+        Pageable sorted = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "dateCreation")
+        );
+        return productRepository.findAll(sorted).map(this::toResponse);
+    }
+
+    @Transactional(readOnly = true)
     public Page<ProductResponse> searchProducts(
             String q,
             BigDecimal prixMin,

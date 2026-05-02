@@ -1,6 +1,6 @@
 import { Component, OnInit } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
-import { Product, PageResponse } from "../../../core/models/product.model";
+import { Product } from "../../../core/models/product.model";
+import { ProductService } from "../../../core/services/product.service";
 
 @Component({
   selector: "app-admin-products",
@@ -14,7 +14,7 @@ export class AdminProductsComponent implements OnInit {
   totalPages = 0;
   loading = false;
 
-  constructor(private http: HttpClient) {}
+  constructor(private productService: ProductService) {}
 
   ngOnInit(): void {
     this.loadProducts();
@@ -22,8 +22,7 @@ export class AdminProductsComponent implements OnInit {
 
   loadProducts(): void {
     this.loading = true;
-    const url = `http://localhost:8081/api/products?page=${this.currentPage}&size=${this.pageSize}`;
-    this.http.get<PageResponse<Product>>(url).subscribe({
+    this.productService.getAllForAdmin(this.currentPage, this.pageSize).subscribe({
       next: (page) => {
         this.products = page.content;
         this.totalPages = page.totalPages;
@@ -45,12 +44,13 @@ export class AdminProductsComponent implements OnInit {
     return Array.from({ length: this.totalPages }, (_, i) => i);
   }
 
-  delete(id: number): void {
-    if (confirm("Désactiver ce produit ?")) {
-      this.http.delete(`http://localhost:8081/api/products/${id}`).subscribe(() => {
-        // Recharge la page courante après suppression
-        this.loadProducts();
-      });
-    }
+  deactivate(id: number): void {
+    if (!confirm("Désactiver ce produit ?")) return;
+    this.productService.deactivate(id).subscribe(() => this.loadProducts());
+  }
+
+  activate(id: number): void {
+    if (!confirm("Activer ce produit ?")) return;
+    this.productService.activate(id).subscribe(() => this.loadProducts());
   }
 }

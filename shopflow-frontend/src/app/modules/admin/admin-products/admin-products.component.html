@@ -41,8 +41,11 @@
             <a [routerLink]="['/products', product.id, 'edit']" class="btn-outline-success" title="Modifier">
               <i class="fas fa-edit"></i>
             </a>
-            <button class="btn-outline-danger" (click)="delete(product.id)" title="Désactiver">
-              <i class="fas fa-trash"></i>
+            <button *ngIf="product.actif" class="btn-outline-danger" (click)="deactivate(product.id)" title="Désactiver">
+              <i class="fas fa-eye-slash"></i>
+            </button>
+            <button *ngIf="!product.actif" class="btn-outline-success" (click)="activate(product.id)" title="Activer">
+              <i class="fas fa-eye"></i>
             </button>
           </td>
         </tr>

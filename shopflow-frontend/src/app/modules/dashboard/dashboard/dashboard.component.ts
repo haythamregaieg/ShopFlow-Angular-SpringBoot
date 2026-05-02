@@ -1,7 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { AuthService } from "../../../core/services/auth.service";
 import { DashboardService } from "../../../core/services/dashboard.service";
-import { ChartConfiguration, ChartType } from "chart.js";
+import { Chart, ChartConfiguration, ChartType, registerables } from "chart.js";
 
 @Component({
   selector: "app-dashboard",
@@ -29,7 +29,9 @@ export class DashboardComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private dashboardService: DashboardService
-  ) {}
+  ) {
+    Chart.register(...registerables);
+  }
 
   ngOnInit(): void {
     this.isAdmin = this.authService.isAdmin();

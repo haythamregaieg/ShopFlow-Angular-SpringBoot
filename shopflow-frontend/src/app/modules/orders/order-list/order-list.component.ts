@@ -12,6 +12,8 @@ export class OrderListComponent implements OnInit {
   orders: Order[] = [];
   isSeller = false;
   isAdmin = false;
+  title = "Mes commandes";
+  subtitle = "Suivez vos achats et l'etat de vos colis";
   availableStatuses = ["PENDING", "PAID", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED", "REFUNDED"];
   readonly statusOrder: Record<string, number> = {
     PENDING: 1,
@@ -30,9 +32,19 @@ export class OrderListComponent implements OnInit {
     this.isSeller = role === "SELLER";
     this.isAdmin = role === "ADMIN";
 
-    const source$ = this.isSeller || this.isAdmin
-      ? this.orderService.getSellerOrders()
-      : this.orderService.getMyOrders();
+    if (this.isAdmin) {
+      this.title = "Toutes les commandes";
+      this.subtitle = "Vue globale des commandes de la plateforme";
+    } else if (this.isSeller) {
+      this.title = "Commandes de mes produits";
+      this.subtitle = "Suivez et mettez a jour les commandes affectees a vos produits";
+    }
+
+    const source$ = this.isAdmin
+      ? this.orderService.getAllOrders()
+      : this.isSeller
+        ? this.orderService.getSellerOrders()
+        : this.orderService.getMyOrders();
 
     source$.subscribe({
       next: (orders) => {

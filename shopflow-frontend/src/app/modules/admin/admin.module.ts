@@ -7,9 +7,10 @@ import { AdminProductsComponent } from './admin-products/admin-products.componen
 import { AdminReviewsComponent } from './admin-reviews/admin-reviews.component';
 import { CouponListComponent } from './coupons/coupon-list/coupon-list.component';
 import { CouponFormComponent } from './coupons/coupon-form/coupon-form.component';
+import { SharedModule } from '../../shared/shared.module';
 
 @NgModule({
   declarations: [AdminUsersComponent, AdminProductsComponent, AdminReviewsComponent, CouponListComponent, CouponFormComponent],
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, AdminRoutingModule]
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, AdminRoutingModule, SharedModule]
 })
 export class AdminModule {}
