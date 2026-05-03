@@ -36,6 +36,14 @@ public class User {
     @Builder.Default
     private boolean actif = true;
 
+    public boolean isActif() {
+        return actif;
+    }
+
+    public void setActif(boolean actif) {
+        this.actif = actif;
+    }
+
     private LocalDateTime dateCreation;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)

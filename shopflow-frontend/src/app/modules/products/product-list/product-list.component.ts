@@ -135,36 +135,60 @@ export class ProductListComponent implements OnInit {
 
   // ---- Chargement produits ----
 
-  loadProducts(): void {
-    this.loading = true;
+loadProducts(): void {
+  this.loading = true;
 
-    this.productService.search({
-      q: this.searchQuery || undefined,
-      prixMin: this.prixMin,
-      prixMax: this.prixMax,
-      categoryIds: this.resolvedCategoryIds(),
-      promoOnly: this.promoOnly,
-      sortBy: this.sortBy,
-      page: this.currentPage,
-      size: this.pageSize
-    }).subscribe({
-      next: (page) => {
-        this.products = page.content || [];
-        this.totalPages = page.totalPages;
-        this.totalElements = page.totalElements || 0;
-        this.computeGroupedProducts();
-        this.loadProductVariants(this.products);
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Erreur chargement produits', err);
-        this.products = [];
-        this.groupedProducts = [];
-        this.loading = false;
+  const searchParams = {
+    q: this.searchQuery || undefined,
+    prixMin: this.prixMin,
+    prixMax: this.prixMax,
+    categoryIds: this.resolvedCategoryIds(),
+    promoOnly: this.promoOnly,
+    sortBy: this.sortBy,
+    page: this.currentPage,
+    size: this.pageSize
+  };
+
+  // Log the exact request being sent
+  console.log('Sending request with params:', searchParams);
+  console.log('Resolved category IDs:', this.resolvedCategoryIds());
+
+  this.productService.search(searchParams).subscribe({
+    next: (page) => {
+      this.products = page.content || [];
+      this.totalPages = page.totalPages;
+      this.totalElements = page.totalElements || 0;
+      this.computeGroupedProducts();
+      this.loadProductVariants(this.products);
+      this.loading = false;
+    },
+    error: (err) => {
+      console.error('=== FULL ERROR DETAILS ===');
+      console.error('Status:', err.status);
+      console.error('StatusText:', err.statusText);
+      console.error('Message:', err.message);
+      console.error('Error object:', err.error);
+      console.error('Headers:', err.headers);
+      console.error('URL:', err.url);
+      console.error('Request params:', searchParams);
+
+      // If the backend returns an error message, show it
+      if (err.error && typeof err.error === 'string') {
+        console.error('Backend error message:', err.error);
+      } else if (err.error && err.error.message) {
+        console.error('Backend error message:', err.error.message);
       }
-    });
-  }
 
+      this.products = [];
+      this.groupedProducts = [];
+      this.loading = false;
+
+      // Optionally show user-friendly message
+      this.message = 'Erreur de chargement des produits. Veuillez réessayer.';
+      setTimeout(() => this.message = '', 5000);
+    }
+  });
+}
   // ---- Groupement ----
 
   computeGroupedProducts(): void {

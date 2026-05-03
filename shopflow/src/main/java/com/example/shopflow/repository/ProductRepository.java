@@ -3,6 +3,7 @@ package com.example.shopflow.repository;
 import com.example.shopflow.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,6 +12,7 @@ import java.util.List;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
+    @EntityGraph(attributePaths = {"categories", "seller"})
     @Query("SELECT DISTINCT p FROM Product p LEFT JOIN p.seller WHERE p.actif = true")
     Page<Product> findByActifTrue(Pageable pageable);
 
@@ -18,37 +20,16 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             SELECT p
             FROM Product p
             WHERE p.actif = true
-              AND (
-                    :q IS NULL
-                    OR LOWER(p.nom) LIKE LOWER(CONCAT('%', :q, '%'))
-                    OR LOWER(COALESCE(p.description, '')) LIKE LOWER(CONCAT('%', :q, '%'))
-                    OR EXISTS (
-                        SELECT 1
-                        FROM Product p2
-                        JOIN p2.categories c
-                        WHERE p2 = p
-                          AND LOWER(COALESCE(c.nom, '')) LIKE LOWER(CONCAT('%', :q, '%'))
-                    )
-                  )
+              AND (:q IS NULL OR LOWER(p.nom) LIKE LOWER(CONCAT('%', :q, '%')))
               AND (:prixMin IS NULL OR p.prix >= :prixMin)
               AND (:prixMax IS NULL OR p.prix <= :prixMax)
-              AND (
-                    :categoryFilterActive = false
-                    OR EXISTS (
-                        SELECT 1
-                        FROM Product p2
-                        JOIN p2.categories c
-                        WHERE p2 = p
-                          AND c.id IN :categoryIds
-                    )
-                  )
+              AND (:categoryIds IS NULL OR EXISTS (SELECT 1 FROM p.categories c WHERE c.id IN :categoryIds))
               AND (:promoOnly = false OR p.prixPromo IS NOT NULL)
             """)
     Page<Product> searchProducts(@Param("q") String q,
                                  @Param("prixMin") BigDecimal prixMin,
                                  @Param("prixMax") BigDecimal prixMax,
                                  @Param("categoryIds") List<Long> categoryIds,
-                                 @Param("categoryFilterActive") boolean categoryFilterActive,
                                  @Param("promoOnly") boolean promoOnly,
                                  Pageable pageable);
 
@@ -56,42 +37,16 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             SELECT p
             FROM Product p
             WHERE p.actif = true
-              AND (
-                    :q IS NULL
-                    OR LOWER(p.nom) LIKE LOWER(CONCAT('%', :q, '%'))
-                    OR LOWER(COALESCE(p.description, '')) LIKE LOWER(CONCAT('%', :q, '%'))
-                    OR EXISTS (
-                        SELECT 1
-                        FROM Product p2
-                        JOIN p2.categories c
-                        WHERE p2 = p
-                          AND LOWER(COALESCE(c.nom, '')) LIKE LOWER(CONCAT('%', :q, '%'))
-                    )
-                  )
+              AND (:q IS NULL OR LOWER(p.nom) LIKE LOWER(CONCAT('%', :q, '%')))
               AND (:prixMin IS NULL OR p.prix >= :prixMin)
               AND (:prixMax IS NULL OR p.prix <= :prixMax)
-              AND (
-                    :categoryFilterActive = false
-                    OR EXISTS (
-                        SELECT 1
-                        FROM Product p2
-                        JOIN p2.categories c
-                        WHERE p2 = p
-                          AND c.id IN :categoryIds
-                    )
-                  )
+              AND (:categoryIds IS NULL OR EXISTS (SELECT 1 FROM p.categories c WHERE c.id IN :categoryIds))
               AND (:promoOnly = false OR p.prixPromo IS NOT NULL)
-            ORDER BY (
-               SELECT COUNT(r.id)
-               FROM Review r
-               WHERE r.product.id = p.id AND r.approuve = true
-            ) DESC, p.dateCreation DESC
             """)
     Page<Product> searchProductsByPopularity(@Param("q") String q,
                                              @Param("prixMin") BigDecimal prixMin,
                                              @Param("prixMax") BigDecimal prixMax,
                                              @Param("categoryIds") List<Long> categoryIds,
-                                             @Param("categoryFilterActive") boolean categoryFilterActive,
                                              @Param("promoOnly") boolean promoOnly,
                                              Pageable pageable);
 

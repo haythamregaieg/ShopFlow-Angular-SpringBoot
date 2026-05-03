@@ -61,11 +61,11 @@ public class ProductService {
             String sortBy,
             Pageable pageable
     ) {
+        String searchQuery = (q == null || q.trim().isEmpty()) ? null : q.trim();
+        List<Long> categoryFilter = (categoryIds == null || categoryIds.isEmpty()) ? null : categoryIds;
         Page<Product> page;
-        boolean categoryFilterActive = categoryIds != null && !categoryIds.isEmpty();
-        List<Long> categoryFilter = categoryFilterActive ? categoryIds : List.of(-1L);
         if ("popularite".equalsIgnoreCase(sortBy)) {
-            page = productRepository.searchProductsByPopularity(q, prixMin, prixMax, categoryFilter, categoryFilterActive, promoOnly, pageable);
+            page = productRepository.searchProductsByPopularity(searchQuery, prixMin, prixMax, categoryFilter, promoOnly, pageable);
         } else {
             Sort sort = switch (sortBy == null ? "nouveautes" : sortBy.toLowerCase()) {
                 case "prix_asc" -> Sort.by(Sort.Direction.ASC, "prix");
@@ -78,7 +78,7 @@ public class ProductService {
                     pageable.getPageSize(),
                     sort
             );
-            page = productRepository.searchProducts(q, prixMin, prixMax, categoryFilter, categoryFilterActive, promoOnly, sorted);
+            page = productRepository.searchProducts(searchQuery, prixMin, prixMax, categoryFilter, promoOnly, sorted);
         }
         return page.map(this::toResponse);
     }
@@ -221,12 +221,15 @@ public class ProductService {
             categoryIds = List.of();
         }
 
+        BigDecimal prix = p.getPrix() != null ? p.getPrix() : BigDecimal.ZERO;
+        BigDecimal prixPromo = p.getPrixPromo();
+
         return ProductResponse.builder()
                 .id(p.getId())
                 .nom(p.getNom())
                 .description(p.getDescription())
-                .prix(p.getPrix())
-                .prixPromo(p.getPrixPromo())
+                .prix(prix)
+                .prixPromo(prixPromo)
                 .stock(getDisplayStock(p))
                 .images(p.getImages())
                 .actif(p.isActif())
@@ -235,10 +238,10 @@ public class ProductService {
                 .categories(categories)
                 .categoryIds(categoryIds)
                 .noteMoyenne(note)
-                .fraisLivraisonLocal(p.getFraisLivraisonLocal())
-                .fraisLivraisonInternational(p.getFraisLivraisonInternational())
-                .promotion(p.getPrixPromo() != null && p.getPrixPromo().compareTo(p.getPrix()) < 0)
-                .pourcentageRemise(calculateDiscountPercent(p.getPrix(), p.getPrixPromo()))
+                .fraisLivraisonLocal(p.getFraisLivraisonLocal() != null ? p.getFraisLivraisonLocal() : BigDecimal.ZERO)
+                .fraisLivraisonInternational(p.getFraisLivraisonInternational() != null ? p.getFraisLivraisonInternational() : BigDecimal.ZERO)
+                .promotion(prixPromo != null && prixPromo.compareTo(prix) < 0)
+                .pourcentageRemise(calculateDiscountPercent(prix, prixPromo))
                 .build();
     }
 
