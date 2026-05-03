@@ -12,7 +12,9 @@
       <a routerLink="/products" routerLinkActive="active" class="nav-icon-link" title="Catalogue">
         <i class="fas fa-tshirt"></i>
       </a>
-      <a routerLink="/orders" routerLinkActive="active" *ngIf="isLoggedIn" class="nav-icon-link" title="Mes commandes">
+      <a routerLink="/orders" routerLinkActive="active" *ngIf="isLoggedIn"
+         class="nav-icon-link"
+         [title]="isSeller ? 'Nouvelles commandes' : 'Mes commandes'">
         <i class="fas fa-gift"></i>
         <span class="notification-badge" *ngIf="notificationCount > 0">{{ notificationCount }}</span>
       </a>

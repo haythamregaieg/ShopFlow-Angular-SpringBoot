@@ -176,7 +176,8 @@ public class OrderService {
                 .fraisLivraison(frais)
                 .totalTTC(sousApresRemise.add(frais))
                 .montantRembourse(BigDecimal.ZERO)
-                .isNewStatus(true)
+                .isNewStatus(false)
+                .seenBySeller(false)
                 .build();
 
         items.forEach(i -> i.setOrder(order));
@@ -290,6 +291,19 @@ public class OrderService {
         return toResponse(orderRepository.save(order));
     }
 
+    @Transactional
+    public OrderResponse markAsSeenBySeller(Long id, String email) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Commande introuvable"));
+        User seller = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable"));
+        if (!isSellerParticipant(order, seller.getId())) {
+            throw new BadRequestException("Non autorise");
+        }
+        order.setSeenBySeller(true);
+        return toResponse(orderRepository.save(order));
+    }
+
     @Transactional(readOnly = true)
     public List<OrderResponse> getAllOrders() {
         return orderRepository.findAll().stream().map(this::toResponse).collect(Collectors.toList());
@@ -342,6 +356,7 @@ public class OrderService {
             .totalTTC(o.getTotalTTC())
             .montantRembourse(o.getMontantRembourse())
             .isNewStatus(o.isNewStatus())
+            .seenBySeller(o.isSeenBySeller())
             .dateCommande(o.getDateCommande())
             .lignes(lignes)
             .build();

@@ -1,5 +1,6 @@
 package com.example.shopflow.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 import java.math.BigDecimal;
@@ -23,7 +24,9 @@ public class OrderResponse {
     private BigDecimal fraisLivraison;
     private BigDecimal totalTTC;
     private BigDecimal montantRembourse;
+    @JsonProperty("isNewStatus")
     private boolean isNewStatus;
+    private boolean seenBySeller;
     private LocalDateTime dateCommande;
     private List<OrderItemResponse> lignes;
 }

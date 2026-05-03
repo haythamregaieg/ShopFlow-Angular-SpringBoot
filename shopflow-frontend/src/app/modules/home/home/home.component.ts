@@ -12,7 +12,7 @@ import { ProductService } from '../../../core/services/product.service';
 export class HomeComponent implements OnInit {
   categories: Category[] = [];
   products: Product[] = [];
-  selectedCategoryId = '';
+  selectedCategoryId: number | undefined = undefined;
   loadingProducts = false;
 
   constructor(
@@ -27,13 +27,14 @@ export class HomeComponent implements OnInit {
 
   loadCategories(): void {
     this.categoryService.getAll().subscribe({
-      next: (categories) => {
-        this.categories = categories || [];
-      },
-      error: () => {
-        this.categories = [];
-      }
+      next: (categories) => { this.categories = categories || []; },
+      error: () => { this.categories = []; }
     });
+  }
+
+  selectCategory(categoryId?: number): void {
+    this.selectedCategoryId = categoryId;
+    this.loadProducts(categoryId);
   }
 
   loadProducts(categoryId?: number): void {
@@ -68,12 +69,6 @@ export class HomeComponent implements OnInit {
     );
   }
 
-  onCategoryChange(event: Event): void {
-    const selected = (event.target as HTMLSelectElement).value;
-    this.selectedCategoryId = selected;
-    this.loadProducts(selected ? Number(selected) : undefined);
-  }
-
   getDisplayPrice(product: Product): number {
     return product.prixPromo ?? product.prix;
   }
@@ -81,5 +76,14 @@ export class HomeComponent implements OnInit {
   getPromoPercent(product: Product): number {
     if (!product.prixPromo) return 0;
     return Math.round((1 - product.prixPromo / product.prix) * 100);
+  }
+
+  getStars(noteMoyenne?: number): ('full' | 'half' | 'empty')[] {
+    const note = noteMoyenne ?? 0;
+    return [1, 2, 3, 4, 5].map(i => {
+      if (note >= i) return 'full';
+      if (note >= i - 0.5) return 'half';
+      return 'empty';
+    });
   }
 }

@@ -86,19 +86,21 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   loadNotificationCount(): void {
-    console.log("Navbar: loadNotificationCount called");
-    this.orderService.getMyOrders().subscribe({
-      next: (orders: Order[]) => {
-        console.log("Navbar: orders received", orders);
-        console.log("Navbar: isNewStatus orders", orders.filter(o => o.isNewStatus));
-        this.notificationCount = orders.filter(o => o.isNewStatus).length;
-        console.log("Navbar: notificationCount set to", this.notificationCount);
-      },
-      error: (err) => {
-        console.error("Navbar: error loading orders", err);
-        this.notificationCount = 0;
-      }
-    });
+    if (this.isSeller) {
+      this.orderService.getSellerOrders().subscribe({
+        next: (orders: Order[]) => {
+          this.notificationCount = orders.filter(o => o.seenBySeller === false).length;
+        },
+        error: () => { this.notificationCount = 0; }
+      });
+    } else if (!this.isAdmin) {
+      this.orderService.getMyOrders().subscribe({
+        next: (orders: Order[]) => {
+          this.notificationCount = orders.filter(o => o.isNewStatus).length;
+        },
+        error: () => { this.notificationCount = 0; }
+      });
+    }
   }
 
   refreshNotificationCount(): void {

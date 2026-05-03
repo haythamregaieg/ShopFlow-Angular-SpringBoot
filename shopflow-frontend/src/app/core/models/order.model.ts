@@ -30,6 +30,7 @@ export interface Order {
   totalTTC: number;
   montantRembourse?: number;
   isNewStatus?: boolean;
+  seenBySeller?: boolean;
   dateCommande: string;
   lignes: OrderItem[];
   // UI helper: selected status in the order list (not persisted)

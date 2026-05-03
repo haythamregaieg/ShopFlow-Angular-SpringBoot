@@ -58,6 +58,13 @@ public class OrderController {
         return orderService.markAsSeen(id, userDetails.getUsername());
     }
 
+    @PutMapping("/{id}/seller-seen")
+    @PreAuthorize("hasAnyRole('SELLER','ADMIN')")
+    public OrderResponse markAsSeenBySeller(@PathVariable Long id,
+                                            @AuthenticationPrincipal UserDetails userDetails) {
+        return orderService.markAsSeenBySeller(id, userDetails.getUsername());
+    }
+
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public List<OrderResponse> getAll() {

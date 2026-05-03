@@ -111,48 +111,89 @@
   transform: translateY(-2px);
 }
 
-/* Hero outil (filtre) */
+/* Hero outil (catégories pills) */
 .hero-tools {
   background: rgba(255,255,240,0.08);
   border-radius: 24px;
   padding: 24px;
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255,255,240,0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
-.hero-tools label {
-  display: block;
+.tools-label {
   font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--peach);
-  margin-bottom: 12px;
+  margin: 0 0 14px;
 }
 
-.hero-tools select {
-  width: 100%;
-  padding: 12px 16px;
+.cat-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.cat-pill {
+  background: rgba(255,255,240,0.1);
+  border: 1.5px solid rgba(255,255,240,0.2);
+  color: rgba(255,255,240,0.85);
   border-radius: 60px;
-  border: none;
-  background: white;
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--ink);
+  padding: 7px 18px;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  outline: none;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236A7F8C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 18px center;
+  transition: all 0.2s ease;
+  font-family: 'Inter', sans-serif;
+  line-height: 1;
+}
+
+.cat-pill:hover {
+  background: rgba(243,171,126,0.25);
+  border-color: var(--peach);
+  color: white;
+}
+
+.cat-pill.active {
+  background: var(--peach);
+  border-color: var(--peach);
+  color: var(--ink);
 }
 
 .hero-tools small {
-  display: block;
-  margin-top: 12px;
   font-size: 12px;
-  color: rgba(255,255,240,0.7);
+  color: rgba(255,255,240,0.55);
+  margin: 0;
+}
+
+/* Étoiles de notation */
+.star-row,
+.no-review {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  margin-bottom: 6px;
+}
+
+.star {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.star.full  { color: #F3AB7E; }
+.star.half  { color: #F3AB7E; }
+.star.empty { color: #D9CEC4; }
+
+.note-val {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-left: 5px;
+  font-weight: 500;
 }
 
 /* Section produits */

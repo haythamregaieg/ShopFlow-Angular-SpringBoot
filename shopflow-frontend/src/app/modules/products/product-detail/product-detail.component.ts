@@ -93,7 +93,7 @@ export class ProductDetailComponent implements OnInit {
         // Print full error to console for debugging (status, body, headers)
         console.error('Review POST error', err);
         // Prefer server-provided message when present
-        const serverMsg = err?.error?.message || err?.message || (err?.error ? JSON.stringify(err.error) : null);
+        const serverMsg = err?.error?.error || err?.error?.message || err?.message || (err?.error ? JSON.stringify(err.error) : null);
         this.message = serverMsg || 'Erreur lors de l\'envoi de l\'avis. Assurez-vous d\'avoir acheté ce produit.';
         setTimeout(() => this.message = '', 5000);
       }

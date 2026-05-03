@@ -50,19 +50,38 @@ export class OrderListComponent implements OnInit {
       next: (orders) => {
         this.prepareOrders(orders);
         this.orders = orders;
-        // Auto-mark new-status notifications as seen for customers
-        if (!this.isSeller && !this.isAdmin) {
+
+        if (this.isSeller) {
+          // Seller: mark unseen orders as seen
+          const unseen = orders.filter(o => o.seenBySeller === false);
+          if (unseen.length > 0) {
+            let done = 0;
+            unseen.forEach(o => {
+              this.orderService.markAsSeenBySeller(o.id).subscribe({
+                next: (updated) => {
+                  const idx = this.orders.findIndex(x => x.id === updated.id);
+                  if (idx !== -1) this.orders[idx] = { ...this.orders[idx], seenBySeller: true };
+                  done++;
+                  if (done === unseen.length) this.orderService.notificationRefreshSubject.next();
+                },
+                error: () => { done++; }
+              });
+            });
+          }
+        } else if (!this.isAdmin) {
+          // Customer: mark orders with changed status as seen
           const newOrders = orders.filter(o => o.isNewStatus);
           if (newOrders.length > 0) {
-            let markedCount = 0;
+            let done = 0;
             newOrders.forEach(o => {
-              this.orderService.markAsSeen(o.id).subscribe(updated => {
-                const idx = this.orders.findIndex(x => x.id === updated.id);
-                if (idx !== -1) this.orders[idx] = { ...this.orders[idx], isNewStatus: false };
-                markedCount++;
-                if (markedCount === newOrders.length) {
-                  this.orderService.notificationRefreshSubject.next();
-                }
+              this.orderService.markAsSeen(o.id).subscribe({
+                next: (updated) => {
+                  const idx = this.orders.findIndex(x => x.id === updated.id);
+                  if (idx !== -1) this.orders[idx] = { ...this.orders[idx], isNewStatus: false };
+                  done++;
+                  if (done === newOrders.length) this.orderService.notificationRefreshSubject.next();
+                },
+                error: () => { done++; }
               });
             });
           }

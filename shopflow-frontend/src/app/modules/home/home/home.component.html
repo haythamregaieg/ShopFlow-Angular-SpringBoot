@@ -14,13 +14,26 @@
           <a routerLink="/auth/register" class="btn-outline">Ouvrir ma boutique</a>
         </div>
       </div>
+
+      <!-- Catégories — pills cliquables -->
       <div class="hero-tools">
-        <label for="categorySelect">Catégorie</label>
-        <select id="categorySelect" [value]="selectedCategoryId" (change)="onCategoryChange($event)">
-          <option value="">Toutes les catégories</option>
-          <option *ngFor="let category of categories" [value]="category.id">{{ category.nom }}</option>
-        </select>
-        <small>Filtre instantané pour trouver rapidement les articles adaptés à vos besoins.</small>
+        <p class="tools-label">Filtrer par catégorie</p>
+        <div class="cat-pills">
+          <button
+            class="cat-pill"
+            [class.active]="selectedCategoryId === undefined"
+            (click)="selectCategory()">
+            Toutes
+          </button>
+          <button
+            class="cat-pill"
+            *ngFor="let cat of categories"
+            [class.active]="selectedCategoryId === cat.id"
+            (click)="selectCategory(cat.id)">
+            {{ cat.nom }}
+          </button>
+        </div>
+        <small>Cliquez sur une catégorie pour filtrer les produits.</small>
       </div>
     </div>
 
@@ -30,14 +43,14 @@
         <h2>Produits coups de cœur</h2>
       </div>
 
-      <!-- État de chargement (skeleton) -->
+      <!-- Squelette de chargement -->
       <div class="skeleton-grid" *ngIf="loadingProducts">
         <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6,7,8]">
           <div class="skeleton-thumb"></div>
           <div class="skeleton-body">
             <div class="skeleton-line w-70"></div>
-            <div class="skeleton-line w-50"></div>
             <div class="skeleton-line w-40"></div>
+            <div class="skeleton-line w-50"></div>
           </div>
         </div>
       </div>
@@ -52,7 +65,25 @@
           </div>
           <div class="product-content">
             <h3>{{ product.nom }}</h3>
-            <p>{{ (product.description | slice:0:80) }}{{ (product.description.length || 0) > 80 ? '…' : '' }}</p>
+
+            <!-- Étoiles de notation -->
+            <div class="star-row" *ngIf="product.noteMoyenne">
+              <span
+                class="star"
+                *ngFor="let s of getStars(product.noteMoyenne)"
+                [class.full]="s === 'full'"
+                [class.half]="s === 'half'"
+                [class.empty]="s === 'empty'">
+                {{ s === 'full' ? '★' : (s === 'half' ? '⯨' : '☆') }}
+              </span>
+              <span class="note-val">{{ product.noteMoyenne | number:'1.1-1' }}</span>
+            </div>
+            <div class="no-review" *ngIf="!product.noteMoyenne">
+              <span class="star empty" *ngFor="let i of [1,2,3,4,5]">☆</span>
+              <span class="note-val">Aucun avis</span>
+            </div>
+
+            <p>{{ (product.description | slice:0:72) }}{{ (product.description?.length || 0) > 72 ? '…' : '' }}</p>
             <div class="price-block">
               <span class="current-price">{{ getDisplayPrice(product) | number:'1.2-2' }} €</span>
               <span class="old-price" *ngIf="product.prixPromo">{{ product.prix | number:'1.2-2' }} €</span>

@@ -22,7 +22,12 @@
             <p class="order-date">Passée le {{ order.dateCommande | date:'dd MMMM yyyy' }}</p>
           </div>
           <div class="order-status-group">
-            <span class="new-badge" *ngIf="order.isNewStatus">✨ Nouveau</span>
+            <span class="new-badge seller-badge" *ngIf="isSeller && order.seenBySeller === false">
+              Nouvelle commande
+            </span>
+            <span class="new-badge" *ngIf="!isSeller && order.isNewStatus">
+              Statut mis à jour
+            </span>
             <span class="status-badge" [ngClass]="'status-' + order.statut.toLowerCase()">
               {{ order.statut }}
             </span>

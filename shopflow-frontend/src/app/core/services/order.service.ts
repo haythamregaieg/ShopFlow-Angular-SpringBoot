@@ -40,6 +40,10 @@ export class OrderService {
     return this.http.put<Order>(`${this.apiUrl}/${id}/seen`, {});
   }
 
+  markAsSeenBySeller(id: number): Observable<Order> {
+    return this.http.put<Order>(`${this.apiUrl}/${id}/seller-seen`, {});
+  }
+
   updateStatus(id: number, status: string): Observable<Order> {
     return this.http.put<Order>(`${this.apiUrl}/${id}/status?status=${status}`, {});
   }

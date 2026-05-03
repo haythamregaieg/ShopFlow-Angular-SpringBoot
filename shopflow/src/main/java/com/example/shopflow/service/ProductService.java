@@ -61,11 +61,15 @@ public class ProductService {
             String sortBy,
             Pageable pageable
     ) {
-        String searchQuery = (q == null || q.trim().isEmpty()) ? null : q.trim();
+        String searchQuery = (q == null || q.trim().isEmpty()) ? "%" : "%" + q.trim() + "%";
         List<Long> categoryFilter = (categoryIds == null || categoryIds.isEmpty()) ? null : categoryIds;
         Page<Product> page;
         if ("popularite".equalsIgnoreCase(sortBy)) {
-            page = productRepository.searchProductsByPopularity(searchQuery, prixMin, prixMax, categoryFilter, promoOnly, pageable);
+            if (categoryFilter != null) {
+                page = productRepository.searchProductsByPopularityWithCategories(searchQuery, prixMin, prixMax, categoryFilter, promoOnly, pageable);
+            } else {
+                page = productRepository.searchProductsByPopularity(searchQuery, prixMin, prixMax, promoOnly, pageable);
+            }
         } else {
             Sort sort = switch (sortBy == null ? "nouveautes" : sortBy.toLowerCase()) {
                 case "prix_asc" -> Sort.by(Sort.Direction.ASC, "prix");
@@ -78,7 +82,11 @@ public class ProductService {
                     pageable.getPageSize(),
                     sort
             );
-            page = productRepository.searchProducts(searchQuery, prixMin, prixMax, categoryFilter, promoOnly, sorted);
+            if (categoryFilter != null) {
+                page = productRepository.searchProductsWithCategories(searchQuery, prixMin, prixMax, categoryFilter, promoOnly, sorted);
+            } else {
+                page = productRepository.searchProducts(searchQuery, prixMin, prixMax, promoOnly, sorted);
+            }
         }
         return page.map(this::toResponse);
     }

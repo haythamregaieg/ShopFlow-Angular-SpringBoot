@@ -27,7 +27,7 @@ public class ReviewService {
     private final OrderRepository orderRepository;
 
     private static final List<OrderStatus> ELIGIBLE_STATUSES =
-            List.of(OrderStatus.PAID, OrderStatus.PROCESSING, OrderStatus.SHIPPED, OrderStatus.DELIVERED);
+            List.of(OrderStatus.PENDING, OrderStatus.PAID, OrderStatus.PROCESSING, OrderStatus.SHIPPED, OrderStatus.DELIVERED);
 
     @Transactional
     public ReviewResponse addReview(String email, ReviewRequest request) {

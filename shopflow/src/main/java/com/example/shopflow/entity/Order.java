@@ -42,6 +42,10 @@ public class Order {
     private BigDecimal totalTTC;
     private BigDecimal montantRembourse;
     private boolean isNewStatus;
+
+    @Column(columnDefinition = "boolean default true")
+    private boolean seenBySeller = true;
+
     private LocalDateTime dateCommande;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
