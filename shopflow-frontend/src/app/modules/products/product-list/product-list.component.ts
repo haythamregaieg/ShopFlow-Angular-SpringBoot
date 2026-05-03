@@ -7,8 +7,9 @@ import { Category } from '../../../core/models/category.model';
 import { CategoryService } from '../../../core/services/category.service';
 import { CartService } from '../../../core/services/cart.service';
 
-interface ProductGroup {
+export interface ProductGroup {
   categoryName: string;
+  subCategoryName?: string;
   products: Product[];
 }
 
@@ -20,7 +21,7 @@ interface ProductGroup {
 export class ProductListComponent implements OnInit {
 
   products: Product[] = [];
-  groupedProducts: ProductGroup[] = []; // ✅ FIX IMPORTANT
+  groupedProducts: ProductGroup[] = [];
 
   totalPages = 0;
   currentPage = 0;
@@ -37,7 +38,11 @@ export class ProductListComponent implements OnInit {
 
   sortBy: 'prix_asc' | 'prix_desc' | 'popularite' | 'nouveautes' = 'nouveautes';
 
+  /** Arbre des catégories (racines + sousCategories) */
   categories: Category[] = [];
+  /** Catégories racines dont le panneau sous-catégories est ouvert */
+  expandedCategories: Set<number> = new Set();
+  /** IDs sélectionnés pour le filtre (peuvent être parents ou sous-catégories) */
   selectedCategoryIds: number[] = [];
 
   pageSize = 12;
@@ -51,9 +56,6 @@ export class ProductListComponent implements OnInit {
 
   variantsByProduct: Record<number, ProductVariant[]> = {};
   selectedVariantByProduct: Record<number, number | undefined> = {};
-
-  // ✅ optimisation
-  private categoryMap: Record<number, string> = {};
 
   constructor(
     private productService: ProductService,
@@ -70,15 +72,59 @@ export class ProductListComponent implements OnInit {
 
     this.categoryService.getAll().subscribe(c => {
       this.categories = c || [];
-
-      // ✅ optimisation map
-      this.categories.forEach(cat => {
-        this.categoryMap[cat.id] = cat.nom;
-      });
-
       this.loadProducts();
     });
   }
+
+  // ---- Helpers filtres catégories ----
+
+  /** Tous les IDs à envoyer au backend : si parent sélectionné, on inclut ses sous-cat aussi */
+  private resolvedCategoryIds(): number[] {
+    if (this.selectedCategoryIds.length === 0) return [];
+
+    const all = new Set<number>(this.selectedCategoryIds);
+    this.selectedCategoryIds.forEach(id => {
+      const parent = this.categories.find(c => c.id === id);
+      if (parent?.sousCategories) {
+        parent.sousCategories.forEach(sub => all.add(sub.id));
+      }
+    });
+    return Array.from(all);
+  }
+
+  isCategorySelected(id: number): boolean {
+    return this.selectedCategoryIds.includes(id);
+  }
+
+  isCategoryExpanded(id: number): boolean {
+    return this.expandedCategories.has(id);
+  }
+
+  toggleExpand(id: number, event: Event): void {
+    event.stopPropagation();
+    if (this.expandedCategories.has(id)) {
+      this.expandedCategories.delete(id);
+    } else {
+      this.expandedCategories.add(id);
+    }
+  }
+
+  toggleCategory(id: number, checked: boolean): void {
+    if (checked) {
+      if (!this.selectedCategoryIds.includes(id)) {
+        this.selectedCategoryIds.push(id);
+      }
+    } else {
+      this.selectedCategoryIds = this.selectedCategoryIds.filter(i => i !== id);
+    }
+  }
+
+  /** Vérifie si une catégorie racine a au moins une sous-catégorie sélectionnée */
+  hasSubSelected(cat: Category): boolean {
+    return (cat.sousCategories || []).some(s => this.selectedCategoryIds.includes(s.id));
+  }
+
+  // ---- Chargement produits ----
 
   loadProducts(): void {
     this.loading = true;
@@ -87,7 +133,7 @@ export class ProductListComponent implements OnInit {
       q: this.searchQuery || undefined,
       prixMin: this.prixMin,
       prixMax: this.prixMax,
-      categoryIds: this.selectedCategoryIds,
+      categoryIds: this.resolvedCategoryIds(),
       promoOnly: this.promoOnly,
       sortBy: this.sortBy,
       page: this.currentPage,
@@ -97,44 +143,35 @@ export class ProductListComponent implements OnInit {
         this.products = page.content || [];
         this.totalPages = page.totalPages;
         this.totalElements = page.totalElements || 0;
-
-        this.computeGroupedProducts(); // ✅ FIX
-
+        this.computeGroupedProducts();
         this.loadProductVariants(this.products);
-
         this.loading = false;
       },
       error: () => this.loading = false
     });
   }
 
-  // ✅ VERSION OPTIMISÉE (plus de getter)
+  // ---- Groupement ----
+
   computeGroupedProducts(): void {
     if (!this.products.length) {
       this.groupedProducts = [];
       return;
     }
 
-    // Pre-compute image lists and a thumbnail for each product to avoid
-    // doing work in the template. Images are stored as a CSV on the model.
     this.products.forEach(product => {
       const imgs = this.parseImageList((product as any).images);
       (product as any)._imageList = imgs;
       (product as any)._thumbnail = imgs.length > 0 ? imgs[0] : null;
     });
 
+    // Clé de groupe : "Parent" ou "Parent > Sous-cat"
     const map = new Map<string, Product[]>();
 
     this.products.forEach(product => {
-      const catName: string =
-        (product as any).categoryNom
-        ?? (product as any).categorie?.nom
-        ?? (product as any).category?.nom
-        ?? this.categoryMap[(product as any).categoryId]
-        ?? 'Autres';
-
-      if (!map.has(catName)) map.set(catName, []);
-      map.get(catName)!.push(product);
+      const key = this.groupKeyForProduct(product);
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(product);
     });
 
     this.groupedProducts = Array.from(map.entries())
@@ -146,14 +183,27 @@ export class ProductListComponent implements OnInit {
       .map(([categoryName, products]) => ({ categoryName, products }));
   }
 
-  /**
-   * Parse a CSV-style images string into an array of valid image URIs.
-   * Accepts http(s) URLs and data URIs.
-   */
+  private groupKeyForProduct(product: Product): string {
+    const details = product.categoryDetails;
+    if (details && details.length > 0) {
+      const first = details[0];
+      if (first.parentNom) {
+        return `${first.parentNom} › ${first.nom}`;
+      }
+      return first.nom;
+    }
+    // Fallback: use categories string array
+    if (product.categories && product.categories.length > 0) {
+      return product.categories[0];
+    }
+    return 'Autres';
+  }
+
   private parseImageList(images?: string): string[] {
     if (!images) return [];
-    const imgs = images.split(',').map(s => s.trim()).filter(Boolean);
-    return imgs.filter(s => s.startsWith('http://') || s.startsWith('https://') || s.startsWith('data:'));
+    return images.split(',').map(s => s.trim()).filter(
+      s => s.startsWith('http://') || s.startsWith('https://') || s.startsWith('data:')
+    );
   }
 
   pagesArray(): number[] {
@@ -174,6 +224,7 @@ export class ProductListComponent implements OnInit {
     this.promoOnly = false;
     this.sortBy = 'nouveautes';
     this.selectedCategoryIds = [];
+    this.expandedCategories.clear();
     this.currentPage = 0;
     this.loadProducts();
   }
@@ -193,24 +244,12 @@ export class ProductListComponent implements OnInit {
     this.prixMax = n < this.PRIX_MAX ? n : undefined;
   }
 
-  toggleCategory(categoryId: number, checked: boolean): void {
-    if (checked) {
-      if (!this.selectedCategoryIds.includes(categoryId)) {
-        this.selectedCategoryIds.push(categoryId);
-      }
-    } else {
-      this.selectedCategoryIds = this.selectedCategoryIds.filter(id => id !== categoryId);
-    }
-  }
-
   addToCart(product: Product): void {
     if (!this.isLoggedIn) {
       this.router.navigate(['/auth/login']);
       return;
     }
-
     const selectedVariant = this.selectedVariantByProduct[product.id];
-
     this.cartService.addItem(product.id, 1, selectedVariant).subscribe({
       next: () => {
         this.message = product.nom + ' ajouté au panier';
@@ -222,9 +261,6 @@ export class ProductListComponent implements OnInit {
       }
     });
   }
-
-  // Compute the displayed price for a product card, taking the first available variant into account
-  // variant-aware card price (removed per user request)
 
   onVariantChange(productId: number, variantId?: number): void {
     this.selectedVariantByProduct[productId] = variantId;
@@ -241,14 +277,11 @@ export class ProductListComponent implements OnInit {
       this.productService.getVariants(product.id).subscribe({
         next: (variants) => {
           const available = (variants || []).filter(v => (v.stock ?? 0) > 0);
-
           this.variantsByProduct[product.id] = available;
           this.selectedVariantByProduct[product.id] =
             available.length > 0 ? available[0].id : undefined;
         },
-        error: () => {
-          this.variantsByProduct[product.id] = [];
-        }
+        error: () => { this.variantsByProduct[product.id] = []; }
       });
     });
   }

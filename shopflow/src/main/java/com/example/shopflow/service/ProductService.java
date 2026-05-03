@@ -206,6 +206,7 @@ public class ProductService {
         // Accès sécurisé aux catégories
         List<String> categories = List.of();
         List<Long> categoryIds = List.of();
+        List<ProductResponse.CategoryInfo> categoryDetails = List.of();
         try {
             if (p.getCategories() != null) {
                 categories = p.getCategories().stream()
@@ -214,10 +215,29 @@ public class ProductService {
                 categoryIds = p.getCategories().stream()
                         .map(Category::getId)
                         .collect(Collectors.toList());
+                categoryDetails = p.getCategories().stream()
+                        .map(cat -> {
+                            Long parentId = null;
+                            String parentNom = null;
+                            try {
+                                if (cat.getParent() != null) {
+                                    parentId = cat.getParent().getId();
+                                    parentNom = cat.getParent().getNom();
+                                }
+                            } catch (Exception ignored) {}
+                            return ProductResponse.CategoryInfo.builder()
+                                    .id(cat.getId())
+                                    .nom(cat.getNom())
+                                    .parentId(parentId)
+                                    .parentNom(parentNom)
+                                    .build();
+                        })
+                        .collect(Collectors.toList());
             }
         } catch (Exception e) {
             categories = List.of();
             categoryIds = List.of();
+            categoryDetails = List.of();
         }
 
         return ProductResponse.builder()
@@ -233,6 +253,7 @@ public class ProductService {
                 .sellerNom(sellerNom)
                 .categories(categories)
                 .categoryIds(categoryIds)
+                .categoryDetails(categoryDetails)
                 .noteMoyenne(note)
                 .fraisLivraisonLocal(p.getFraisLivraisonLocal())
                 .fraisLivraisonInternational(p.getFraisLivraisonInternational())

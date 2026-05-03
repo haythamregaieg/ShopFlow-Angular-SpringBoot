@@ -1,11 +1,13 @@
 package com.example.shopflow.controller;
 
-import com.example.shopflow.entity.Category;
-import com.example.shopflow.repository.CategoryRepository;
+import com.example.shopflow.dto.request.CategoryRequest;
+import com.example.shopflow.dto.response.CategoryResponse;
+import com.example.shopflow.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -13,31 +15,37 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CategoryController {
 
-    private final CategoryRepository categoryRepository;
+    private final CategoryService categoryService;
 
+    /** Retourne l'arbre : catégories racines avec leurs sous-catégories */
     @GetMapping
-    public List<Category> getAll() {
-        return categoryRepository.findAll();
+    public List<CategoryResponse> getAll() {
+        return categoryService.getAllTree();
+    }
+
+    /** Retourne la liste plate de toutes les catégories (pour les formulaires) */
+    @GetMapping("/flat")
+    public List<CategoryResponse> getAllFlat() {
+        return categoryService.getAllFlat();
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
-    public Category create(@RequestBody Category category) {
-        return categoryRepository.save(category);
+    public CategoryResponse create(@RequestBody CategoryRequest request) {
+        return categoryService.create(request);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
-    public Category update(@PathVariable Long id, @RequestBody Category category) {
-        category.setId(id);
-        return categoryRepository.save(category);
+    public CategoryResponse update(@PathVariable Long id, @RequestBody CategoryRequest request) {
+        return categoryService.update(id, request);
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
-        categoryRepository.deleteById(id);
+        categoryService.delete(id);
     }
 }

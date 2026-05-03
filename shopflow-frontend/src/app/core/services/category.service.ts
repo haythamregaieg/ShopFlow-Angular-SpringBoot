@@ -9,16 +9,22 @@ export class CategoryService {
 
   constructor(private http: HttpClient) {}
 
+  /** Arbre : catégories racines avec leurs sous-catégories */
   getAll(): Observable<Category[]> {
     return this.http.get<Category[]>(this.apiUrl);
   }
 
-  create(category: Category): Observable<Category> {
-    return this.http.post<Category>(this.apiUrl, category);
+  /** Liste plate de toutes les catégories */
+  getAllFlat(): Observable<Category[]> {
+    return this.http.get<Category[]>(`${this.apiUrl}/flat`);
   }
 
-  update(id: number, category: Category): Observable<Category> {
-    return this.http.put<Category>(`${this.apiUrl}/${id}`, category);
+  create(request: { nom: string; description?: string; parentId?: number | null }): Observable<Category> {
+    return this.http.post<Category>(this.apiUrl, request);
+  }
+
+  update(id: number, request: { nom: string; description?: string; parentId?: number | null }): Observable<Category> {
+    return this.http.put<Category>(`${this.apiUrl}/${id}`, request);
   }
 
   delete(id: number): Observable<void> {

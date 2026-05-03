@@ -38,7 +38,7 @@
           <tr *ngFor="let user of filteredUsers">
             <td class="id-cell">{{ user.id }}</td>
             <td class="user-cell">
-              <div class="user-avatar">{{ (user.prenom?.charAt(0) || 'U') + (user.nom?.charAt(0) || '') }}</div>
+              <div class="user-avatar">{{ (user.prenom.charAt(0) || 'U') + (user.nom.charAt(0) || '') }}</div>
               <div class="user-name">{{ user.prenom }} {{ user.nom }}</div>
             </td>
             <td class="email-cell">{{ user.email }}</td>

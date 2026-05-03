@@ -43,17 +43,49 @@
             <div class="filter-label-row">
               <span class="filter-label">🏷️ Catégories</span>
               <button class="cat-clear" *ngIf="selectedCategoryIds.length > 0"
-                      (click)="selectedCategoryIds = []; search()">Tout effacer</button>
+                      (click)="selectedCategoryIds = []; expandedCategories.clear(); search()">
+                Tout effacer
+              </button>
             </div>
-            <div class="categories-list">
-              <label class="cat-chip" *ngFor="let category of categories"
-                     [class.cat-chip-active]="selectedCategoryIds.includes(category.id)">
-                <input type="checkbox" hidden
-                       [checked]="selectedCategoryIds.includes(category.id)"
-                       (change)="toggleCategory(category.id, $any($event.target).checked); search()" />
-                <span class="cat-check" *ngIf="selectedCategoryIds.includes(category.id)" aria-hidden="true">✓</span>
-                {{ category.nom }}
-              </label>
+
+            <div class="cat-tree">
+              <div class="cat-parent-node" *ngFor="let cat of categories">
+
+                <!-- Ligne catégorie racine -->
+                <div class="cat-row" [class.cat-row-active]="isCategorySelected(cat.id) || hasSubSelected(cat)">
+                  <label class="cat-row-label">
+                    <input type="checkbox" hidden
+                           [checked]="isCategorySelected(cat.id)"
+                           (change)="toggleCategory(cat.id, $any($event.target).checked); search()" />
+                    <span class="cat-check-box" [class.checked]="isCategorySelected(cat.id)">
+                      <span *ngIf="isCategorySelected(cat.id)">✓</span>
+                    </span>
+                    <span class="cat-name">📁 {{ cat.nom }}</span>
+                  </label>
+                  <!-- Bouton expand si sous-catégories existent -->
+                  <button class="cat-expand-btn"
+                          *ngIf="(cat.sousCategories?.length || 0) > 0"
+                          (click)="toggleExpand(cat.id, $event)"
+                          [attr.aria-label]="isCategoryExpanded(cat.id) ? 'Réduire' : 'Développer'">
+                    {{ isCategoryExpanded(cat.id) ? '▲' : '▼' }}
+                  </button>
+                </div>
+
+                <!-- Sous-catégories (dépliables) -->
+                <div class="cat-sub-list" *ngIf="(cat.sousCategories?.length || 0) > 0 && isCategoryExpanded(cat.id)">
+                  <label class="cat-sub-row" *ngFor="let sub of cat.sousCategories"
+                         [class.cat-sub-active]="isCategorySelected(sub.id)">
+                    <input type="checkbox" hidden
+                           [checked]="isCategorySelected(sub.id)"
+                           (change)="toggleCategory(sub.id, $any($event.target).checked); search()" />
+                    <span class="cat-check-box small" [class.checked]="isCategorySelected(sub.id)">
+                      <span *ngIf="isCategorySelected(sub.id)">✓</span>
+                    </span>
+                    <span class="cat-name sub-name">📂 {{ sub.nom }}</span>
+                  </label>
+                </div>
+
+              </div>
             </div>
           </div>
 

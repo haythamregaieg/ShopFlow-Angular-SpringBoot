@@ -19,7 +19,8 @@ export class ProductFormComponent implements OnInit {
   productId: number | null = null;
   loading = false;
   error = '';
-  categories: Category[] = [];
+  categories: Category[] = [];     // arbre (racines + sousCategories)
+  flatCategories: Category[] = []; // liste plate pour la logique
   variants: ProductVariant[] = [];
   removedVariantIds: number[] = [];
 
@@ -83,8 +84,29 @@ export class ProductFormComponent implements OnInit {
     this.syncDisplayedStock();
   }
 
+  /** IDs actuellement cochés */
+  get selectedCategoryIds(): number[] {
+    return this.form.get('categoryIds')?.value || [];
+  }
+
+  isCategorySelected(id: number): boolean {
+    return this.selectedCategoryIds.includes(id);
+  }
+
+  toggleCategory(id: number, checked: boolean): void {
+    const current: number[] = [...this.selectedCategoryIds];
+    if (checked) {
+      if (!current.includes(id)) current.push(id);
+    } else {
+      const idx = current.indexOf(id);
+      if (idx !== -1) current.splice(idx, 1);
+    }
+    this.form.get('categoryIds')?.setValue(current);
+  }
+
   ngOnInit(): void {
     this.categoryService.getAll().subscribe(c => this.categories = c || []);
+    this.categoryService.getAllFlat().subscribe(c => this.flatCategories = c || []);
     const id = this.route.snapshot.paramMap.get('id');
     if (id && id !== 'new') {
       this.isEdit = true;

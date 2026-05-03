@@ -40,7 +40,7 @@
           <tr *ngFor="let product of products">
             <td class="product-info">
               <strong>{{ product.nom }}</strong>
-              <div class="product-desc">{{ product.description | slice:0:80 }}{{ (product.description?.length || 0) > 80 ? '…' : '' }}</div>
+              <div class="product-desc">{{ product.description | slice:0:80 }}{{ (product.description.length || 0) > 80 ? '…' : '' }}</div>
             </td>
             <td class="price">{{ product.prix | number:'1.2-2' }} €</td>
             <td class="stock">{{ product.stock }}</td>

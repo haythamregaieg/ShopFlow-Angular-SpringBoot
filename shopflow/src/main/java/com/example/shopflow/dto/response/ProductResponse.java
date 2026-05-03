@@ -21,9 +21,19 @@ public class ProductResponse {
     private String sellerNom;
     private List<String> categories;
     private List<Long> categoryIds;
+    private List<CategoryInfo> categoryDetails;
     private Double noteMoyenne;
     private BigDecimal fraisLivraisonLocal;
     private BigDecimal fraisLivraisonInternational;
     private boolean promotion;
     private Integer pourcentageRemise;
+
+    @Data
+    @Builder
+    public static class CategoryInfo {
+        private Long id;
+        private String nom;
+        private Long parentId;
+        private String parentNom;
+    }
 }

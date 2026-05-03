@@ -24,8 +24,8 @@
 
     <div class="nav-auth">
       <ng-container *ngIf="!isLoggedIn">
-        <a routerLink="/auth/login" class="btn-link login-btn">Connexion</a>
-        <a routerLink="/auth/register" class="btn-primary register-btn">Inscription</a>
+        <a routerLink="/auth/login" class="nav-login-btn">Connexion</a>
+        <a routerLink="/auth/register" class="nav-register-btn">Inscription</a>
       </ng-container>
       <ng-container *ngIf="isLoggedIn">
         <div class="user-menu-wrap">

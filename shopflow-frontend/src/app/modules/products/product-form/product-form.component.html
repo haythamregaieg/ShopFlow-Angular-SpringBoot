@@ -52,11 +52,31 @@
         </div>
 
         <div class="form-group">
-          <label>Catégories</label>
-          <select class="form-control" formControlName="categoryIds" multiple style="height: 120px;">
-            <option *ngFor="let category of categories" [ngValue]="category.id">{{ category.nom }}</option>
-          </select>
-          <small class="form-hint">Maintenez Ctrl (Cmd sur Mac) pour sélectionner plusieurs catégories</small>
+          <label>Catégories &amp; Sous-catégories</label>
+          <div class="category-picker">
+            <div class="cat-tree-node" *ngFor="let cat of categories">
+              <!-- Catégorie racine -->
+              <label class="cat-check-row root-row">
+                <input type="checkbox"
+                       [checked]="isCategorySelected(cat.id)"
+                       (change)="toggleCategory(cat.id, $any($event.target).checked)" />
+                <span class="cat-check-label">📁 {{ cat.nom }}</span>
+              </label>
+              <!-- Sous-catégories -->
+              <div class="sub-cats" *ngIf="(cat.sousCategories?.length || 0) > 0">
+                <label class="cat-check-row sub-row" *ngFor="let sub of cat.sousCategories">
+                  <input type="checkbox"
+                         [checked]="isCategorySelected(sub.id)"
+                         (change)="toggleCategory(sub.id, $any($event.target).checked)" />
+                  <span class="cat-check-label">📂 {{ sub.nom }}</span>
+                </label>
+              </div>
+            </div>
+            <div class="cat-empty" *ngIf="categories.length === 0">
+              Aucune catégorie disponible
+            </div>
+          </div>
+          <small class="form-hint">Cochez les catégories ou sous-catégories du produit</small>
         </div>
       </div>
 

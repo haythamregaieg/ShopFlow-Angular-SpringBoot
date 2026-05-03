@@ -1,3 +1,10 @@
+export interface ProductCategoryInfo {
+  id: number;
+  nom: string;
+  parentId?: number;
+  parentNom?: string;
+}
+
 export interface Product {
   id: number;
   nom: string;
@@ -10,6 +17,7 @@ export interface Product {
   sellerNom?: string;
   categories?: string[];
   categoryIds?: number[];
+  categoryDetails?: ProductCategoryInfo[];
   noteMoyenne?: number;
   fraisLivraisonLocal?: number;
   fraisLivraisonInternational?: number;

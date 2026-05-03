@@ -52,7 +52,7 @@
           </div>
           <div class="product-content">
             <h3>{{ product.nom }}</h3>
-            <p>{{ (product.description | slice:0:80) }}{{ (product.description?.length || 0) > 80 ? '…' : '' }}</p>
+            <p>{{ (product.description | slice:0:80) }}{{ (product.description.length || 0) > 80 ? '…' : '' }}</p>
             <div class="price-block">
               <span class="current-price">{{ getDisplayPrice(product) | number:'1.2-2' }} €</span>
               <span class="old-price" *ngIf="product.prixPromo">{{ product.prix | number:'1.2-2' }} €</span>

@@ -6,7 +6,7 @@
       <div class="header-icon">🏷️</div>
       <div>
         <h1>Gestion des catégories</h1>
-        <p>Organisez votre catalogue en créant ou modifiant les catégories</p>
+        <p>Organisez votre catalogue avec des catégories et sous-catégories</p>
       </div>
     </header>
 
@@ -15,71 +15,147 @@
       <!-- Colonne gauche : formulaire -->
       <div class="form-column">
         <div class="form-card">
+
+          <!-- Onglets -->
+          <div class="tab-bar">
+            <button class="tab-btn" [class.tab-active]="activeTab === 'principale'"
+                    (click)="switchTab('principale')">
+              📁 Catégorie principale
+            </button>
+            <button class="tab-btn" [class.tab-active]="activeTab === 'sous'"
+                    (click)="switchTab('sous')">
+              📂 Sous-catégorie
+            </button>
+          </div>
+
           <div class="card-title">
             <span class="emoji">{{ isEdit ? '✏️' : '➕' }}</span>
-            <h3>{{ isEdit ? 'Modifier la catégorie' : 'Nouvelle catégorie' }}</h3>
+            <h3>
+              {{ isEdit ? 'Modifier' : 'Nouvelle' }}
+              {{ activeTab === 'principale' ? 'catégorie' : 'sous-catégorie' }}
+            </h3>
           </div>
+
           <form [formGroup]="form" (ngSubmit)="onSubmit()">
+
+            <!-- Sélecteur parent (uniquement pour sous-catégorie) -->
+            <div class="form-group" *ngIf="activeTab === 'sous'">
+              <label>Catégorie parente *</label>
+              <select formControlName="parentId" class="form-select">
+                <option [ngValue]="null">-- Choisir une catégorie --</option>
+                <option *ngFor="let p of parentOptions" [ngValue]="p.id">{{ p.nom }}</option>
+              </select>
+            </div>
+
             <div class="form-group">
               <label>Nom *</label>
-              <input type="text" formControlName="nom" placeholder="Ex: Vêtements, Jouets...">
+              <input type="text" formControlName="nom"
+                     [placeholder]="activeTab === 'sous' ? 'Ex: T-shirts, Robes…' : 'Ex: Vêtements, Jouets…'">
+              <span class="field-error" *ngIf="form.get('nom')?.touched && form.get('nom')?.invalid">
+                Le nom est requis
+              </span>
             </div>
+
             <div class="form-group">
               <label>Description</label>
-              <textarea formControlName="description" rows="3" placeholder="Courte description (optionnelle)"></textarea>
+              <textarea formControlName="description" rows="3"
+                        placeholder="Courte description (optionnelle)"></textarea>
             </div>
+
             <div class="form-actions">
-              <button type="submit" class="btn-submit" [disabled]="form.invalid || loading">
-                {{ loading ? 'Enregistrement...' : (isEdit ? 'Mettre à jour' : 'Créer') }}
+              <button type="submit" class="btn-submit"
+                      [disabled]="form.invalid || loading || (activeTab === 'sous' && !form.value.parentId)">
+                {{ loading ? 'Enregistrement…' : (isEdit ? 'Mettre à jour' : 'Créer') }}
               </button>
-              <button type="button" class="btn-cancel" (click)="resetForm()" *ngIf="isEdit">Annuler</button>
+              <button type="button" class="btn-cancel" (click)="resetForm()" *ngIf="isEdit">
+                Annuler
+              </button>
             </div>
           </form>
+
           <div class="error-message" *ngIf="error">{{ error }}</div>
         </div>
       </div>
 
-      <!-- Colonne droite : liste des catégories en cartes -->
+      <!-- Colonne droite : arbre des catégories -->
       <div class="list-column">
         <div class="list-header">
-          <h3>📋 Mes catégories</h3>
-          <span class="count-badge">{{ categories.length }}</span>
+          <h3>📋 Catalogue</h3>
+          <div class="badges-row">
+            <span class="count-badge">{{ categories.length }} catégorie{{ categories.length !== 1 ? 's' : '' }}</span>
+            <span class="count-badge sub-badge">{{ totalSubCount() }} sous-catégorie{{ totalSubCount() !== 1 ? 's' : '' }}</span>
+          </div>
         </div>
 
-        <!-- État de chargement -->
         <div class="loading-state" *ngIf="loading && categories.length === 0">
           <div class="spinner"></div>
-          <span>Chargement...</span>
+          <span>Chargement…</span>
         </div>
 
-        <!-- Grille de cartes -->
-        <div class="categories-grid" *ngIf="!loading || categories.length > 0">
-          <div class="category-card" *ngFor="let cat of categories">
-            <div class="card-content">
-<div class="category-icon" style="background: var(--peach-light);">📁</div>              <div class="category-info">
-                <h4>{{ cat.nom }}</h4>
-                <p>{{ cat.description || 'Aucune description' | slice:0:60 }}{{ (cat.description?.length || 0) > 60 ? '…' : '' }}</p>
-              </div>
-            </div>
-            <div class="card-actions">
-              <button class="icon-btn edit" (click)="edit(cat)" title="Modifier"><i class="fas fa-edit"></i></button>
-              <button class="icon-btn delete" (click)="delete(cat.id!)" title="Supprimer"><i class="fas fa-trash-alt"></i></button>
-            </div>
-          </div>
+        <div class="categories-tree" *ngIf="!loading || categories.length > 0">
+
           <div class="empty-state" *ngIf="categories.length === 0 && !loading">
             <span>📦</span>
             <p>Aucune catégorie pour le moment</p>
             <small>Utilisez le formulaire pour en créer une</small>
+          </div>
+
+          <!-- Chaque catégorie racine -->
+          <div class="tree-node" *ngFor="let cat of rootCategories">
+            <div class="node-row root-node">
+              <div class="node-left">
+                <span class="node-icon">📁</span>
+                <div class="node-info">
+                  <span class="node-name">{{ cat.nom }}</span>
+                  <span class="node-desc" *ngIf="cat.description">{{ cat.description | slice:0:50 }}{{ (cat.description.length || 0) > 50 ? '…' : '' }}</span>
+                </div>
+                <span class="sub-count" *ngIf="(cat.sousCategories?.length || 0) > 0">
+                  {{ cat.sousCategories!.length }} sous-cat.
+                </span>
+              </div>
+              <div class="node-actions">
+                <button class="icon-btn edit" (click)="edit(cat)" title="Modifier">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="icon-btn delete" (click)="delete(cat.id)" title="Supprimer">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Sous-catégories -->
+            <div class="sub-nodes" *ngIf="(cat.sousCategories?.length || 0) > 0">
+              <div class="tree-node sub-tree-node" *ngFor="let sub of cat.sousCategories">
+                <div class="node-row sub-node">
+                  <div class="node-left">
+                    <span class="tree-connector" aria-hidden="true">└─</span>
+                    <span class="node-icon sub-icon">📂</span>
+                    <div class="node-info">
+                      <span class="node-name">{{ sub.nom }}</span>
+                      <span class="node-desc" *ngIf="sub.description">{{ sub.description | slice:0:50 }}{{ (sub.description.length || 0) > 50 ? '…' : '' }}</span>
+                    </div>
+                  </div>
+                  <div class="node-actions">
+                    <button class="icon-btn edit" (click)="edit(sub)" title="Modifier">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="icon-btn delete" (click)="delete(sub.id)" title="Supprimer">
+                      <i class="fas fa-trash-alt"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
 
     </div>
 
-    <!-- Loading toast (en bas à droite pendant les actions) -->
     <div class="toast-loading" *ngIf="loading && categories.length > 0">
       <div class="spinner-small"></div>
-      <span>Mise à jour...</span>
+      <span>Mise à jour…</span>
     </div>
 
   </div>
