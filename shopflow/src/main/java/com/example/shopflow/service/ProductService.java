@@ -62,9 +62,10 @@ public class ProductService {
             Pageable pageable
     ) {
         Page<Product> page;
-        List<Long> categoryFilter = (categoryIds == null || categoryIds.isEmpty()) ? null : categoryIds;
+        boolean categoryFilterActive = categoryIds != null && !categoryIds.isEmpty();
+        List<Long> categoryFilter = categoryFilterActive ? categoryIds : List.of(-1L);
         if ("popularite".equalsIgnoreCase(sortBy)) {
-            page = productRepository.searchProductsByPopularity(q, prixMin, prixMax, categoryFilter, promoOnly, pageable);
+            page = productRepository.searchProductsByPopularity(q, prixMin, prixMax, categoryFilter, categoryFilterActive, promoOnly, pageable);
         } else {
             Sort sort = switch (sortBy == null ? "nouveautes" : sortBy.toLowerCase()) {
                 case "prix_asc" -> Sort.by(Sort.Direction.ASC, "prix");
@@ -77,7 +78,7 @@ public class ProductService {
                     pageable.getPageSize(),
                     sort
             );
-            page = productRepository.searchProducts(q, prixMin, prixMax, categoryFilter, promoOnly, sorted);
+            page = productRepository.searchProducts(q, prixMin, prixMax, categoryFilter, categoryFilterActive, promoOnly, sorted);
         }
         return page.map(this::toResponse);
     }

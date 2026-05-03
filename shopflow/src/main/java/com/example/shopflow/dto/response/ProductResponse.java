@@ -1,7 +1,6 @@
 package com.example.shopflow.dto.response;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,7 +27,10 @@ public class ProductResponse {
     private boolean promotion;
     private Integer pourcentageRemise;
 
-    @Data
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Builder
     public static class CategoryInfo {
         private Long id;

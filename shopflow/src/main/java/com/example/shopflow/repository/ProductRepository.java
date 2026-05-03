@@ -15,44 +15,71 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findByActifTrue(Pageable pageable);
 
     @Query("""
-            SELECT DISTINCT p
+            SELECT p
             FROM Product p
-            LEFT JOIN p.seller s
-            LEFT JOIN p.categories c
             WHERE p.actif = true
               AND (
                     :q IS NULL
                     OR LOWER(p.nom) LIKE LOWER(CONCAT('%', :q, '%'))
                     OR LOWER(COALESCE(p.description, '')) LIKE LOWER(CONCAT('%', :q, '%'))
-                    OR LOWER(COALESCE(c.nom, '')) LIKE LOWER(CONCAT('%', :q, '%'))
+                    OR EXISTS (
+                        SELECT 1
+                        FROM Product p2
+                        JOIN p2.categories c
+                        WHERE p2 = p
+                          AND LOWER(COALESCE(c.nom, '')) LIKE LOWER(CONCAT('%', :q, '%'))
+                    )
                   )
               AND (:prixMin IS NULL OR p.prix >= :prixMin)
               AND (:prixMax IS NULL OR p.prix <= :prixMax)
-              AND (:categoryIds IS NULL OR c.id IN :categoryIds)
+              AND (
+                    :categoryFilterActive = false
+                    OR EXISTS (
+                        SELECT 1
+                        FROM Product p2
+                        JOIN p2.categories c
+                        WHERE p2 = p
+                          AND c.id IN :categoryIds
+                    )
+                  )
               AND (:promoOnly = false OR p.prixPromo IS NOT NULL)
             """)
     Page<Product> searchProducts(@Param("q") String q,
                                  @Param("prixMin") BigDecimal prixMin,
                                  @Param("prixMax") BigDecimal prixMax,
                                  @Param("categoryIds") List<Long> categoryIds,
+                                 @Param("categoryFilterActive") boolean categoryFilterActive,
                                  @Param("promoOnly") boolean promoOnly,
                                  Pageable pageable);
 
     @Query("""
-            SELECT DISTINCT p
+            SELECT p
             FROM Product p
-            LEFT JOIN p.seller s
-            LEFT JOIN p.categories c
             WHERE p.actif = true
               AND (
                     :q IS NULL
                     OR LOWER(p.nom) LIKE LOWER(CONCAT('%', :q, '%'))
                     OR LOWER(COALESCE(p.description, '')) LIKE LOWER(CONCAT('%', :q, '%'))
-                    OR LOWER(COALESCE(c.nom, '')) LIKE LOWER(CONCAT('%', :q, '%'))
+                    OR EXISTS (
+                        SELECT 1
+                        FROM Product p2
+                        JOIN p2.categories c
+                        WHERE p2 = p
+                          AND LOWER(COALESCE(c.nom, '')) LIKE LOWER(CONCAT('%', :q, '%'))
+                    )
                   )
               AND (:prixMin IS NULL OR p.prix >= :prixMin)
               AND (:prixMax IS NULL OR p.prix <= :prixMax)
-              AND (:categoryIds IS NULL OR c.id IN :categoryIds)
+              AND (
+                    :categoryFilterActive = false
+                    OR EXISTS (
+                        SELECT 1
+                        FROM Product p2
+                        JOIN p2.categories c
+                        WHERE p2 = p
+                          AND c.id IN :categoryIds
+                    )
+                  )
               AND (:promoOnly = false OR p.prixPromo IS NOT NULL)
             ORDER BY (
                SELECT COUNT(r.id)
@@ -64,6 +91,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                                              @Param("prixMin") BigDecimal prixMin,
                                              @Param("prixMax") BigDecimal prixMax,
                                              @Param("categoryIds") List<Long> categoryIds,
+                                             @Param("categoryFilterActive") boolean categoryFilterActive,
                                              @Param("promoOnly") boolean promoOnly,
                                              Pageable pageable);
 

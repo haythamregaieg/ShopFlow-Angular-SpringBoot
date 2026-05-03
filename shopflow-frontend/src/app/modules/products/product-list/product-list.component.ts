@@ -44,6 +44,8 @@ export class ProductListComponent implements OnInit {
   expandedCategories: Set<number> = new Set();
   /** IDs sélectionnés pour le filtre (peuvent être parents ou sous-catégories) */
   selectedCategoryIds: number[] = [];
+  /** Map id → {nom, parentNom?} construite depuis l'arbre */
+  private catInfoMap = new Map<number, { nom: string; parentNom?: string }>();
 
   pageSize = 12;
   loading = false;
@@ -70,9 +72,16 @@ export class ProductListComponent implements OnInit {
     this.isAdmin = this.authService.isAdmin();
     this.isSeller = this.authService.getRole() === 'SELLER';
 
-    this.categoryService.getAll().subscribe(c => {
-      this.categories = c || [];
-      this.loadProducts();
+    // Charger les produits immédiatement sans attendre les catégories
+    this.loadProducts();
+
+    // Charger les catégories pour le filtre sidebar en parallèle
+    this.categoryService.getAll().subscribe({
+      next: c => {
+        this.categories = c || [];
+        this.buildCatInfoMap();
+      },
+      error: () => { this.categories = []; }
     });
   }
 
@@ -147,7 +156,12 @@ export class ProductListComponent implements OnInit {
         this.loadProductVariants(this.products);
         this.loading = false;
       },
-      error: () => this.loading = false
+      error: (err) => {
+        console.error('Erreur chargement produits', err);
+        this.products = [];
+        this.groupedProducts = [];
+        this.loading = false;
+      }
     });
   }
 
@@ -183,16 +197,26 @@ export class ProductListComponent implements OnInit {
       .map(([categoryName, products]) => ({ categoryName, products }));
   }
 
+  /** Construit la map id → {nom, parentNom} depuis l'arbre de catégories */
+  private buildCatInfoMap(): void {
+    this.catInfoMap.clear();
+    this.categories.forEach(cat => {
+      this.catInfoMap.set(cat.id, { nom: cat.nom });
+      (cat.sousCategories || []).forEach(sub => {
+        this.catInfoMap.set(sub.id, { nom: sub.nom, parentNom: cat.nom });
+      });
+    });
+  }
+
   private groupKeyForProduct(product: Product): string {
-    const details = product.categoryDetails;
-    if (details && details.length > 0) {
-      const first = details[0];
-      if (first.parentNom) {
-        return `${first.parentNom} › ${first.nom}`;
+    // Utilise la map locale (category tree) pour le nom de groupe
+    if (product.categoryIds && product.categoryIds.length > 0) {
+      const info = this.catInfoMap.get(product.categoryIds[0]);
+      if (info) {
+        return info.parentNom ? `${info.parentNom} › ${info.nom}` : info.nom;
       }
-      return first.nom;
     }
-    // Fallback: use categories string array
+    // Fallback : nom de catégorie texte retourné par le backend
     if (product.categories && product.categories.length > 0) {
       return product.categories[0];
     }

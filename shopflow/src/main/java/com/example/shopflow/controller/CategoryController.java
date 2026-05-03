@@ -17,16 +17,10 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
-    /** Retourne l'arbre : catégories racines avec leurs sous-catégories */
+    /** Retourne l'arbre : catégories racines avec leurs sous-catégories imbriquées */
     @GetMapping
     public List<CategoryResponse> getAll() {
         return categoryService.getAllTree();
-    }
-
-    /** Retourne la liste plate de toutes les catégories (pour les formulaires) */
-    @GetMapping("/flat")
-    public List<CategoryResponse> getAllFlat() {
-        return categoryService.getAllFlat();
     }
 
     @PostMapping

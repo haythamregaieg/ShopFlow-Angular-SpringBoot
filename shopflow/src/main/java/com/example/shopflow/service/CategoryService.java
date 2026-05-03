@@ -93,11 +93,15 @@ public class CategoryService {
         Long parentId = null;
         String parentNom = null;
         try {
-            if (cat.getParent() != null) {
-                parentId = cat.getParent().getId();
-                parentNom = cat.getParent().getNom();
+            Category parent = cat.getParent();
+            if (parent != null) {
+                // Force l'initialisation du proxy Hibernate si encore lazy
+                parentId = parent.getId();
+                parentNom = parent.getNom();
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+            // LazyInitializationException hors transaction — parentId reste null
+        }
         return CategoryResponse.builder()
                 .id(cat.getId())
                 .nom(cat.getNom())

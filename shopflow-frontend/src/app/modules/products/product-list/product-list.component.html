@@ -134,13 +134,10 @@
         <div class="results-bar">
           <div class="results-left">
             <span class="results-count">
-              <strong>{{ products.length }}</strong> article{{ products.length !== 1 ? 's' : '' }}
+              <strong>{{ totalElements }}</strong> article{{ totalElements !== 1 ? 's' : '' }}
             </span>
-            <span class="results-total" *ngIf="totalElements !== undefined">
-              • <strong>{{ totalElements }}</strong> au total
-            </span>
-            <span class="results-page" *ngIf="totalPages > 0">
-              • Page {{ currentPage + 1 }} / {{ totalPages }}
+            <span class="results-page" *ngIf="totalPages > 1">
+              — Page {{ currentPage + 1 }} / {{ totalPages }}
             </span>
           </div>
           <div class="sort-wrap">
@@ -171,7 +168,7 @@
         </div>
 
         <!-- Products grouped by category -->
-        <div *ngIf="!loading && products.length > 0">
+        <div *ngIf="!loading && groupedProducts.length > 0">
           <ng-container *ngFor="let group of groupedProducts">
             <section class="category-section">
               <div class="category-header">
@@ -257,7 +254,7 @@
         </div>
 
         <!-- Empty state -->
-        <div class="empty-state" *ngIf="!loading && products.length === 0">
+        <div class="empty-state" *ngIf="!loading && groupedProducts.length === 0">
           <div class="empty-visual" aria-hidden="true">🧸🧸🧸</div>
           <h3 class="empty-title">Aucun petit vêtement trouvé</h3>
           <p class="empty-text">On a peut‑être égaré cette collection… Essaie d’autres filtres !</p>
