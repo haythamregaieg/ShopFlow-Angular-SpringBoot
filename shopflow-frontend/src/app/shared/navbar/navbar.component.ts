@@ -5,6 +5,7 @@ import { HttpClient } from "@angular/common/http";
 import { UserService } from "../../core/services/user.service";
 import { OrderService } from "../../core/services/order.service";
 import { Order } from "../../core/models/order.model";
+import { SellerProfileService } from "../../core/services/seller-profile.service";
 
 @Component({
   selector: "app-navbar",
@@ -21,6 +22,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
   cartCount = 0;
   notificationCount = 0;
   isUserMenuOpen = false;
+  avatarImageUrl = "";
+  avatarImageFailed = false;
   private pollingInterval: any = null;
 
   constructor(
@@ -29,7 +32,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
     private http: HttpClient,
     private userService: UserService,
     private elementRef: ElementRef,
-    private orderService: OrderService
+    private orderService: OrderService,
+    private sellerProfileService: SellerProfileService
   ) {}
 
   ngOnInit(): void {
@@ -42,10 +46,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
       if (user) {
         this.loadCartCount();
         this.loadUserIdentity();
+        this.loadAvatarImage();
         this.loadNotificationCount();
         this.startPolling();
       } else {
         this.userFullName = "";
+        this.avatarImageUrl = "";
+        this.avatarImageFailed = false;
         this.isUserMenuOpen = false;
         this.notificationCount = 0;
         this.stopPolling();
@@ -54,6 +61,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
     this.orderService.notificationRefresh$.subscribe(() => {
       this.loadNotificationCount();
+    });
+
+    this.sellerProfileService.profileRefresh$.subscribe(profile => {
+      this.avatarImageUrl = profile.logo || "";
+      this.avatarImageFailed = false;
     });
   }
 
@@ -120,6 +132,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.isUserMenuOpen = false;
   }
 
+  onAvatarImageError(): void {
+    this.avatarImageFailed = true;
+  }
+
   get userInitial(): string {
     if (this.userFullName) {
       return this.userFullName.charAt(0).toUpperCase();
@@ -134,6 +150,23 @@ export class NavbarComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.userFullName = this.userEmail ? this.userEmail.split("@")[0] : "Utilisateur";
+      }
+    });
+  }
+
+  private loadAvatarImage(): void {
+    this.avatarImageUrl = "";
+    this.avatarImageFailed = false;
+    if (!this.isSeller) return;
+
+    this.sellerProfileService.getMyProfile().subscribe({
+      next: (profile) => {
+        this.avatarImageUrl = profile.logo || "";
+        this.avatarImageFailed = false;
+      },
+      error: () => {
+        this.avatarImageUrl = "";
+        this.avatarImageFailed = true;
       }
     });
   }

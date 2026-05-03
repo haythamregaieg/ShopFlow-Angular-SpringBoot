@@ -38,6 +38,29 @@
   color: #6A7F8C;
 }
 
+.order-alert {
+  max-width: 720px;
+  margin: 0 auto 24px;
+  padding: 12px 18px;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  border: 1px solid transparent;
+}
+
+.order-alert.success {
+  background: #EAF4EF;
+  color: #4F7A5E;
+  border-color: rgba(79, 122, 94, 0.22);
+}
+
+.order-alert.error {
+  background: #FEF0ED;
+  color: #D9534F;
+  border-color: rgba(217, 83, 79, 0.24);
+}
+
 /* Grille responsive */
 .orders-grid {
   display: grid;
@@ -431,5 +454,104 @@
   }
   .info-value.total {
     font-size: 24px;
+  }
+}
+
+/* === COMMANDES NON TRAITÉES (VENDEUR) === */
+.unseen-order {
+  border: 2px solid #EF4444;
+  background: linear-gradient(135deg, #FFF9F0 0%, rgba(239, 68, 68, 0.05) 100%);
+  position: relative;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+}
+
+.unseen-order::before {
+  content: "⚠ À TRAITER";
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #EF4444;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 60px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.unseen-order:hover {
+  box-shadow: 0 8px 16px rgba(239, 68, 68, 0.25);
+}
+
+/* === PAGINATION === */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 48px;
+  flex-wrap: wrap;
+}
+
+.page-btn {
+  border-radius: 60px;
+  padding: 9px 20px;
+  background: white;
+  border: 1px solid #F0E4D4;
+  font-weight: 600;
+  font-size: 13px;
+  color: #6A7F8C;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Inter', sans-serif;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: #FFF2E6;
+  border-color: #F3AB7E;
+  color: #2E404F;
+}
+
+.page-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.page-numbers {
+  display: flex;
+  gap: 6px;
+}
+
+.page-number {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: white;
+  border: 1px solid #F0E4D4;
+  font-weight: 600;
+  font-size: 13px;
+  color: #6A7F8C;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Inter', sans-serif;
+}
+
+.page-number:hover {
+  background: #FFF2E6;
+  border-color: #F3AB7E;
+  color: #2E404F;
+}
+
+.page-number.active {
+  background: #F3AB7E;
+  border-color: #F3AB7E;
+  color: white;
+  box-shadow: 0 2px 10px rgba(243, 171, 126, 0.35);
+}
+
+@media (max-width: 550px) {
+  .pagination {
+    gap: 8px;
   }
 }

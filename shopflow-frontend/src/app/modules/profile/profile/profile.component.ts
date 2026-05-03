@@ -88,7 +88,8 @@ export class ProfileComponent implements OnInit {
     }
     this.savingSeller = true;
     this.sellerProfileService.updateMyProfile(this.sellerForm.value).subscribe({
-      next: () => {
+      next: (profile) => {
+        this.sellerForm.patchValue(profile);
         this.success = 'Profil boutique mis à jour.';
         this.error = '';
         this.savingSeller = false;

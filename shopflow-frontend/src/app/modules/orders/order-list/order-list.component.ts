@@ -10,10 +10,13 @@ import { AuthService } from "../../../core/services/auth.service";
 })
 export class OrderListComponent implements OnInit {
   orders: Order[] = [];
+  paginatedOrders: Order[] = [];
   isSeller = false;
   isAdmin = false;
   title = "Mes commandes";
   subtitle = "Suivez vos achats et l'etat de vos colis";
+  message = "";
+  error = "";
   availableStatuses = ["PENDING", "PAID", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED", "REFUNDED"];
   readonly statusOrder: Record<string, number> = {
     PENDING: 1,
@@ -24,6 +27,11 @@ export class OrderListComponent implements OnInit {
     CANCELLED: 99,
     REFUNDED: 100
   };
+
+  // Pagination
+  itemsPerPage = 9;
+  currentPage = 1;
+  totalPages = 1;
 
   constructor(private orderService: OrderService, private authService: AuthService) {}
 
@@ -50,42 +58,7 @@ export class OrderListComponent implements OnInit {
       next: (orders) => {
         this.prepareOrders(orders);
         this.orders = orders;
-
-        if (this.isSeller) {
-          // Seller: mark unseen orders as seen
-          const unseen = orders.filter(o => o.seenBySeller === false);
-          if (unseen.length > 0) {
-            let done = 0;
-            unseen.forEach(o => {
-              this.orderService.markAsSeenBySeller(o.id).subscribe({
-                next: (updated) => {
-                  const idx = this.orders.findIndex(x => x.id === updated.id);
-                  if (idx !== -1) this.orders[idx] = { ...this.orders[idx], seenBySeller: true };
-                  done++;
-                  if (done === unseen.length) this.orderService.notificationRefreshSubject.next();
-                },
-                error: () => { done++; }
-              });
-            });
-          }
-        } else if (!this.isAdmin) {
-          // Customer: mark orders with changed status as seen
-          const newOrders = orders.filter(o => o.isNewStatus);
-          if (newOrders.length > 0) {
-            let done = 0;
-            newOrders.forEach(o => {
-              this.orderService.markAsSeen(o.id).subscribe({
-                next: (updated) => {
-                  const idx = this.orders.findIndex(x => x.id === updated.id);
-                  if (idx !== -1) this.orders[idx] = { ...this.orders[idx], isNewStatus: false };
-                  done++;
-                  if (done === newOrders.length) this.orderService.notificationRefreshSubject.next();
-                },
-                error: () => { done++; }
-              });
-            });
-          }
-        }
+        this.calculatePagination();
       },
       error: (err) => console.error("Orders error:", err)
     });
@@ -114,18 +87,31 @@ export class OrderListComponent implements OnInit {
   }
 
   updateStatus(id: number, status?: string): void {
+    this.message = "";
+    this.error = "";
     if (!status) {
       console.warn('No status provided for updateStatus call', id);
+      return;
+    }
+    const currentOrder = this.orders.find(o => o.id === id);
+    if (currentOrder?.statut === status) {
+      this.error = "Choisissez un nouveau statut avant de mettre a jour.";
       return;
     }
     this.orderService.updateStatus(id, status).subscribe({
       next: (order) => {
         const idx = this.orders.findIndex(o => o.id === id);
         if (idx !== -1) {
-          this.orders[idx] = order;
+          this.orders[idx] = { ...order, _selectedStatus: order.statut };
+          this.calculatePagination();
         }
+        this.message = "Statut mis a jour. Le client recevra une notification.";
+        this.orderService.notificationRefreshSubject.next();
       },
-      error: (err) => console.error("Status update error:", err)
+      error: (err) => {
+        console.error("Status update error:", err);
+        this.error = err?.error?.message || "Impossible de mettre a jour le statut.";
+      }
     });
   }
 
@@ -159,5 +145,46 @@ export class OrderListComponent implements OnInit {
       }
       return (this.statusOrder[s] ?? 0) >= currentRank;
     });
+  }
+
+  private calculatePagination(): void {
+    this.totalPages = Math.ceil(this.orders.length / this.itemsPerPage);
+    if (this.currentPage > this.totalPages && this.totalPages > 0) {
+      this.currentPage = this.totalPages;
+    }
+    this.updatePaginatedOrders();
+  }
+
+  private updatePaginatedOrders(): void {
+    const startIdx = (this.currentPage - 1) * this.itemsPerPage;
+    const endIdx = startIdx + this.itemsPerPage;
+    this.paginatedOrders = this.orders.slice(startIdx, endIdx);
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.updatePaginatedOrders();
+    }
+  }
+
+  nextPage(): void {
+    this.goToPage(this.currentPage + 1);
+  }
+
+  previousPage(): void {
+    this.goToPage(this.currentPage - 1);
+  }
+
+  getPages(): number[] {
+    const pages = [];
+    for (let i = 1; i <= this.totalPages; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  isOrderUnseen(order: Order): boolean {
+    return this.isSeller && order.seenBySeller === false;
   }
 }

@@ -243,6 +243,7 @@ public class OrderService {
         }
         order.setStatut(status);
         order.setNewStatus(true);
+        order.setSeenBySeller(true);
         return toResponse(orderRepository.save(order));
     }
 

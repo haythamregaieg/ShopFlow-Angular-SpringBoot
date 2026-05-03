@@ -1,11 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, Subject, tap } from 'rxjs';
 import { SellerProfile, SellerProfileRequest } from '../models/seller-profile.model';
 
 @Injectable({ providedIn: 'root' })
 export class SellerProfileService {
   private apiUrl = 'http://localhost:8081/api/seller-profiles';
+  private profileRefreshSubject = new Subject<SellerProfile>();
+  profileRefresh$ = this.profileRefreshSubject.asObservable();
 
   constructor(private http: HttpClient) {}
 
@@ -14,6 +16,8 @@ export class SellerProfileService {
   }
 
   updateMyProfile(request: SellerProfileRequest): Observable<SellerProfile> {
-    return this.http.put<SellerProfile>(`${this.apiUrl}/me`, request);
+    return this.http.put<SellerProfile>(`${this.apiUrl}/me`, request).pipe(
+      tap(profile => this.profileRefreshSubject.next(profile))
+    );
   }
 }

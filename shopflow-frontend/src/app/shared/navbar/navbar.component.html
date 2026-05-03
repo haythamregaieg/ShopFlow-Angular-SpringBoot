@@ -32,7 +32,15 @@
       <ng-container *ngIf="isLoggedIn">
         <div class="user-menu-wrap">
           <button class="user-menu-trigger" (click)="toggleUserMenu()">
-            <div class="user-avatar">{{ userInitial }}</div>
+            <div class="user-avatar">
+              <img
+                *ngIf="avatarImageUrl && !avatarImageFailed; else avatarInitial"
+                [src]="avatarImageUrl"
+                alt="Logo de la boutique"
+                class="user-avatar-img"
+                (error)="onAvatarImageError()">
+              <ng-template #avatarInitial>{{ userInitial }}</ng-template>
+            </div>
             <div class="user-info">
               <span class="user-name">{{ userFullName || userEmail.split('@')[0] }}</span>
               <span class="user-role-badge">{{ userRole }}</span>

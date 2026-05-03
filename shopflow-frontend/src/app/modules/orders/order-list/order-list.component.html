@@ -5,6 +5,9 @@
       <p class="page-subtitle">{{ subtitle }}</p>
     </div>
 
+    <div class="order-alert success" *ngIf="message">{{ message }}</div>
+    <div class="order-alert error" *ngIf="error">{{ error }}</div>
+
     <!-- Message si aucune commande -->
     <div *ngIf="orders.length === 0" class="empty-state">
       <div class="empty-icon">📦</div>
@@ -15,7 +18,7 @@
 
     <!-- Grille de cartes -->
     <div class="orders-grid" *ngIf="orders.length > 0">
-      <div class="order-card" *ngFor="let order of orders">
+      <div class="order-card" *ngFor="let order of paginatedOrders" [ngClass]="{ 'unseen-order': isOrderUnseen(order) }">
         <div class="order-header">
           <div>
             <h2 class="order-number">Commande #{{ order.numeroCommande }}</h2>
@@ -63,5 +66,25 @@
         </div>
       </div>
     </div>
+
+    <!-- Pagination corrigée -->
+    <nav class="pagination" *ngIf="totalPages > 1" aria-label="Pagination">
+      <button class="page-btn" (click)="previousPage()" [disabled]="currentPage === 1" aria-label="Page précédente">
+        ← Précédent
+      </button>
+      <div class="page-numbers">
+        <button *ngFor="let page of getPages()"
+                class="page-number"
+                [class.active]="page === currentPage"
+                (click)="goToPage(page)"
+                [attr.aria-label]="'Aller à la page ' + page"
+                [attr.aria-current]="page === currentPage ? 'page' : null">
+          {{ page }}
+        </button>
+      </div>
+      <button class="page-btn" (click)="nextPage()" [disabled]="currentPage === totalPages" aria-label="Page suivante">
+        Suivant →
+      </button>
+    </nav>
   </div>
 </div>

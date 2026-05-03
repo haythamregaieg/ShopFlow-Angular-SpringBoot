@@ -34,17 +34,9 @@ export class OrderDetailComponent implements OnInit {
           this.order = o;
           this.computeVisibleLignes();
           this.enrichOrderImages();
-          // Customer: mark changed-status notification as seen
           if (!this.isSeller && o.isNewStatus) {
             this.orderService.markAsSeen(o.id).subscribe(() => {
               if (this.order) this.order = { ...this.order, isNewStatus: false };
-              this.orderService.notificationRefreshSubject.next();
-            });
-          }
-          // Seller: mark new-order notification as seen
-          if (this.isSeller && o.seenBySeller === false) {
-            this.orderService.markAsSeenBySeller(o.id).subscribe(() => {
-              if (this.order) this.order = { ...this.order, seenBySeller: true };
               this.orderService.notificationRefreshSubject.next();
             });
           }
@@ -107,6 +99,7 @@ export class OrderDetailComponent implements OnInit {
     this.orderService.updateStatus(id, status).subscribe(o => {
       this.order = o;
       this.computeVisibleLignes();
+      this.orderService.notificationRefreshSubject.next();
     });
   }
 }
