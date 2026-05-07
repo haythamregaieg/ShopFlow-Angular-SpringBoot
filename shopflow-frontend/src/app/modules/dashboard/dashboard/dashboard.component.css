@@ -145,6 +145,43 @@
 }
 
 /* ---------- Statistiques ---------- */
+.dashboard-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.metric-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  padding: 18px 20px;
+  transition: var(--transition);
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--peach);
+}
+
+.metric-card mat-card-title {
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.metric-card mat-card-subtitle {
+  color: var(--pine);
+  font-family: 'Quicksand', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+}
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -194,6 +231,40 @@
 }
 
 /* ---------- Grille 2 colonnes ---------- */
+.charts-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.chart-box {
+  background: var(--card-white);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  min-height: 360px;
+  padding: 18px 20px 24px;
+  position: relative;
+  transition: var(--transition);
+}
+
+.chart-box:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.chart-box h3 {
+  color: var(--ink);
+  font-family: 'Quicksand', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 18px;
+}
+
+.chart-box canvas {
+  height: 280px !important;
+}
+
 .grid-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -255,6 +326,10 @@
   color: var(--ink);
   border-bottom: 1px solid var(--border);
 }
+.order-number,
+.order-total {
+  font-weight: 600;
+}
 .recent-orders-table tr:last-child td {
   border-bottom: none;
 }
@@ -286,6 +361,11 @@
 .btn-ghost:hover {
   border-color: var(--peach);
   color: var(--peach);
+}
+
+.table-action {
+  margin-top: 20px;
+  text-align: center;
 }
 
 /* ---------- Accordéon ---------- */
@@ -381,6 +461,19 @@
   .stats-grid {
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 16px;
+  }
+  .dashboard-cards {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+  }
+  .charts-row {
+    grid-template-columns: 1fr;
+  }
+  .chart-box {
+    min-height: 320px;
+  }
+  .chart-box canvas {
+    height: 240px !important;
   }
   .stat-card {
     padding: 16px;

@@ -9,6 +9,7 @@ export interface RecentOrder {
 export interface BaseDashboardStats {
   totalOrders?: number;
   nom?: string;
+  prenom?: string;
   email?: string;
   recentOrders?: RecentOrder[];
 }

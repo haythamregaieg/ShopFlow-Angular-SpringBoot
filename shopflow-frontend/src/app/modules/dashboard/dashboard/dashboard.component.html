@@ -1,14 +1,13 @@
 <div class="dashboard-page">
   <div class="dashboard-container">
 
-    <!-- En-tête professionnel avec actions en haut -->
     <div class="dashboard-header">
       <div class="header-title">
         <h1>{{ isAdmin ? 'Administration' : (isSeller ? 'Gestion boutique' : 'Mon espace') }}</h1>
-        <p>Bienvenue, {{ stats.nom || 'Utilisateur' }} 👋</p>
+        <p>Bienvenue, {{ stats.nom || 'Utilisateur' }}</p>
       </div>
+
       <div class="header-actions-group">
-        <!-- Actions principales selon le rôle -->
         <ng-container *ngIf="isSeller">
           <a routerLink="/dashboard/seller" class="header-action">
             <i class="fas fa-store"></i> Ma boutique
@@ -17,77 +16,222 @@
             <i class="fas fa-plus-circle"></i> Ajouter un produit
           </a>
         </ng-container>
+
         <ng-container *ngIf="isAdmin">
           <a routerLink="/admin/users" class="header-action">
             <i class="fas fa-users"></i> Utilisateurs
           </a>
           <a routerLink="/dashboard/categories" class="header-action">
-            <i class="fas fa-tags"></i> Catégories
+            <i class="fas fa-tags"></i> Categories
           </a>
         </ng-container>
-
       </div>
     </div>
 
-    <!-- Statistiques Admin -->
-    <div class="stats-grid" *ngIf="isAdmin">
-      <div class="stat-card"><div class="stat-icon" style="background:#FFF2E6;color:#F3AB7E;"><i class="fas fa-users"></i></div><div class="stat-content"><div class="stat-value">{{ stats.totalUsers || 0 }}</div><div class="stat-label">Utilisateurs</div></div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:#EAF4EF;color:#4F7A5E;"><i class="fas fa-box"></i></div><div class="stat-content"><div class="stat-value">{{ stats.totalProducts || 0 }}</div><div class="stat-label">Produits</div></div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:#FFF2E6;color:#F3AB7E;"><i class="fas fa-shopping-cart"></i></div><div class="stat-content"><div class="stat-value">{{ stats.totalOrders || 0 }}</div><div class="stat-label">Commandes</div></div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:#FEF0ED;color:#D9534F;"><i class="fas fa-euro-sign"></i></div><div class="stat-content"><div class="stat-value">{{ (stats.chiffreAffaires || 0) | number:'1.0-0' }} €</div><div class="stat-label">Chiffre d'affaires</div></div></div>
+<!-- ===== CARDS ADMIN ===== -->
+<div class="dashboard-cards" *ngIf="isAdmin">
+  <mat-card class="metric-card">
+    <div class="stat-icon" style="background:#FFF2E6;color:#F3AB7E;"><i class="fas fa-users"></i></div>
+    <div class="stat-content"><div class="stat-value">{{ nbUsers }}</div><div class="stat-label">Utilisateurs</div></div>
+  </mat-card>
+  <mat-card class="metric-card">
+    <div class="stat-icon" style="background:#EAF4EF;color:#4F7A5E;"><i class="fas fa-box"></i></div>
+    <div class="stat-content"><div class="stat-value">{{ nbProducts }}</div><div class="stat-label">Produits</div></div>
+  </mat-card>
+  <mat-card class="metric-card">
+    <div class="stat-icon" style="background:#FFF2E6;color:#F3AB7E;"><i class="fas fa-shopping-cart"></i></div>
+    <div class="stat-content"><div class="stat-value">{{ nbOrders }}</div><div class="stat-label">Commandes</div></div>
+  </mat-card>
+  <mat-card class="metric-card">
+    <div class="stat-icon" style="background:#FEF0ED;color:#D9534F;"><i class="fas fa-euro-sign"></i></div>
+    <div class="stat-content"><div class="stat-value">{{ nbRevenue | number:'1.0-0' }} €</div><div class="stat-label">Chiffre d'affaires</div></div>
+  </mat-card>
+</div>
+
+<!-- ===== CARDS SELLER ===== -->
+<div class="dashboard-cards" *ngIf="isSeller">
+  <mat-card class="metric-card">
+    <div class="stat-icon" style="background:#FFF2E6;color:#F3AB7E;"><i class="fas fa-receipt"></i></div>
+    <div class="stat-content"><div class="stat-value">{{ nbOrders }}</div><div class="stat-label">Commandes reçues</div></div>
+  </mat-card>
+  <mat-card class="metric-card">
+    <div class="stat-icon" style="background:#EAF4EF;color:#4F7A5E;"><i class="fas fa-coins"></i></div>
+    <div class="stat-content"><div class="stat-value">{{ nbRevenue | number:'1.2-2' }} €</div><div class="stat-label">Revenus</div></div>
+  </mat-card>
+  <mat-card class="metric-card">
+    <div class="stat-icon" style="background:#FFEFE0;color:#F3AB7E;"><i class="fas fa-clock"></i></div>
+    <div class="stat-content"><div class="stat-value">{{ nbPendingOrders }}</div><div class="stat-label">À traiter</div></div>
+  </mat-card>
+  <mat-card class="metric-card">
+    <div class="stat-icon" style="background:#FEF0ED;color:#D9534F;"><i class="fas fa-exclamation-triangle"></i></div>
+    <div class="stat-content"><div class="stat-value">{{ nbStockAlerts }}</div><div class="stat-label">Stock faible</div></div>
+  </mat-card>
+</div>
+
+<!-- ===== CARDS CUSTOMER ===== -->
+<div class="dashboard-cards" *ngIf="!isAdmin && !isSeller">
+  <mat-card class="metric-card">
+    <div class="stat-icon" style="background:#FFF2E6;color:#F3AB7E;"><i class="fas fa-receipt"></i></div>
+    <div class="stat-content"><div class="stat-value">{{ nbOrders }}</div><div class="stat-label">Mes commandes</div></div>
+  </mat-card>
+  <mat-card class="metric-card">
+    <div class="stat-icon" style="background:#EAF4EF;color:#4F7A5E;"><i class="fas fa-truck"></i></div>
+    <div class="stat-content"><div class="stat-value">{{ nbInProgressOrders }}</div><div class="stat-label">En cours</div></div>
+  </mat-card>
+  <mat-card class="metric-card">
+    <div class="stat-icon" style="background:#FFEFE0;color:#F3AB7E;"><i class="fas fa-wallet"></i></div>
+    <div class="stat-content"><div class="stat-value">{{ nbTotalSpent | number:'1.2-2' }} €</div><div class="stat-label">Dépenses totales</div></div>
+  </mat-card>
+  <mat-card class="metric-card">
+    <div class="stat-icon" style="background:#E8F0FE;color:#5B6E8C;"><i class="fas fa-chart-line"></i></div>
+    <div class="stat-content"><div class="stat-value">{{ nbAverageCart | number:'1.2-2' }} €</div><div class="stat-label">Panier moyen</div></div>
+  </mat-card>
+</div>
+
+    <!-- ===== CHARTS ADMIN ===== -->
+    <div class="charts-row" *ngIf="isAdmin">
+      <div class="chart-box">
+        <h3><i class="fas fa-chart-pie"></i> Vue generale</h3>
+        <canvas baseChart
+          [type]="pieChartType"
+          [datasets]="chartDataOverviewPie"
+          [labels]="chartLabelsOverviewPie"
+          [options]="chartOptions">
+        </canvas>
+      </div>
+
+      <div class="chart-box">
+        <h3><i class="fas fa-box-open"></i> Top produits</h3>
+        <canvas baseChart
+          [type]="barChartType"
+          [datasets]="chartDataTopProducts"
+          [labels]="chartLabelsTopProducts"
+          [options]="chartOptions">
+        </canvas>
+      </div>
+
+      <div class="chart-box">
+        <h3><i class="fas fa-store"></i> Top vendeurs</h3>
+        <canvas baseChart
+          [type]="barChartType"
+          [datasets]="chartDataTopSellers"
+          [labels]="chartLabelsTopSellers"
+          [options]="chartOptions">
+        </canvas>
+      </div>
+
+      <div class="chart-box" *ngIf="recentOrders.length > 0">
+        <h3><i class="fas fa-clipboard-list"></i> Etat des commandes</h3>
+        <canvas baseChart
+          [type]="doughnutChartType"
+          [datasets]="chartDataOrdersStatus"
+          [labels]="chartLabelsOrdersStatus"
+          [options]="chartOptions">
+        </canvas>
+      </div>
     </div>
 
-    <!-- Statistiques Vendeur / Client -->
-    <div class="stats-grid" *ngIf="!isAdmin">
-      <div class="stat-card"><div class="stat-icon" style="background:#FFF2E6;color:#F3AB7E;"><i class="fas fa-receipt"></i></div><div class="stat-content"><div class="stat-value">{{ stats.totalOrders || 0 }}</div><div class="stat-label">{{ isSeller ? 'Commandes reçues' : 'Mes commandes' }}</div></div></div>
-      <div class="stat-card" *ngIf="isSeller"><div class="stat-icon" style="background:#EAF4EF;color:#4F7A5E;"><i class="fas fa-coins"></i></div><div class="stat-content"><div class="stat-value">{{ (stats.revenus || 0) | number:'1.2-2' }} €</div><div class="stat-label">Revenus</div></div></div>
-      <div class="stat-card" *ngIf="isSeller"><div class="stat-icon" style="background:#FFEFE0;color:#F3AB7E;"><i class="fas fa-clock"></i></div><div class="stat-content"><div class="stat-value">{{ stats.commandesEnAttente || 0 }}</div><div class="stat-label">À traiter</div></div></div>
-      <div class="stat-card" *ngIf="isSeller"><div class="stat-icon" style="background:#FEF0ED;color:#D9534F;"><i class="fas fa-exclamation-triangle"></i></div><div class="stat-content"><div class="stat-value">{{ stats.alertesStockFaible || 0 }}</div><div class="stat-label">Stock faible</div></div></div>
-      <div class="stat-card" *ngIf="!isSeller"><div class="stat-icon" style="background:#EAF4EF;color:#4F7A5E;"><i class="fas fa-truck"></i></div><div class="stat-content"><div class="stat-value">{{ stats.commandesEnCours || 0 }}</div><div class="stat-label">En cours</div></div></div>
-      <div class="stat-card" *ngIf="!isSeller"><div class="stat-icon" style="background:#FFEFE0;color:#F3AB7E;"><i class="fas fa-wallet"></i></div><div class="stat-content"><div class="stat-value">{{ (stats.totalDepense || 0) | number:'1.2-2' }} €</div><div class="stat-label">Dépenses totales</div></div></div>
-      <div class="stat-card" *ngIf="!isSeller"><div class="stat-icon" style="background:#E8F0FE;color:#5B6E8C;"><i class="fas fa-chart-line"></i></div><div class="stat-content"><div class="stat-value">{{ (stats.panierMoyen || 0) | number:'1.2-2' }} €</div><div class="stat-label">Panier moyen</div></div></div>
+    <!-- ===== CHARTS SELLER ===== -->
+    <div class="charts-row" *ngIf="isSeller">
+      <div class="chart-box">
+        <h3><i class="fas fa-chart-pie"></i> Vue generale</h3>
+        <canvas baseChart
+          [type]="pieChartType"
+          [datasets]="chartDataOverviewPie"
+          [labels]="chartLabelsOverviewPie"
+          [options]="chartOptions">
+        </canvas>
+      </div>
+
+      <div class="chart-box" *ngIf="recentOrders.length > 0">
+        <h3><i class="fas fa-clipboard-list"></i> Etat des commandes</h3>
+        <canvas baseChart
+          [type]="doughnutChartType"
+          [datasets]="chartDataOrdersStatus"
+          [labels]="chartLabelsOrdersStatus"
+          [options]="chartOptions">
+        </canvas>
+      </div>
     </div>
 
-    <!-- Graphiques Admin -->
-    <div class="grid-2" *ngIf="isAdmin">
-      <div class="dashboard-card"><div class="card-header"><h3>Top produits</h3></div><div class="card-body"><div class="chart-wrapper"><canvas baseChart [type]="barChartType" [datasets]="chartDataTopProducts" [labels]="chartLabelsTopProducts" [options]="chartOptions"></canvas></div></div></div>
-      <div class="dashboard-card"><div class="card-header"><h3>Top vendeurs</h3></div><div class="card-body"><div class="chart-wrapper"><canvas baseChart [type]="barChartType" [datasets]="chartDataTopSellers" [labels]="chartLabelsTopSellers" [options]="chartOptions"></canvas></div></div></div>
+    <!-- ===== CHARTS CUSTOMER ===== -->
+    <div class="charts-row" *ngIf="!isAdmin && !isSeller">
+      <div class="chart-box">
+        <h3><i class="fas fa-chart-pie"></i> Vue generale</h3>
+        <canvas baseChart
+          [type]="pieChartType"
+          [datasets]="chartDataOverviewPie"
+          [labels]="chartLabelsOverviewPie"
+          [options]="chartOptions">
+        </canvas>
+      </div>
+
+      <div class="chart-box">
+        <h3><i class="fas fa-chart-line"></i> Evolution des depenses</h3>
+        <canvas baseChart
+          [type]="lineChartType"
+          [datasets]="chartDataMonthlySpend"
+          [labels]="chartLabelsMonthlySpend"
+          [options]="chartOptions">
+        </canvas>
+      </div>
+
+      <div class="chart-box">
+        <h3><i class="fas fa-chart-bar"></i> Commandes par statut</h3>
+        <canvas baseChart
+          [type]="barChartType"
+          [datasets]="chartDataCustomerStatus"
+          [labels]="chartLabelsCustomerStatus"
+          [options]="chartOptions">
+        </canvas>
+      </div>
+
+      <div class="chart-box" *ngIf="recentOrders.length > 0">
+        <h3><i class="fas fa-clipboard-list"></i> Etat des commandes</h3>
+        <canvas baseChart
+          [type]="doughnutChartType"
+          [datasets]="chartDataOrdersStatus"
+          [labels]="chartLabelsOrdersStatus"
+          [options]="chartOptions">
+        </canvas>
+      </div>
     </div>
 
-    <!-- Commandes récentes + État des commandes -->
-    <div class="grid-2" *ngIf="recentOrders.length > 0">
-      <div class="dashboard-card">
-        <div class="card-header"><h3>Commandes récentes</h3></div>
-        <div class="card-body">
-          <div class="table-responsive">
-            <table class="recent-orders-table">
-              <thead><tr><th>N°</th><th>Date</th><th>Total</th><th>Statut</th></tr></thead>
-              <tbody>
-                <tr *ngFor="let order of recentOrders">
-                  <td style="font-weight:600">{{ order.numeroCommande }}</td>
-                  <td>{{ order.dateCommande | date:'dd/MM/yyyy' }}</td>
-                  <td style="font-weight:600">{{ order.totalTTC | number:'1.2-2' }} €</td>
-                  <td><span class="status-badge" [ngClass]="'status-' + (order.statut | lowercase)">{{ order.statut }}</span></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div style="margin-top:20px;text-align:center"><button routerLink="/orders" class="btn-ghost">Voir tout</button></div>
+    <div class="dashboard-card" *ngIf="recentOrders.length > 0">
+      <div class="card-header">
+        <h3>Commandes recentes</h3>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="recent-orders-table">
+            <thead>
+              <tr>
+                <th>N</th>
+                <th>Date</th>
+                <th>Total</th>
+                <th>Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let order of recentOrders">
+                <td class="order-number">{{ order.numeroCommande }}</td>
+                <td>{{ order.dateCommande | date:'dd/MM/yyyy' }}</td>
+                <td class="order-total">{{ order.totalTTC | number:'1.2-2' }} EUR</td>
+                <td>
+                  <span class="status-badge" [ngClass]="'status-' + (order.statut | lowercase)">
+                    {{ order.statut }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-action">
+          <button routerLink="/orders" class="btn-ghost">Voir tout</button>
         </div>
       </div>
-      <div class="dashboard-card">
-        <div class="card-header"><h3>État des commandes</h3></div>
-        <div class="card-body"><div class="chart-wrapper"><canvas baseChart [type]="doughnutChartType" [datasets]="chartDataOrdersStatus" [labels]="chartLabelsOrdersStatus" [options]="chartOptions"></canvas></div></div>
-      </div>
     </div>
-
-    <!-- Graphiques Client (évolution dépenses + commandes par statut) -->
-    <div class="grid-2" *ngIf="!isAdmin && !isSeller">
-      <div class="dashboard-card"><div class="card-header"><h3>Évolution des dépenses</h3></div><div class="card-body"><div class="chart-wrapper"><canvas baseChart [type]="lineChartType" [datasets]="chartDataMonthlySpend" [labels]="chartLabelsMonthlySpend" [options]="chartOptions"></canvas></div></div></div>
-      <div class="dashboard-card"><div class="card-header"><h3>Commandes par statut</h3></div><div class="card-body"><div class="chart-wrapper"><canvas baseChart [type]="barChartType" [datasets]="chartDataCustomerStatus" [labels]="chartLabelsCustomerStatus" [options]="chartOptions"></canvas></div></div></div>
-    </div>
-
-    <!-- Accordéon pour liens supplémentaires (optionnel) -->
 
   </div>
 </div>

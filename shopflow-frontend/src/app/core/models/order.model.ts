@@ -4,7 +4,6 @@ export interface OrderItem {
   quantite: number;
   prixUnitaire: number;
   sousTotal: number;
-  // Seller info populated by backend so frontend can filter lines for a seller
   sellerId?: number | null;
   sellerNom?: string | null;
 }
@@ -33,7 +32,6 @@ export interface Order {
   seenBySeller?: boolean;
   dateCommande: string;
   lignes: OrderItem[];
-  // UI helper: selected status in the order list (not persisted)
   _selectedStatus?: string;
 }
 

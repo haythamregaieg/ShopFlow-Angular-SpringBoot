@@ -15,9 +15,17 @@ export class SellerProfileService {
     return this.http.get<SellerProfile>(`${this.apiUrl}/me`);
   }
 
+  GetMySellerProfile(): Observable<SellerProfile> {
+    return this.getMyProfile();
+  }
+
   updateMyProfile(request: SellerProfileRequest): Observable<SellerProfile> {
     return this.http.put<SellerProfile>(`${this.apiUrl}/me`, request).pipe(
       tap(profile => this.profileRefreshSubject.next(profile))
     );
+  }
+
+  updateSellerProfile(request: SellerProfileRequest): Observable<SellerProfile> {
+    return this.updateMyProfile(request);
   }
 }

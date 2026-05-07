@@ -27,6 +27,10 @@ export class AuthService {
     );
   }
 
+  Login(request: LoginRequest): Observable<AuthResponse> {
+    return this.login(request);
+  }
+
   register(request: RegisterRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/register`, request).pipe(
       tap(response => {
@@ -35,6 +39,10 @@ export class AuthService {
         this.currentUserSubject.next(response);
       })
     );
+  }
+
+  Register(request: RegisterRequest): Observable<AuthResponse> {
+    return this.register(request);
   }
 
   registerSeller(request: RegisterRequest): Observable<AuthResponse> {
@@ -47,12 +55,24 @@ export class AuthService {
     );
   }
 
+  RegisterSeller(request: RegisterRequest): Observable<AuthResponse> {
+    return this.registerSeller(request);
+  }
+
   forgotPassword(email: string): Observable<{ message: string; token: string }> {
     return this.http.post<{ message: string; token: string }>(`${this.apiUrl}/forgot-password?email=${encodeURIComponent(email)}`, {});
   }
 
+  ForgotPassword(email: string): Observable<{ message: string; token: string }> {
+    return this.forgotPassword(email);
+  }
+
   resetPassword(token: string, newPassword: string): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(`${this.apiUrl}/reset-password`, { token, newPassword });
+  }
+
+  ResetPassword(token: string, newPassword: string): Observable<{ message: string }> {
+    return this.resetPassword(token, newPassword);
   }
 
   logout(): void {
