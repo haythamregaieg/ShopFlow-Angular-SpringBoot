@@ -113,9 +113,9 @@ export class DashboardComponent implements OnInit {
   }
 
   private getDashboardStats(): Observable<DashboardStats> {
-    if (this.isAdmin) return this.dashboardService.GetAdminStats();
-    if (this.isSeller) return this.dashboardService.GetSellerStats();
-    return this.dashboardService.GetCustomerStats();
+    if (this.isAdmin) return this.dashboardService.getAdminStats();
+    if (this.isSeller) return this.dashboardService.getSellerStats();
+    return this.dashboardService.getCustomerStats();
   }
 
   loadAdminData(stats: AdminDashboardStats): void {

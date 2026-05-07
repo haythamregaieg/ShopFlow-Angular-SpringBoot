@@ -12,8 +12,4 @@ export class AddressService {
   getMyAddresses(): Observable<Address[]> {
     return this.http.get<Address[]>(`${this.apiUrl}/my`);
   }
-
-  GetMyAddresses(): Observable<Address[]> {
-    return this.getMyAddresses();
-  }
 }

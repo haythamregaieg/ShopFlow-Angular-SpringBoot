@@ -15,10 +15,6 @@ export class CategoryService {
     return this.http.get<Category[]>(this.apiUrl);
   }
 
-  GetAllCategories(): Observable<Category[]> {
-    return this.getAll();
-  }
-
   /** Liste plate dérivée de l'arbre (pas de second endpoint) */
   getAllFlat(): Observable<Category[]> {
     return this.getAll().pipe(
@@ -33,31 +29,15 @@ export class CategoryService {
     );
   }
 
-  GetAllCategoriesFlat(): Observable<Category[]> {
-    return this.getAllFlat();
-  }
-
   create(request: { nom: string; description?: string; parentId?: number | null }): Observable<Category> {
     return this.http.post<Category>(this.apiUrl, request);
-  }
-
-  addCategory(request: { nom: string; description?: string; parentId?: number | null }): Observable<Category> {
-    return this.create(request);
   }
 
   update(id: number, request: { nom: string; description?: string; parentId?: number | null }): Observable<Category> {
     return this.http.put<Category>(`${this.apiUrl}/${id}`, request);
   }
 
-  updateCategory(request: { nom: string; description?: string; parentId?: number | null }, id: number): Observable<Category> {
-    return this.update(id, request);
-  }
-
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
-  }
-
-  deleteCategory(id: number): Observable<void> {
-    return this.delete(id);
   }
 }

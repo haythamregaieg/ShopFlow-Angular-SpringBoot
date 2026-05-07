@@ -17,23 +17,11 @@ export class DashboardService {
     return this.http.get<AdminDashboardStats>(`${this.apiUrl}/admin`);
   }
 
-  GetAdminStats(): Observable<AdminDashboardStats> {
-    return this.getAdminStats();
-  }
-
   getSellerStats(): Observable<SellerDashboardStats> {
     return this.http.get<SellerDashboardStats>(`${this.apiUrl}/seller`);
   }
 
-  GetSellerStats(): Observable<SellerDashboardStats> {
-    return this.getSellerStats();
-  }
-
   getCustomerStats(): Observable<CustomerDashboardStats> {
     return this.http.get<CustomerDashboardStats>(`${this.apiUrl}/customer`);
-  }
-
-  GetCustomerStats(): Observable<CustomerDashboardStats> {
-    return this.getCustomerStats();
   }
 }
