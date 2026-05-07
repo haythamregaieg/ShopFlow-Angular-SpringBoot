@@ -213,6 +213,5 @@ archive.zip
 ├── frontend/                   # Code source Angular
 ├── rapport.pdf                 # Rapport technique
 ├── README.md                   # Ce fichier
-├── shopflow.postman_collection.json
-└── data.sql                    # Données de démonstration
+
 ```

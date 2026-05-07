@@ -1,7 +1,15 @@
 import { Component, OnInit } from "@angular/core";
+import { Observable } from "rxjs";
+import { Chart, ChartDataset, ChartOptions, ChartType, registerables } from "chart.js";
 import { AuthService } from "../../../core/services/auth.service";
 import { DashboardService } from "../../../core/services/dashboard.service";
-import { Chart, ChartConfiguration, ChartType, registerables } from "chart.js";
+import {
+  AdminDashboardStats,
+  CustomerDashboardStats,
+  DashboardStats,
+  DashboardViewStats,
+  RecentOrder
+} from "../../../core/models/dashboard.model";
 
 @Component({
   selector: "app-dashboard",
@@ -11,20 +19,71 @@ import { Chart, ChartConfiguration, ChartType, registerables } from "chart.js";
 export class DashboardComponent implements OnInit {
   isAdmin = false;
   isSeller = false;
-  stats: any = {};
-  recentOrders: any[] = [];
+  stats: DashboardViewStats = {};
+  recentOrders: RecentOrder[] = [];
   accordionOpen = false;
 
-  // Chart configurations
-  barChartType: ChartType = 'bar';
-  lineChartType: ChartType = 'line';
-  doughnutChartType: ChartType = 'doughnut';
+  barChartType: ChartType = "bar";
+  lineChartType: ChartType = "line";
+  doughnutChartType: ChartType = "doughnut";
 
-  topProductsData: ChartConfiguration<'bar'>['data'] = { labels: [], datasets: [{ data: [], label: 'Ventes' }] };
-  topSellersData: ChartConfiguration<'bar'>['data'] = { labels: [], datasets: [{ data: [], label: 'Revenus' }] };
-  ordersStatusData: ChartConfiguration<'doughnut'>['data'] = { labels: [], datasets: [{ data: [] }] };
-  monthlySpendData: ChartConfiguration<'line'>['data'] = { labels: [], datasets: [{ data: [], label: 'Dépenses' }] };
-  customerStatusData: ChartConfiguration<'bar'>['data'] = { labels: [], datasets: [{ data: [], label: 'Commandes' }] };
+  chartOptions: ChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false
+  };
+
+  // Bar chart: top products
+  chartDataTopProducts: ChartDataset[] = [
+    {
+      label: "Ventes",
+      data: [],
+      backgroundColor: "#F3AB7E",
+      borderRadius: 10
+    }
+  ];
+  chartLabelsTopProducts: string[] = [];
+
+  // Bar chart: top sellers
+  chartDataTopSellers: ChartDataset[] = [
+    {
+      label: "Revenus",
+      data: [],
+      backgroundColor: "#4F7A5E",
+      borderRadius: 10
+    }
+  ];
+  chartLabelsTopSellers: string[] = [];
+
+  // Doughnut chart: orders by status
+  chartDataOrdersStatus: ChartDataset[] = [
+    {
+      data: [],
+      backgroundColor: ["#F3AB7E", "#4F7A5E", "#E2B56A", "#6A7F8C"]
+    }
+  ];
+  chartLabelsOrdersStatus: string[] = [];
+
+  // Line chart: monthly spend
+  chartDataMonthlySpend: ChartDataset[] = [
+    {
+      label: "Depenses",
+      data: [],
+      borderColor: "#4F7A5E",
+      tension: 0.3,
+      fill: false
+    }
+  ];
+  chartLabelsMonthlySpend: string[] = [];
+
+  // Bar chart: customer orders by status
+  chartDataCustomerStatus: ChartDataset[] = [
+    {
+      label: "Commandes",
+      data: [],
+      backgroundColor: "#F3AB7E"
+    }
+  ];
+  chartLabelsCustomerStatus: string[] = [];
 
   constructor(
     private authService: AuthService,
@@ -35,19 +94,28 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.isAdmin = this.authService.isAdmin();
-    this.isSeller = this.authService.getRole() === 'SELLER';
+    this.isSeller = this.authService.getRole() === "SELLER";
+
     if (!this.authService.isLoggedIn()) return;
 
-    let obs;
-    if (this.isAdmin) obs = this.dashboardService.getAdminStats();
-    else if (this.isSeller) obs = this.dashboardService.getSellerStats();
-    else obs = this.dashboardService.getCustomerStats();
+    this.loadDashboard();
+  }
 
-    obs.subscribe({
-      next: (s) => {
-        this.stats = s || {};
-        this.recentOrders = s?.recentOrders || [];
-        this.buildCharts();
+  loadDashboard(): void {
+    this.getDashboardStats().subscribe({
+      next: (response: DashboardStats) => {
+        this.stats = response || {};
+        this.recentOrders = response?.recentOrders || [];
+
+        this.loadOrdersStatus();
+
+        if (this.isAdmin) {
+          this.loadAdminCharts(response as AdminDashboardStats);
+        }
+
+        if (!this.isAdmin && !this.isSeller) {
+          this.loadCustomerCharts(response as CustomerDashboardStats);
+        }
       },
       error: (err) => console.error("Dashboard error", err)
     });
@@ -57,67 +125,87 @@ export class DashboardComponent implements OnInit {
     this.accordionOpen = !this.accordionOpen;
   }
 
-  private buildCharts(): void {
-    // Top produits (admin)
-    const topProducts = this.stats.topProducts || {};
-    this.topProductsData = {
-      labels: Object.keys(topProducts),
-      datasets: [{
-        data: Object.values(topProducts).map(v => Number(v)),
-        label: 'Ventes',
-        backgroundColor: '#F3AB7E',
-        borderRadius: 10
-      }]
-    };
+  private getDashboardStats(): Observable<DashboardStats> {
+    if (this.isAdmin) return this.dashboardService.getAdminStats();
+    if (this.isSeller) return this.dashboardService.getSellerStats();
+    return this.dashboardService.getCustomerStats();
+  }
 
-    // Top vendeurs (admin)
-    const topSellers = this.stats.topSellers || {};
-    this.topSellersData = {
-      labels: Object.keys(topSellers),
-      datasets: [{
-        data: Object.values(topSellers).map(v => Number(v)),
-        label: 'Revenus',
-        backgroundColor: '#4F7A5E',
-        borderRadius: 10
-      }]
-    };
+  // ============================
+  // Admin charts
+  // ============================
+  loadAdminCharts(stats: AdminDashboardStats): void {
+    const topProducts = stats.topProducts || {};
 
-    // État des commandes (doughnut)
+    this.chartLabelsTopProducts = Object.keys(topProducts);
+    this.chartDataTopProducts = [
+      {
+        label: "Ventes",
+        data: Object.values(topProducts).map(value => Number(value)),
+        backgroundColor: "#F3AB7E",
+        borderRadius: 10
+      }
+    ];
+
+    const topSellers = stats.topSellers || {};
+
+    this.chartLabelsTopSellers = Object.keys(topSellers);
+    this.chartDataTopSellers = [
+      {
+        label: "Revenus",
+        data: Object.values(topSellers).map(value => Number(value)),
+        backgroundColor: "#4F7A5E",
+        borderRadius: 10
+      }
+    ];
+  }
+
+  // ============================
+  // Orders data
+  // ============================
+  loadOrdersStatus(): void {
     const statusCount: Record<string, number> = {};
-    this.recentOrders.forEach(o => {
-      const statut = o.statut?.toLowerCase() || 'inconnu';
+
+    this.recentOrders.forEach(order => {
+      const statut = order.statut?.toLowerCase() || "inconnu";
       statusCount[statut] = (statusCount[statut] || 0) + 1;
     });
-    this.ordersStatusData = {
-      labels: Object.keys(statusCount),
-      datasets: [{
-        data: Object.values(statusCount),
-        backgroundColor: ['#F3AB7E', '#4F7A5E', '#E2B56A', '#6A7F8C']
-      }]
-    };
 
-    // Client : dépenses par mois
-    const monthly = this.stats.depensesParMois || {};
-    this.monthlySpendData = {
-      labels: Object.keys(monthly),
-      datasets: [{
-        data: Object.values(monthly).map(v => Number(v)),
-        label: 'Dépenses',
-        borderColor: '#4F7A5E',
+    this.chartLabelsOrdersStatus = Object.keys(statusCount);
+    this.chartDataOrdersStatus = [
+      {
+        data: Object.values(statusCount),
+        backgroundColor: ["#F3AB7E", "#4F7A5E", "#E2B56A", "#6A7F8C"]
+      }
+    ];
+  }
+
+  // ============================
+  // Customer charts
+  // ============================
+  loadCustomerCharts(stats: CustomerDashboardStats): void {
+    const monthly = stats.depensesParMois || {};
+
+    this.chartLabelsMonthlySpend = Object.keys(monthly);
+    this.chartDataMonthlySpend = [
+      {
+        label: "Depenses",
+        data: Object.values(monthly).map(value => Number(value)),
+        borderColor: "#4F7A5E",
         tension: 0.3,
         fill: false
-      }]
-    };
+      }
+    ];
 
-    // Client : commandes par statut
-    const custStatuses = this.stats.commandesParStatut || {};
-    this.customerStatusData = {
-      labels: Object.keys(custStatuses),
-      datasets: [{
-        data: Object.values(custStatuses).map(v => Number(v)),
-        label: 'Commandes',
-        backgroundColor: '#F3AB7E'
-      }]
-    };
+    const statuses = stats.commandesParStatut || {};
+
+    this.chartLabelsCustomerStatus = Object.keys(statuses);
+    this.chartDataCustomerStatus = [
+      {
+        label: "Commandes",
+        data: Object.values(statuses).map(value => Number(value)),
+        backgroundColor: "#F3AB7E"
+      }
+    ];
   }
 }

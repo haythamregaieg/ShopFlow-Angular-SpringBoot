@@ -50,8 +50,8 @@
 
     <!-- Graphiques Admin -->
     <div class="grid-2" *ngIf="isAdmin">
-      <div class="dashboard-card"><div class="card-header"><h3>Top produits</h3></div><div class="card-body"><div class="chart-wrapper"><canvas baseChart [type]="barChartType" [data]="topProductsData"></canvas></div></div></div>
-      <div class="dashboard-card"><div class="card-header"><h3>Top vendeurs</h3></div><div class="card-body"><div class="chart-wrapper"><canvas baseChart [type]="barChartType" [data]="topSellersData"></canvas></div></div></div>
+      <div class="dashboard-card"><div class="card-header"><h3>Top produits</h3></div><div class="card-body"><div class="chart-wrapper"><canvas baseChart [type]="barChartType" [datasets]="chartDataTopProducts" [labels]="chartLabelsTopProducts" [options]="chartOptions"></canvas></div></div></div>
+      <div class="dashboard-card"><div class="card-header"><h3>Top vendeurs</h3></div><div class="card-body"><div class="chart-wrapper"><canvas baseChart [type]="barChartType" [datasets]="chartDataTopSellers" [labels]="chartLabelsTopSellers" [options]="chartOptions"></canvas></div></div></div>
     </div>
 
     <!-- Commandes récentes + État des commandes -->
@@ -77,14 +77,14 @@
       </div>
       <div class="dashboard-card">
         <div class="card-header"><h3>État des commandes</h3></div>
-        <div class="card-body"><div class="chart-wrapper"><canvas baseChart [type]="doughnutChartType" [data]="ordersStatusData"></canvas></div></div>
+        <div class="card-body"><div class="chart-wrapper"><canvas baseChart [type]="doughnutChartType" [datasets]="chartDataOrdersStatus" [labels]="chartLabelsOrdersStatus" [options]="chartOptions"></canvas></div></div>
       </div>
     </div>
 
     <!-- Graphiques Client (évolution dépenses + commandes par statut) -->
     <div class="grid-2" *ngIf="!isAdmin && !isSeller">
-      <div class="dashboard-card"><div class="card-header"><h3>Évolution des dépenses</h3></div><div class="card-body"><div class="chart-wrapper"><canvas baseChart [type]="lineChartType" [data]="monthlySpendData"></canvas></div></div></div>
-      <div class="dashboard-card"><div class="card-header"><h3>Commandes par statut</h3></div><div class="card-body"><div class="chart-wrapper"><canvas baseChart [type]="barChartType" [data]="customerStatusData"></canvas></div></div></div>
+      <div class="dashboard-card"><div class="card-header"><h3>Évolution des dépenses</h3></div><div class="card-body"><div class="chart-wrapper"><canvas baseChart [type]="lineChartType" [datasets]="chartDataMonthlySpend" [labels]="chartLabelsMonthlySpend" [options]="chartOptions"></canvas></div></div></div>
+      <div class="dashboard-card"><div class="card-header"><h3>Commandes par statut</h3></div><div class="card-body"><div class="chart-wrapper"><canvas baseChart [type]="barChartType" [datasets]="chartDataCustomerStatus" [labels]="chartLabelsCustomerStatus" [options]="chartOptions"></canvas></div></div></div>
     </div>
 
     <!-- Accordéon pour liens supplémentaires (optionnel) -->
