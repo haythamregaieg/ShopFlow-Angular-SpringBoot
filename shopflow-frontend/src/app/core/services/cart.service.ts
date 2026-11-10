@@ -5,7 +5,7 @@ import { Cart } from "../models/cart.model";
 
 @Injectable({ providedIn: "root" })
 export class CartService {
-  private apiUrl = "http://localhost:8081/api/cart";
+  private apiUrl = "https://scarecrow-erratic-pessimist.ngrok-free.dev/api/cart";
 
   constructor(private http: HttpClient) {}
 

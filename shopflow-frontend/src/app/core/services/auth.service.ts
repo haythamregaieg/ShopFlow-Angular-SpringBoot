@@ -5,11 +5,11 @@ import { AuthResponse, LoginRequest, RegisterRequest } from '../models/user.mode
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private apiUrl = 'http://localhost:8081/api/auth';
+  private apiUrl = 'https://scarecrow-erratic-pessimist.ngrok-free.dev/api/auth';
   private currentUserSubject = new BehaviorSubject<AuthResponse | null>(this.getUserFromStorage());
 
   currentUser$ = this.currentUserSubject.asObservable();
-//partager les données utilisateur,détecter login/logout en temps réel
+//partager les donnÃ©es utilisateur,dÃ©tecter login/logout en temps rÃ©el
   constructor(private http: HttpClient) {}
 
   private getUserFromStorage(): AuthResponse | null {

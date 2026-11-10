@@ -5,7 +5,7 @@ import { Coupon, CouponRequest } from '../models/coupon.model';
 
 @Injectable({ providedIn: 'root' })
 export class CouponService {
-  private apiUrl = 'http://localhost:8081/api/coupons';
+  private apiUrl = 'https://scarecrow-erratic-pessimist.ngrok-free.dev/api/coupons';
 
   constructor(private http: HttpClient) {}
 

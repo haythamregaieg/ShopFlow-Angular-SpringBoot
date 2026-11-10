@@ -5,7 +5,7 @@ import { Order } from "../models/order.model";
 
 @Injectable({ providedIn: "root" })
 export class OrderService {
-  private apiUrl = "http://localhost:8081/api/orders";
+  private apiUrl = "https://scarecrow-erratic-pessimist.ngrok-free.dev/api/orders";
   notificationRefreshSubject = new Subject<void>();
 
   constructor(private http: HttpClient) {}

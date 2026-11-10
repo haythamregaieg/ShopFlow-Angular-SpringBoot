@@ -5,7 +5,7 @@ import { UpdateUserProfileRequest, User } from "../models/user.model";
 
 @Injectable({ providedIn: "root" })
 export class UserService {
-  private apiUrl = "http://localhost:8081/api/users";
+  private apiUrl = "https://scarecrow-erratic-pessimist.ngrok-free.dev/api/users";
 
   constructor(private http: HttpClient) {}
 

@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent } from '@angular/common/http';
+import { Observable, catchError, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
 
@@ -10,19 +9,18 @@ export class JwtInterceptor implements HttpInterceptor {
   constructor(private authService: AuthService, private router: Router) {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    const token = this.authService.getToken();
-    if (token && token !== 'null' && token !== 'undefined') {
-      request = request.clone({
-        setHeaders: { Authorization: `Bearer ${token}` }
-      });
-    }
-
+    const token = localStorage.getItem('token');
+    request = request.clone({
+      setHeaders: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        'ngrok-skip-browser-warning': '69420'
+      }
+    });
     return next.handle(request).pipe(
-      catchError((error: HttpErrorResponse) => {
-        if ([401, 403].includes(error.status) && this.authService.isLoggedIn()) {
-          // Auto logout if 401 or 403 response returned from api
+      catchError((error) => {
+        if (error.status === 401) {
           this.authService.logout();
-          this.router.navigate(['/auth/login'], { queryParams: { returnUrl: this.router.url }});
+          this.router.navigate(['/auth/login']);
         }
         return throwError(() => error);
       })

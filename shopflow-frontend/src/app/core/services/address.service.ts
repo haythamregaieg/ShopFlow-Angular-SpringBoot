@@ -5,7 +5,7 @@ import { Address } from '../models/order.model';
 
 @Injectable({ providedIn: 'root' })
 export class AddressService {
-  private apiUrl = 'http://localhost:8081/api/addresses';
+  private apiUrl = 'https://scarecrow-erratic-pessimist.ngrok-free.dev/api/addresses';
 
   constructor(private http: HttpClient) {}
 

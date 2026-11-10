@@ -91,7 +91,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   loadCartCount(): void {
-    this.http.get<any>("http://localhost:8081/api/cart").subscribe({
+    this.http.get<any>("https://scarecrow-erratic-pessimist.ngrok-free.dev/api/cart").subscribe({
       next: (cart) => this.cartCount = cart?.lignes?.length || 0,
       error: () => this.cartCount = 0
     });

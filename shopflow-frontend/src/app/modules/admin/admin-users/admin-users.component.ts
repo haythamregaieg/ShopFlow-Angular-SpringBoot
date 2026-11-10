@@ -21,7 +21,7 @@ export class AdminUsersComponent implements OnInit {
 
   loadUsers(): void {
     this.loading = true;
-    this.http.get<User[]>("http://localhost:8081/api/users").subscribe({
+    this.http.get<User[]>("https://scarecrow-erratic-pessimist.ngrok-free.dev/api/users").subscribe({
       next: (users) => {
         this.users = users;
         this.filteredUsers = users;
@@ -44,12 +44,12 @@ export class AdminUsersComponent implements OnInit {
 
   toggle(user: User): void {
     const url = user.actif
-      ? `http://localhost:8081/api/users/${user.id}/deactivate`
-      : `http://localhost:8081/api/users/${user.id}/activate`;
+      ? `https://scarecrow-erratic-pessimist.ngrok-free.dev/api/users/${user.id}/deactivate`
+      : `https://scarecrow-erratic-pessimist.ngrok-free.dev/api/users/${user.id}/activate`;
     this.http.put<User>(url, {}).subscribe(updated => {
       const idx = this.users.findIndex(u => u.id === user.id);
       if (idx !== -1) this.users[idx] = updated;
-      this.filterUsers(); // met à jour la vue filtrée
+      this.filterUsers(); // met Ã  jour la vue filtrÃ©e
     });
   }
 }

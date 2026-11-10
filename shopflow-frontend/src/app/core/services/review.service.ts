@@ -7,7 +7,7 @@ import { Review, ReviewRequest } from '../models/review.model';
   providedIn: 'root'
 })
 export class ReviewService {
-  private apiUrl = 'http://localhost:8081/api/reviews';
+  private apiUrl = 'https://scarecrow-erratic-pessimist.ngrok-free.dev/api/reviews';
 
   constructor(private http: HttpClient) { }
 

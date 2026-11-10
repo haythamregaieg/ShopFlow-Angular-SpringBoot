@@ -9,7 +9,7 @@ import {
 
 @Injectable({ providedIn: "root" })
 export class DashboardService {
-  private apiUrl = "http://localhost:8081/api/dashboard";
+  private apiUrl = "https://scarecrow-erratic-pessimist.ngrok-free.dev/api/dashboard";
 
   constructor(private http: HttpClient) {}
 

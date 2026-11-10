@@ -1,0 +1,42 @@
+﻿# Angular
+node_modules/
+dist/
+.angular/
+coverage/
+
+# Spring Boot
+target/
+build/
+.gradle/
+*.class
+
+# IDE
+.idea/
+.vscode/
+*.iml
+.settings/
+.project
+.classpath
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Sensitive files
+application-local.properties
+application-local.yml
+application-secret.properties
+application-secret.yml
+*.pem
+*.key
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Firebase cache
+.firebase/

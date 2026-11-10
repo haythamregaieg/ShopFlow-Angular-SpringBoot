@@ -5,7 +5,7 @@ import { SellerProfile, SellerProfileRequest } from '../models/seller-profile.mo
 
 @Injectable({ providedIn: 'root' })
 export class SellerProfileService {
-  private apiUrl = 'http://localhost:8081/api/seller-profiles';
+  private apiUrl = 'https://scarecrow-erratic-pessimist.ngrok-free.dev/api/seller-profiles';
   private profileRefreshSubject = new Subject<SellerProfile>();
   profileRefresh$ = this.profileRefreshSubject.asObservable();
 

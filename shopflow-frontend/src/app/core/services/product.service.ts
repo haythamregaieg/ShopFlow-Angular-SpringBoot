@@ -5,7 +5,7 @@ import { Product, ProductRequest, PageResponse, ProductSearchParams, ProductVari
 
 @Injectable({ providedIn: "root" })
 export class ProductService {
-  private apiUrl = "http://localhost:8081/api/products";
+  private apiUrl = "https://scarecrow-erratic-pessimist.ngrok-free.dev/api/products";
 
   constructor(private http: HttpClient) {}
 

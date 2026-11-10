@@ -6,16 +6,14 @@ import { Category } from '../models/category.model';
 
 @Injectable({ providedIn: 'root' })
 export class CategoryService {
-  private apiUrl = 'http://localhost:8081/api/categories';
+  private apiUrl = 'https://scarecrow-erratic-pessimist.ngrok-free.dev/api/categories';
 
   constructor(private http: HttpClient) {}
 
-  /** Arbre : catégories racines avec leurs sous-catégories imbriquées */
   getAll(): Observable<Category[]> {
     return this.http.get<Category[]>(this.apiUrl);
   }
 
-  /** Liste plate dérivée de l'arbre (pas de second endpoint) */
   getAllFlat(): Observable<Category[]> {
     return this.getAll().pipe(
       map(tree => {
